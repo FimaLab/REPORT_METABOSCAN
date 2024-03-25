@@ -1,6 +1,10 @@
 from dash import Dash, html, dcc, callback, Output, Input
 import plotly.express as px
 import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+import matplotlib.cm as cm
+import matplotlib as mpl
 
 name = 'Иванов Иван Иванович'
 date = '21.07.2023'
@@ -26,6 +30,39 @@ markery_mikrobioty_list = [10,40]
 vospalenie_list = [70]
 funcii_serdca_list = [10,20,40,60]
 functii_pecheni_list = [10,20,33,1000]
+
+N = 1000
+a = 3.5   
+value = 1
+
+def normal_dist(N, a, value):
+    x = np.linspace(-a, a, N)
+    y = (1 / np.sqrt(2 * np.pi)) * np.exp(-0.5 * x**2)  # Формула для нормального распределения
+
+    cmap = mpl.colors.LinearSegmentedColormap.from_list("", ["#0db350","#edd30e", "#ff051e"],gamma=1.2)
+
+    plt.figure(figsize=(10, 5))
+
+    plt.ylim(min(y), max(y) + 0.00001)
+
+    plt.xticks([])  # Убрать деления по оси X
+    plt.yticks([])  # Убрать деления по оси Y
+
+    for pos in ['top', 'bottom', 'left', 'right']:
+        plt.gca().spines[pos].set_visible(False)
+
+    # print(x[1], len(y))
+
+    for i in range(N-1):
+        plt.fill_between([x[i], x[i+1]], [0, 0], [y[i], y[i+1]], color=cmap((x[i]+a)*N/(a*2)/N))
+
+    plt.plot(x, y, color='grey')
+
+    plt.axvline(value, ymin=min(y) * 1/max(y), ymax=1,color='#356ba6', linestyle='-', linewidth=3, clip_on=True)
+
+    plt.savefig("assets/normal.png", bbox_inches='tight', pad_inches=0)
+    return 'normal.png'
+
 
 def get_color(n):
     """
@@ -58,6 +95,8 @@ def procent_validator(n):
         return '100%'
     else:
         return f'{n}%'
+    
+
 
 app = Dash(__name__)
 
@@ -106,10 +145,16 @@ app.layout = html.Div([
         ], style={ 'width':'65%',}),
         html.Div([
             html.Div([
-                html.Img(src=app.get_asset_url('people.png'), style={'width':'150px','height':'150px','margin':'0px','margin-top':'10px'}),
-                      ], style={'height':'170px','text-align':'center'}),
+                html.Img(src=app.get_asset_url('people.png'), style={'width':'180px','height':'180px','margin':'0px','margin-top':'10px'}),
+                      ], style={'height':'190px','text-align':'center'}),
             html.P('На основании панорамного метаболомного профиля был оценен темп старения организма',style={'color':'black','height':'60px','font-family':'Calibri','font-size':'16px','margin':'0px','margin-left':'10px','text-align':"left "}),
-            html.Div([], style={'height':'190px','border':'1px solid black'}),
+            html.Div([html.Img(src=app.get_asset_url(f'{normal_dist(N,a,value)}'), style={'width':'100%','margin-top':'10px'})], style={'height':'150px'}),
+            html.Div([
+                html.P("медленно",style={'margin':'0px','margin-left':'10px'}),
+                html.P("нормально",style={'margin':'0px'}),
+                html.P("быстро",style={'margin':'0px','margin-right':'10px'}),
+            ],style={'height':'20px','display':'flex', 'justify-content':'space-between', 'width':'100%','font-family':'Calibri','font-size':'16px','margin':'0px'}),
+
             html.Div([], style={'height':'47px','border':'1px solid black'}),    
         ], style={'width':'35%',}),
     ], style={'display':'flex', 'justify-content':'space-between', 'width':'100%'}),
