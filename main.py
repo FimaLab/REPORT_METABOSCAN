@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.cm as cm
 import matplotlib as mpl
+from typing import List
+import matplotlib.colors as mcolors
 
 name = 'Иванов Иван Иванович'
 date = '21.07.2023'
@@ -35,6 +37,8 @@ N = 1000
 a = 3.5   
 value = 1
 
+part = [20, 25, 30, 40, 50 ,55, 45, 50, 30]
+
 def normal_dist(N, a, value):
     x = np.linspace(-a, a, N)
     y = (1 / np.sqrt(2 * np.pi)) * np.exp(-0.5 * x**2)  # Формула для нормального распределения
@@ -63,6 +67,106 @@ def normal_dist(N, a, value):
     plt.savefig("assets/normal.png", bbox_inches='tight', pad_inches=0)
     return 'normal.png'
 
+def main_plot(part):
+    names = ['Обмен веществ', 'Обмен аминокислот', 'Нутриентный статус', 'Стресс и нейромедиаторы', 
+         'Токсическое воздействие', 'Маркеры микробиоты', 'Воспаление', 'Функция сердца', 'Функция печени']
+
+    numbers=[1,2,3,4,5,6,7,8,9]
+
+    y_line = np.linspace(14.3,0.2,9)
+
+    plt.figure(figsize=(7,5))
+    plt.plot(part, y_line, 'ro', marker='o', markersize=0)
+
+    plt.rcParams['font.family'] = 'bahnschrift'
+    plt.rcParams['figure.dpi'] = 300
+    plt.rcParams['savefig.dpi'] = 300
+    plt.grid(True, linewidth=0.5, color = 'Grey', which='major')
+
+    plt.xlim(0,100)
+    plt.ylim(-1,15)
+
+    plt.yticks(np.linspace(-1,16,11),c='white')
+    plt.xticks(np.linspace(0,100,11), c='b')
+
+    for label in plt.gca().get_xticklabels():
+        if label.get_text() in ['0', '20', '40', '60', '80', '100']:
+            label.set_visible(True)
+        else:
+            label.set_visible(False)
+            
+    cmap = mpl.colors.LinearSegmentedColormap.from_list("", ["#77DD77","#FCE883", "#E4717A"],gamma=1.0)
+
+    n=0
+    for i_x, i_y in zip(part, y_line):
+        number = dict(boxstyle='circle', facecolor='white', alpha=1, edgecolor='black')
+
+        prop = dict(boxstyle='Round', facecolor=cmap(i_x/100), alpha=1, edgecolor=cmap(i_x/100),pad=0.8)
+
+        plt.text(i_x+1, i_y+0.7, names[n], color = 'black',  bbox=prop, fontsize = 9)
+        plt.text(i_x, i_y, numbers[n], color = 'black',  bbox=number, fontsize = 7)
+        n=n+1
+    plt.gca().spines['bottom'].set_color('blue')
+    plt.gca().spines['top'].set_color('blue')
+    plt.gca().spines['right'].set_color('blue')
+    plt.gca().spines['left'].set_color('blue')
+
+    plt.ylabel('')
+    plt.gca().set_yticklabels([])
+    
+    fig = plt.Figure()
+    fig.set_canvas(plt.gcf().canvas)
+
+    plt.savefig("assets/main.png", bbox_inches='tight', pad_inches=0)
+    return 'main.png'
+
+def color_marker(value: float, lines: List[float] = [25*256/100, 75*256/100]) -> str:
+    colors = ['red', 'yellow', 'green', 'yellow', 'red']  # красный - зеленый - красный
+    n_bins = 256
+    cmap_name = 'custom_gradient'
+    cm = mcolors.LinearSegmentedColormap.from_list(cmap_name, colors, N=256)
+
+    # Создание данных для градиента
+    gradient_data = np.linspace(0, 1, n_bins).reshape(1, -1)
+    plt.figure(figsize=(9,1))
+    plt.imshow(gradient_data, aspect='auto', cmap=cm, origin='lower')
+    plt.xticks([])  
+    plt.yticks([])  
+
+    
+    plt.scatter(value, 0.45, color='black', s=350, marker = 'v',clip_on=False) 
+
+    for i in lines:
+        plt.axvline(i, ymax=10,color='black', linestyle='-', linewidth=1, clip_on=False)
+    
+    plt.axis('off')
+
+    plt.savefig("assets/colorbar.png", bbox_inches='tight', pad_inches=0)
+    return 'colorbar.png'
+
+    
+def color_marker_green(value: float, lines: List[float] = [75*256/100]) -> str:
+    colors = ['green', 'yellow', 'red']  # красный - зеленый - красный
+    n_bins = 256
+    cmap_name = 'custom_gradient'
+    cm = mcolors.LinearSegmentedColormap.from_list(cmap_name, colors, N=256, gamma=2.5)
+
+    # Создание данных для градиента
+    gradient_data = np.linspace(0, 1, n_bins).reshape(1, -1)
+    plt.figure(figsize=(9,1))
+    plt.imshow(gradient_data, aspect='auto', cmap=cm, origin='lower')
+    plt.xticks([])  # Убрать деления по оси X
+    plt.yticks([])  # Убрать деления по оси Y
+
+    plt.scatter(value, 0.45, color='black', s=350, marker = 'v',clip_on=False)
+
+    for i in lines:
+        plt.axvline(i, ymax=10,color='black', linestyle='-', linewidth=1, clip_on=False)
+    
+    plt.axis('off')
+
+    plt.savefig("assets/colorbar2.png", bbox_inches='tight', pad_inches=0)
+    return 'colorbar2.png'
 
 def get_color(n):
     """
@@ -140,8 +244,8 @@ app.layout = html.Div([
                 html.Img(src=app.get_asset_url('risk_bar.png'), style={'width':'100%','pointer-events':'none'}),
             ], style={'margin':'0px', 'width':'100%','height':'50px'}),
             html.Div([
-                
-            ], style={'display':'flex', 'justify-content':'space-between', 'width':'100%','height':'330px','border':'1px solid black'}),
+                html.Img(src=app.get_asset_url(f'{main_plot(part=part)}'), style={'width':'100%','margin-top':'10px', 'margin-right':'5px'}),
+            ], style={'display':'flex', 'justify-content':'space-between', 'width':'100%','height':'330px'}),
         ], style={ 'width':'65%',}),
         html.Div([
             html.Div([
