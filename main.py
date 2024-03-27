@@ -39,6 +39,8 @@ value = 1
 
 part = [20, 25, 30, 40, 50 ,55, 45, 50, 30]
 
+procent_speed = 70
+
 def normal_dist(N, a, value):
     x = np.linspace(-a, a, N)
     y = (1 / np.sqrt(2 * np.pi)) * np.exp(-0.5 * x**2)  # Формула для нормального распределения
@@ -64,7 +66,7 @@ def normal_dist(N, a, value):
 
     plt.axvline(value, ymin=min(y) * 1/max(y), ymax=1,color='#356ba6', linestyle='-', linewidth=3, clip_on=True)
 
-    plt.savefig("assets/normal.png", bbox_inches='tight', pad_inches=0)
+    plt.savefig("assets/normal.png", bbox_inches='tight' , pad_inches=0)
     return 'normal.png'
 
 def main_plot(part):
@@ -201,6 +203,26 @@ def procent_validator(n):
         return f'{n}%'
     
 
+def get_color_under_normal_dist(n):
+    if n < 30:
+        return '#50c150'
+    elif n < 60:
+        return '#9fd047'
+    elif n < 80:
+        return '#feb61d'
+    else:
+        return '#de6d54'
+    
+def get_text_from_procent(n):
+    if n < 30:
+        return 'Замедленный'
+    elif n < 60:
+        return 'Нормальный'
+    elif n < 80:
+        return 'Умеренно ускоренный'
+    else:
+        return 'Сильно ускоренный'
+    
 
 app = Dash(__name__)
 
@@ -241,10 +263,10 @@ app.layout = html.Div([
                 # html.Img(src=app.get_asset_url('rArrow.png'), style={'width':'25px'}),
             ],style={'display':'flex', 'width':'100%','height':'30px'}),
             html.Div([
-                html.Img(src=app.get_asset_url('risk_bar.png'), style={'width':'100%','pointer-events':'none'}),
+                html.Img(src=app.get_asset_url('risk_bar.png'), style={'width':'98.2%','pointer-events':'none'}),
             ], style={'margin':'0px', 'width':'100%','height':'50px'}),
             html.Div([
-                html.Img(src=app.get_asset_url(f'{main_plot(part=part)}'), style={'width':'100%','margin-top':'10px', 'margin-right':'5px'}),
+                html.Img(src=app.get_asset_url(f'{main_plot(part=part)}'), style={'width':'100%','margin-top':'10px'}),
             ], style={'display':'flex', 'justify-content':'space-between', 'width':'100%','height':'330px'}),
         ], style={ 'width':'65%',}),
         html.Div([
@@ -258,8 +280,9 @@ app.layout = html.Div([
                 html.P("нормально",style={'margin':'0px'}),
                 html.P("быстро",style={'margin':'0px','margin-right':'10px'}),
             ],style={'height':'20px','display':'flex', 'justify-content':'space-between', 'width':'100%','font-family':'Calibri','font-size':'16px','margin':'0px'}),
-
-            html.Div([], style={'height':'47px','border':'1px solid black'}),    
+            html.Div([
+                html.P(f'{get_text_from_procent(procent_speed)}',style={'margin':'0','font-size':'18px','color':'white','font-family':'Calibri','font-weight':'bold','line-height':'normal','display':'inline-block','vertical-align':'center'}),
+            ], style={'height':'47px','background-color':f'{get_color_under_normal_dist(procent_speed)}','line-height':'47px','text-align':'center','margin-left':'40px','margin-right':'40px'}),    
         ], style={'width':'35%',}),
     ], style={'display':'flex', 'justify-content':'space-between', 'width':'100%'}),
     html.Div([
@@ -269,23 +292,26 @@ app.layout = html.Div([
     html.Div([
         html.Div([
             html.Div([
-                html.P('1. Обмен веществ – (',style={'margin':'0px','margin-bottom':'1px'}),html.B(f'{obmen_veshestv}',style={'margin':'0px'}),html.P('%)',style={'margin':'0px'})    
+                html.P('1. Обмен веществ – (',style={'margin':'0px','margin-bottom':'1px'}),html.B(f'{obmen_veshestv}%',style={'margin':'0px'}),html.P(')',style={'margin':'0px'}),
+                html.Div([
+                    html.Div([],style={'width':f'{procent_validator(obmen_veshestv)}','background-color':f'{get_color_under_normal_dist(obmen_veshestv)}','border-radius':'2px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center','margin-left':'5px','margin-top':'6px'}),
+                ],style={'width':'50px','height':'18px','line-height':'18px'}),
             ], style={'color':'black','font-family':'Calibri','font-size':'16px','margin':'0px','display':'flex', 'justify-content':'left','margin-bottom':'1px'}),
             html.Hr(style={'margin':'0px','height':'2px','border-width':'0px','background-color':'#336CA6'}),
             html.Div([
                 html.Div([
-                    html.Div([],style={'width':f'{procent_validator(obmen_veshestv_list[0])}','background-color':f'{get_color(obmen_veshestv_list[0])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center','margin-left':'2px'}),
+                    html.Div([],style={'width':f'{procent_validator(obmen_veshestv_list[0])}','background-color':f'{get_color(obmen_veshestv_list[0])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'23%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Карнитин',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px'})
-                ],style={'width':'77%'}),
+                    html.P('Карнитин',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
+                ],style={'width':'75%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
             html.Div([
                 html.Div([
                     html.Div([],style={'width':f'{procent_validator(obmen_veshestv_list[1])}','background-color':f'{get_color(obmen_veshestv_list[1])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'23%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Короткоцепочечные ацилкарнитины',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px'})
+                    html.P('Короткоцепочечные ацилкарнитины',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
                 ],style={'width':'77%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
             html.Div([
@@ -293,7 +319,7 @@ app.layout = html.Div([
                     html.Div([],style={'width':f'{procent_validator(obmen_veshestv_list[2])}','background-color':f'{get_color(obmen_veshestv_list[2])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'23%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Среднецепочечные ацилкарнитины',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px'})
+                    html.P('Среднецепочечные ацилкарнитины',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
                 ],style={'width':'77%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
             html.Div([
@@ -301,7 +327,7 @@ app.layout = html.Div([
                     html.Div([],style={'width':f'{procent_validator(obmen_veshestv_list[3])}','background-color':f'{get_color(obmen_veshestv_list[3])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'23%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Длинноцепочечные ацилкарнитины',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px'})
+                    html.P('Длинноцепочечные ацилкарнитины',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
                 ],style={'width':'77%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
             html.Div([
@@ -309,14 +335,17 @@ app.layout = html.Div([
                     html.Div([],style={'width':f'{procent_validator(obmen_veshestv_list[4])}','background-color':f'{get_color(obmen_veshestv_list[4])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'23%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Функция эндотелия сосудов',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px'})
+                    html.P('Функция эндотелия сосудов',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
                 ],style={'width':'77%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
 
 
 
             html.Div([
-                html.P('3. Нутриентный статус – (',style={'margin':'0px','margin-bottom':'1px'}),html.B(f'{nutrieviy_status}',style={'margin':'0px'}),html.P('%)',style={'margin':'0px'})    
+                html.P('3. Нутриентный статус – (',style={'margin':'0px','margin-bottom':'1px'}),html.B(f'{nutrieviy_status}%',style={'margin':'0px'}),html.P(')',style={'margin':'0px'}),
+                html.Div([
+                    html.Div([],style={'width':f'{procent_validator(nutrieviy_status)}','background-color':f'{get_color_under_normal_dist(nutrieviy_status)}','border-radius':'2px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center','margin-left':'5px','margin-top':'6px'}),
+                ],style={'width':'50px','height':'18px','line-height':'18px'}),  
             ], style={'color':'black','font-family':'Calibri','font-size':'16px','margin':'0px','display':'flex', 'justify-content':'left','margin-top':'24px','margin-bottom':'1px'}),
             html.Hr(style={'margin':'0px','height':'2px','border-width':'0px','background-color':'#336CA6'}),
             html.Div([
@@ -324,7 +353,7 @@ app.layout = html.Div([
                     html.Div([],style={'width':f'{procent_validator(nutrieviy_status_list[0])}','background-color':f'{get_color(nutrieviy_status_list[0])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'23%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Витамины',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px'})
+                    html.P('Витамины',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
                 ],style={'width':'77%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
             html.Div([
@@ -332,7 +361,7 @@ app.layout = html.Div([
                     html.Div([],style={'width':f'{procent_validator(nutrieviy_status_list[1])}','background-color':f'{get_color(nutrieviy_status_list[1])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'23%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Метаболизм холина',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px'})
+                    html.P('Метаболизм холина',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
                 ],style={'width':'77%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
             html.Div([
@@ -340,7 +369,7 @@ app.layout = html.Div([
                     html.Div([],style={'width':f'{procent_validator(nutrieviy_status_list[2])}','background-color':f'{get_color(nutrieviy_status_list[2])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'23%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Потребление рыбы',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px'})
+                    html.P('Потребление рыбы',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
                 ],style={'width':'77%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
             html.Div([
@@ -348,7 +377,7 @@ app.layout = html.Div([
                     html.Div([],style={'width':f'{procent_validator(nutrieviy_status_list[3])}','background-color':f'{get_color(nutrieviy_status_list[3])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'23%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Потребление растительной пищи',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px'})
+                    html.P('Потребление растительной пищи',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
                 ],style={'width':'77%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
             html.Div([
@@ -356,14 +385,17 @@ app.layout = html.Div([
                     html.Div([],style={'width':f'{procent_validator(nutrieviy_status_list[4])}','background-color':f'{get_color(nutrieviy_status_list[4])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'23%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Потребление мяса',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px'})
+                    html.P('Потребление мяса',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
                 ],style={'width':'77%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
 
 
 
             html.Div([
-                html.P('5. Токсическое воздействие – (',style={'margin':'0px','margin-bottom':'1px'}),html.B(f'{toxicheskie_vosdeystvia}',style={'margin':'0px'}),html.P('%)',style={'margin':'0px'})    
+                html.P('5. Токсическое воздействие – (',style={'margin':'0px','margin-bottom':'1px'}),html.B(f'{toxicheskie_vosdeystvia}%',style={'margin':'0px'}),html.P(')',style={'margin':'0px'}),
+                html.Div([
+                    html.Div([],style={'width':f'{procent_validator(toxicheskie_vosdeystvia)}','background-color':f'{get_color_under_normal_dist(toxicheskie_vosdeystvia)}','border-radius':'2px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center','margin-left':'5px','margin-top':'6px'}),
+                ],style={'width':'50px','height':'18px','line-height':'18px'}),
             ], style={'color':'black','font-family':'Calibri','font-size':'16px','margin':'0px','display':'flex', 'justify-content':'left','margin-top':'6px','margin-bottom':'1px'}),
             html.Hr(style={'margin':'0px','height':'2px','border-width':'0px','background-color':'#336CA6'}),
             html.Div([
@@ -371,7 +403,7 @@ app.layout = html.Div([
                     html.Div([],style={'width':f'{procent_validator(toxicheskie_vosdeystvia_list[0])}','background-color':f'{get_color(toxicheskie_vosdeystvia_list[0])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'23%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Аллергия',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px'})
+                    html.P('Аллергия',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
                 ],style={'width':'77%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
             html.Div([
@@ -379,7 +411,7 @@ app.layout = html.Div([
                     html.Div([],style={'width':f'{procent_validator(toxicheskie_vosdeystvia_list[1])}','background-color':f'{get_color(toxicheskie_vosdeystvia_list[1])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'23%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Окислительный стресс',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px'})
+                    html.P('Окислительный стресс',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
                 ],style={'width':'77%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
             html.Div([
@@ -387,14 +419,17 @@ app.layout = html.Div([
                     html.Div([],style={'width':f'{procent_validator(toxicheskie_vosdeystvia_list[2])}','background-color':f'{get_color(toxicheskie_vosdeystvia_list[2])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'23%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Цикл мочевины',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px'})
+                    html.P('Цикл мочевины',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
                 ],style={'width':'77%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
 
 
 
             html.Div([
-                html.P('7. Воспаление – (',style={'margin':'0px','margin-bottom':'1px'}),html.B(f'{vospalenie}',style={'margin':'0px'}),html.P('%)',style={'margin':'0px'})    
+                html.P('7. Воспаление – (',style={'margin':'0px','margin-bottom':'1px'}),html.B(f'{vospalenie}%',style={'margin':'0px'}),html.P(')',style={'margin':'0px'}),
+                html.Div([
+                    html.Div([],style={'width':f'{procent_validator(vospalenie)}','background-color':f'{get_color_under_normal_dist(vospalenie)}','border-radius':'2px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center','margin-left':'5px','margin-top':'5px'}),
+                ],style={'width':'50px','height':'18px','line-height':'18px'}),
             ], style={'color':'black','font-family':'Calibri','font-size':'16px','margin':'0px','display':'flex', 'justify-content':'left','margin-top':'6px','margin-bottom':'1px'}),
             html.Hr(style={'margin':'0px','height':'2px','border-width':'0px','background-color':'#336CA6'}),
             html.Div([
@@ -402,13 +437,16 @@ app.layout = html.Div([
                     html.Div([],style={'width':f'{procent_validator(vospalenie_list[0])}','background-color':f'{get_color(vospalenie_list[0])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'23%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Маркеры воспаления',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px'})
+                    html.P('Маркеры воспаления',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
                 ],style={'width':'77%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
 
 
             html.Div([
-                html.P('9. Функция печени – (',style={'margin':'0px','margin-bottom':'1px'}),html.B(f'{functii_pecheni}',style={'margin':'0px'}),html.P('%)',style={'margin':'0px'})    
+                html.P('9. Функция печени – (',style={'margin':'0px','margin-bottom':'1px'}),html.B(f'{functii_pecheni}%',style={'margin':'0px'}),html.P(')',style={'margin':'0px'}),
+                html.Div([
+                    html.Div([],style={'width':f'{procent_validator(functii_pecheni)}','background-color':f'{get_color_under_normal_dist(functii_pecheni)}','border-radius':'2px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center','margin-left':'5px','margin-top':'6px'}),
+                ],style={'width':'50px','height':'18px','line-height':'18px'}),  
             ], style={'color':'black','font-family':'Calibri','font-size':'16px','margin':'0px','display':'flex', 'justify-content':'left','margin-top':'6px','margin-bottom':'1px'}),
             html.Hr(style={'margin':'0px','height':'2px','border-width':'0px','background-color':'#336CA6'}),
             html.Div([
@@ -416,7 +454,7 @@ app.layout = html.Div([
                     html.Div([],style={'width':f'{procent_validator(functii_pecheni_list[0])}','background-color':f'{get_color(functii_pecheni_list[0])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'23%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Индекс Фишера',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px'})
+                    html.P('Индекс Фишера',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
                 ],style={'width':'77%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
             html.Div([
@@ -424,7 +462,7 @@ app.layout = html.Div([
                     html.Div([],style={'width':f'{procent_validator(functii_pecheni_list[1])}','background-color':f'{get_color(functii_pecheni_list[1])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'23%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Индекс Aor',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px'})
+                    html.P('Индекс Aor',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
                 ],style={'width':'77%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
             html.Div([
@@ -432,7 +470,7 @@ app.layout = html.Div([
                     html.Div([],style={'width':f'{procent_validator(functii_pecheni_list[2])}','background-color':f'{get_color(functii_pecheni_list[2])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'23%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Индекс GABR',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px'})
+                    html.P('Индекс GABR',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
                 ],style={'width':'77%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
             html.Div([
@@ -440,7 +478,7 @@ app.layout = html.Div([
                     html.Div([],style={'width':f'{procent_validator(functii_pecheni_list[3])}','background-color':f'{get_color(functii_pecheni_list[3])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'23%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Индекс GSG',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px'})
+                    html.P('Индекс GSG',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
                 ],style={'width':'77%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
             
@@ -448,101 +486,110 @@ app.layout = html.Div([
         ], style={'width':'38%','height':'480px'}),
         html.Div([
             html.Div([
-                html.P('2. Обмен аминокислот – (',style={'margin':'0px'}),html.B(f'{obmen_aminokislot}',style={'margin':'0px'}),html.P('%)',style={'margin':'0px'})    
-            ], style={'color':'black','font-family':'Calibri','font-size':'16px','margin':'0px','display':'flex', 'justify-content':'left'}),
+                html.P('2. Обмен аминокислот – (',style={'margin':'0px'}),html.B(f'{obmen_aminokislot}%',style={'margin':'0px'}),html.P(')',style={'margin':'0px'}),
+                html.Div([
+                    html.Div([],style={'width':f'{procent_validator(obmen_aminokislot)}','background-color':f'{get_color_under_normal_dist(obmen_aminokislot)}','border-radius':'2px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center','margin-left':'5px','margin-top':'6px'}),
+                ],style={'width':'50px','height':'18px','line-height':'18px'}),  
+            ], style={'color':'black','font-family':'Calibri','font-size':'16px','margin':'0px','display':'flex', 'justify-content':'left','margin-top':'2px'}),
             html.Hr(style={'margin':'0px','height':'2px','border-width':'0px','background-color':'#336CA6','width':'94%'}),
             html.Div([
                 html.Div([
                     html.Div([],style={'width':f'{procent_validator(obmen_aminokislot_list[0])}','background-color':f'{get_color(obmen_aminokislot_list[0])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'15%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Метаболизм фенилаланина',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px'})
-                ],style={'width':'78%'}),
+                    html.P('Метаболизм фенилаланина',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
+                ],style={'width':'79%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
             html.Div([
                 html.Div([
                     html.Div([],style={'width':f'{procent_validator(obmen_aminokislot_list[1])}','background-color':f'{get_color(obmen_aminokislot_list[1])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'15%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Метаболизм аминокислот с разветвленной боковой цепью',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px'})
-                ],style={'width':'78%'}),
+                    html.P('Метаболизм аминокислот с разветвленной боковой цепью',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
+                ],style={'width':'79%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
             html.Div([
                 html.Div([
                     html.Div([],style={'width':f'{procent_validator(obmen_aminokislot_list[2])}','background-color':f'{get_color(obmen_aminokislot_list[2])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'15%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Метаболизм триптофана',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px'})
-                ],style={'width':'78%'}),
+                    html.P('Метаболизм триптофана',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
+                ],style={'width':'79%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
             html.Div([
                 html.Div([
                     html.Div([],style={'width':f'{procent_validator(obmen_aminokislot_list[3])}','background-color':f'{get_color(obmen_aminokislot_list[3])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'15%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Метионин',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px'})
-                ],style={'width':'78%'}),
+                    html.P('Метионин',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
+                ],style={'width':'79%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
             html.Div([
                 html.Div([
                     html.Div([],style={'width':f'{procent_validator(obmen_aminokislot_list[4])}','background-color':f'{get_color(obmen_aminokislot_list[4])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'15%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Гистидин',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px'})
-                ],style={'width':'78%'}),
+                    html.P('Гистидин',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
+                ],style={'width':'79%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
             html.Div([
                 html.Div([
                     html.Div([],style={'width':f'{procent_validator(obmen_aminokislot_list[5])}','background-color':f'{get_color(obmen_aminokislot_list[5])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'15%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Глутаминовая кислота и аспарагиновая кислота',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px'})
-                ],style={'width':'78%'}),
+                    html.P('Глутаминовая кислота и аспарагиновая кислота',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
+                ],style={'width':'79%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
 
 
 
             html.Div([
-                html.P('4. Стресс и нейромедиаторы – (',style={'margin':'0px'}),html.B(f'{nutrieviy_status}',style={'margin':'0px'}),html.P('%)',style={'margin':'0px'})    
-            ], style={'color':'black','font-family':'Calibri','font-size':'16px','margin':'0px','display':'flex', 'justify-content':'left','margin-top':'9px'}),
+                html.P('4. Стресс и нейромедиаторы – (',style={'margin':'0px'}),html.B(f'{stress_i_neyromoderatory}%',style={'margin':'0px'}),html.P(')',style={'margin':'0px'}),
+                html.Div([
+                    html.Div([],style={'width':f'{procent_validator(stress_i_neyromoderatory)}','background-color':f'{get_color_under_normal_dist(stress_i_neyromoderatory)}','border-radius':'2px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center','margin-left':'5px','margin-top':'6px'}),
+                ],style={'width':'50px','height':'18px','line-height':'18px'}),   
+            ], style={'color':'black','font-family':'Calibri','font-size':'16px','margin':'0px','display':'flex', 'justify-content':'left','margin-top':'8px'}),
             html.Hr(style={'margin':'0px','height':'2px','border-width':'0px','background-color':'#336CA6','width':'94%'}),
             html.Div([
                 html.Div([
                     html.Div([],style={'width':f'{procent_validator(stress_i_neyromoderatory_list[0])}','background-color':f'{get_color(stress_i_neyromoderatory_list[0])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'15%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Стероидные гормоны',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px'})
-                ],style={'width':'78%'}),
+                    html.P('Стероидные гормоны',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
+                ],style={'width':'79%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
             html.Div([
                 html.Div([
                     html.Div([],style={'width':f'{procent_validator(stress_i_neyromoderatory_list[1])}','background-color':f'{get_color(stress_i_neyromoderatory_list[1])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'15%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Нейромедиаторы',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px'})
-                ],style={'width':'78%'}),
+                    html.P('Нейромедиаторы',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
+                ],style={'width':'79%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
             html.Div([
                 html.Div([
                     html.Div([],style={'width':f'{procent_validator(stress_i_neyromoderatory_list[2])}','background-color':f'{get_color(stress_i_neyromoderatory_list[2])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'15%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Метаболизм фенилаланина',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px'})
-                ],style={'width':'78%'}),
+                    html.P('Метаболизм фенилаланина',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
+                ],style={'width':'79%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
             html.Div([
                 html.Div([
                     html.Div([],style={'width':f'{procent_validator(stress_i_neyromoderatory_list[3])}','background-color':f'{get_color(stress_i_neyromoderatory_list[3])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'15%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Синтез серотонина и мелатонина',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px'})
-                ],style={'width':'78%'}),
+                    html.P('Синтез серотонина и мелатонина',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
+                ],style={'width':'79%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
 
 
 
             html.Div([
-                html.P('6. Маркеры микробиоты – (',style={'margin':'0px'}),html.B(f'{toxicheskie_vosdeystvia}',style={'margin':'0px'}),html.P('%)',style={'margin':'0px'})    
+                html.P('6. Маркеры микробиоты – (',style={'margin':'0px'}),html.B(f'{markery_mikrobioty}%',style={'margin':'0px'}),html.P(')',style={'margin':'0px'}),
+                html.Div([
+                    html.Div([],style={'width':f'{procent_validator(markery_mikrobioty)}','background-color':f'{get_color_under_normal_dist(markery_mikrobioty)}','border-radius':'2px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center','margin-left':'5px','margin-top':'6px'}),
+                ],style={'width':'50px','height':'18px','line-height':'18px'}),    
             ], style={'color':'black','font-family':'Calibri','font-size':'16px','margin':'0px','display':'flex', 'justify-content':'left','margin-top':'26px'}),
             html.Hr(style={'margin':'0px','height':'2px','border-width':'0px','background-color':'#336CA6','width':'94%'}),
             html.Div([
@@ -550,61 +597,64 @@ app.layout = html.Div([
                     html.Div([],style={'width':f'{procent_validator(markery_mikrobioty_list[0])}','background-color':f'{get_color(markery_mikrobioty_list[0])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'15%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('ТМАО (триметиламин-N-оксид)',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px'})
-                ],style={'width':'78%'}),
+                    html.P('ТМАО (триметиламин-N-оксид)',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
+                ],style={'width':'79%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
             html.Div([
                 html.Div([
                     html.Div([],style={'width':f'{procent_validator(markery_mikrobioty_list[1])}','background-color':f'{get_color(markery_mikrobioty_list[1])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'15%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Индольный путь метаболизма триптофана',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px'})
-                ],style={'width':'78%'}),
+                    html.P('Индольный путь метаболизма триптофана',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
+                ],style={'width':'79%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
 
 
 
             html.Div([
-                html.P('8. Функция сердца – (',style={'margin':'0px'}),html.B(f'{vospalenie}',style={'margin':'0px'}),html.P('%)',style={'margin':'0px'})    
-            ], style={'color':'black','font-family':'Calibri','font-size':'16px','margin':'0px','display':'flex', 'justify-content':'left','margin-top':'25px'}),
+                html.P('8. Функция сердца – (',style={'margin':'0px'}),html.B(f'{funcii_serdca}%',style={'margin':'0px'}),html.P(')',style={'margin':'0px'}),
+                html.Div([
+                    html.Div([],style={'width':f'{procent_validator(funcii_serdca)}','background-color':f'{get_color_under_normal_dist(funcii_serdca)}','border-radius':'2px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center','margin-left':'5px','margin-top':'6px'}),
+                ],style={'width':'50px','height':'18px','line-height':'18px'}),    
+            ], style={'color':'black','font-family':'Calibri','font-size':'16px','margin':'0px','display':'flex', 'justify-content':'left','margin-top':'26px'}),
             html.Hr(style={'margin':'0px','height':'2px','border-width':'0px','background-color':'#336CA6','width':'94%'}),
             html.Div([
                 html.Div([
                     html.Div([],style={'width':f'{procent_validator(funcii_serdca_list[0])}','background-color':f'{get_color(funcii_serdca_list[0])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'15%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Метаболизм аминокислот с разветвленной боковой цепью',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px'})
-                ],style={'width':'78%'}),
+                    html.P('Метаболизм аминокислот с разветвленной боковой цепью',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
+                ],style={'width':'79%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
                         html.Div([
                 html.Div([
                     html.Div([],style={'width':f'{procent_validator(funcii_serdca_list[1])}','background-color':f'{get_color(funcii_serdca_list[1])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'15%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Окислительный стресс',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px'})
-                ],style={'width':'78%'}),
+                    html.P('Окислительный стресс',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
+                ],style={'width':'79%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
                         html.Div([
                 html.Div([
                     html.Div([],style={'width':f'{procent_validator(funcii_serdca_list[2])}','background-color':f'{get_color(funcii_serdca_list[2])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'15%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Функция эндотелия сосудов',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px'})
-                ],style={'width':'78%'}),
+                    html.P('Функция эндотелия сосудов',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
+                ],style={'width':'79%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
                         html.Div([
                 html.Div([
                     html.Div([],style={'width':f'{procent_validator(funcii_serdca_list[3])}','background-color':f'{get_color(funcii_serdca_list[3])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'15%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Системные маркеры',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px'})
-                ],style={'width':'78%'}),
+                    html.P('Системные маркеры',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
+                ],style={'width':'79%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
         ], style={'width':'57%','height':'480px',})
-    ], style={'display':'flex', 'justify-content':'space-between','height':'480px'}),
+    ], style={'display':'flex', 'justify-content':'space-between','height':'480px','margin-top':'5px'}),
     html.P('Результаты данного отчета не являются диагнозом и должны быть интерпретированы лечащим врачом на основании клинико-лабораторных данных и других диагностических исследований.',
-           style={'color':'black','font-family':'Calibri','font-size':'16px','margin':'0px','text-align':"left",'font-style':'italic','margin-top':'5px'}),
-    ],style={'margin-left':'10px', 'margin-right':'10px','width':'800px'})
+           style={'color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"left",'font-style':'italic','margin-top':'5px'}),
+    ],style={'margin-right':'5mm','width':'800px'})
     
     
 
