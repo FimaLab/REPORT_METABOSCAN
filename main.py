@@ -227,6 +227,7 @@ def get_text_from_procent(n):
 app = Dash(__name__)
 
 app.layout = html.Div([
+    # 1 страница
     html.Div([
         html.Div([
             html.Img(src=app.get_asset_url('logo-sechenov.png'), style={'width':'100%','height':'100%','margin':'0px'})
@@ -654,6 +655,54 @@ app.layout = html.Div([
     ], style={'display':'flex', 'justify-content':'space-between','height':'480px','margin-top':'5px'}),
     html.P('Результаты данного отчета не являются диагнозом и должны быть интерпретированы лечащим врачом на основании клинико-лабораторных данных и других диагностических исследований.',
            style={'color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"left",'font-style':'italic','margin-top':'5px'}),
+
+    # 2 страница
+    html.Div([
+        html.Div([],style={'height':'8mm','width':'100%'}),
+        html.Div([
+            html.Div([
+                html.B(f"Дата: {date}",style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
+                html.Div([
+                    html.B(f'Пациент: {name}',style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
+                ],style={'margin-top':'10px'}),
+            ], style={'width':'33.3%'}),
+            html.Div([
+                html.B("MetaboScan-Test01",style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
+            ], style={'width':'33.3%','text-align':'center'}),
+            html.Div([
+                html.Img(src=app.get_asset_url('logo.jpg'),style={'height':'54px','float':'right'}),
+            ], style={'width':'33.3%'}),
+        ], style={'display':'flex', 'justify-content':'space-between','width':'100%','height':'54px','color':'#336CA6'}),    
+        html.Div([
+        html.H3(children='1. Аминокислоты', style={'textAlign':'center','margin':'0px','line-height':'normal','display':'inline-block','vertical-align':'center'}),]
+             , style={'width':'100%','background-color':'#336CA6', 'color':'white','font-family':'Calibri','margin':'0px','height':'35px','line-height':'35px','text-align':'center','margin-top':'5px'}),
+        html.Div([
+            html.Div([
+                html.Div([html.B('Метаболизм фенилаланина',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'36%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'40px'}),
+                html.Div([html.B('Результат',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'8%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'40px'}),
+                html.Div([html.Img(src=app.get_asset_url('procent_head.png'),style={'width':'100%','height':'15px','line-height':'normal','display':'inline-block','vertical-align':'center'}),],style={'width':'30%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'40px'}),
+                html.Div([html.B('Референсные значения, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center'}),
+            ], style={'width':'100%','display':'flex', 'justify-content':'space-between','height':'40px'}),
+            html.Div([
+                html.Div([html.B('Фенилаланин (Phe)',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'36%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','line-height':'40px'}),
+                html.Div([html.B('+',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'8%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'40px'}),
+                html.Div([html.Img(src=app.get_asset_url('procent_head.png'),style={'width':'100%','height':'15px','line-height':'normal','display':'inline-block','vertical-align':'center'}),],style={'width':'30%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'40px'}),
+                html.Div([html.P('35.8 - 76.9')],style={'width':'21%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center'}),
+            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'40px','margin-left':'5px'}),
+            html.Div([
+                html.Div([html.B('Индекс [Glu / Gln]',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'36%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','line-height':'40px'}),
+                html.Div([html.B('+',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'8%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'40px'}),
+                html.Div([html.Img(src=app.get_asset_url('procent_head.png'),style={'width':'100%','height':'15px','line-height':'normal','display':'inline-block','vertical-align':'center'}),],style={'width':'30%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'40px'}),
+                html.Div([html.P('35.8 - 76.9')],style={'width':'21%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center'}),
+            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'40px','margin-left':'5px'}),
+            html.Div([
+                html.Div([html.B('Индекс GSG [Glu / (Ser + Gly)]',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'36%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','line-height':'40px'}),
+                html.Div([html.Div([html.B('+',style={'width':'50%'}),html.B('100',style={'width':'50%'})],style={'width':'100%','height':'20px','display':'flex','justify-content':'space-between','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'8%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'40px'}),
+                html.Div([html.Img(src=app.get_asset_url('procent_head.png'),style={'width':'100%','height':'15px','line-height':'normal','display':'inline-block','vertical-align':'center'}),],style={'width':'30%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'40px'}),
+                html.Div([html.P('35.8 - 76.9')],style={'width':'21%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center'}),
+            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'40px','margin-left':'5px'}),
+        ], style={'margin':'0px','height':'200px','border':'1px solid black','margin-left':'20px'}),
+    ])
     ],style={'margin-right':'5mm','width':'800px'})
     
     
