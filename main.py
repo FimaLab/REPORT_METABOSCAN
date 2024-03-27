@@ -37,11 +37,11 @@ N = 1000
 a = 3.5   
 value = 1
 
-part = [20, 25, 30, 40, 50 ,55, 45, 50, 30]
+part = [20, 25, 30, 40, 50 ,55, 45, 50, 90]
 
-procent_speed = 70
+procent_speed = 50
 
-def normal_dist(N, a, value):
+def normal_dist(N: int, a: float, value: float):
     x = np.linspace(-a, a, N)
     y = (1 / np.sqrt(2 * np.pi)) * np.exp(-0.5 * x**2)  # Формула для нормального распределения
 
@@ -49,7 +49,7 @@ def normal_dist(N, a, value):
 
     plt.figure(figsize=(10, 5))
 
-    plt.ylim(min(y), max(y) + 0.00001)
+    plt.ylim(min(y), max(y) + 0.001)
 
     plt.xticks([])  # Убрать деления по оси X
     plt.yticks([])  # Убрать деления по оси Y
@@ -64,7 +64,17 @@ def normal_dist(N, a, value):
 
     plt.plot(x, y, color='grey')
 
-    plt.axvline(value, ymin=min(y) * 1/max(y), ymax=1,color='#356ba6', linestyle='-', linewidth=3, clip_on=True)
+    checked_value = 0
+    if value < 0:
+        checked_value = 0
+    elif value > 100:
+        checked_value = 100
+    else:
+        checked_value = value
+
+    line = 2*a*checked_value/100 - a
+
+    plt.axvline(line, ymin=min(y) * 1/max(y), ymax=1,color='#356ba6', linestyle='-', linewidth=3, clip_on=True)
 
     plt.savefig("assets/normal.png", bbox_inches='tight' , pad_inches=0)
     return 'normal.png'
@@ -75,10 +85,14 @@ def main_plot(part):
 
     numbers=[1,2,3,4,5,6,7,8,9]
 
-    y_line = np.linspace(14.3,0.2,9)
+    left_margin = dict(zip(names, [16.8,21.55,21.9,28.3,28,23.4,13,18,18]))
+
+    y_line = np.linspace(14.3,-0.5,9)
+
+    print(y_line)
 
     plt.figure(figsize=(7,5))
-    plt.plot(part, y_line, 'ro', marker='o', markersize=0)
+    # plt.plot(part, y_line, marker='o', markersize=0)
 
     plt.rcParams['font.family'] = 'bahnschrift'
     plt.rcParams['figure.dpi'] = 300
@@ -105,7 +119,11 @@ def main_plot(part):
 
         prop = dict(boxstyle='Round', facecolor=cmap(i_x/100), alpha=1, edgecolor=cmap(i_x/100),pad=0.8)
 
-        plt.text(i_x+1, i_y+0.7, names[n], color = 'black',  bbox=prop, fontsize = 9)
+        if i_x > 80:
+            mg = left_margin[names[n]]
+            plt.text(i_x-mg, i_y+0.7, names[n], color = 'black',  bbox=prop, fontsize = 9)
+        else:
+            plt.text(i_x+1, i_y+0.7, names[n], color = 'black',  bbox=prop, fontsize = 9)
         plt.text(i_x, i_y, numbers[n], color = 'black',  bbox=number, fontsize = 7)
         n=n+1
     plt.gca().spines['bottom'].set_color('blue')
@@ -264,8 +282,8 @@ app.layout = html.Div([
                 # html.Img(src=app.get_asset_url('rArrow.png'), style={'width':'25px'}),
             ],style={'display':'flex', 'width':'100%','height':'30px'}),
             html.Div([
-                html.Img(src=app.get_asset_url('risk_bar.png'), style={'width':'98.2%','pointer-events':'none'}),
-            ], style={'margin':'0px', 'width':'100%','height':'50px'}),
+                html.Img(src=app.get_asset_url('risk_bar.png'), style={'width':'100%','pointer-events':'none', 'margin-left':'3px', 'margin-right':'0px'}),
+            ], style={'width':'100%','margin':'0px','height':'50px'}),
             html.Div([
                 html.Img(src=app.get_asset_url(f'{main_plot(part=part)}'), style={'width':'100%','margin-top':'10px'}),
             ], style={'display':'flex', 'justify-content':'space-between', 'width':'100%','height':'330px'}),
@@ -275,7 +293,7 @@ app.layout = html.Div([
                 html.Img(src=app.get_asset_url('people.png'), style={'width':'180px','height':'180px','margin':'0px','margin-top':'10px'}),
                       ], style={'height':'190px','text-align':'center'}),
             html.P('На основании панорамного метаболомного профиля был оценен темп старения организма',style={'color':'black','height':'60px','font-family':'Calibri','font-size':'16px','margin':'0px','margin-left':'10px','text-align':"left "}),
-            html.Div([html.Img(src=app.get_asset_url(f'{normal_dist(N,a,value)}'), style={'width':'100%','margin-top':'10px'})], style={'height':'150px'}),
+            html.Div([html.Img(src=app.get_asset_url(f'{normal_dist(N,a,procent_speed)}'), style={'width':'100%','margin-top':'10px'})], style={'height':'150px'}),
             html.Div([
                 html.P("медленно",style={'margin':'0px','margin-left':'10px'}),
                 html.P("нормально",style={'margin':'0px'}),
