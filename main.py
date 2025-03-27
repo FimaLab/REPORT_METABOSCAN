@@ -1,13 +1,12 @@
-from dash import Dash, html, dcc, callback, Output, Input
-import plotly.express as px
-import pandas as pd
+from dash import Dash, html
 import matplotlib.pyplot as plt
 import numpy as np
-import matplotlib.cm as cm
 import matplotlib as mpl
 from typing import List
 import matplotlib.colors as mcolors
-import pdfkit
+import os
+
+app_pid = os.getpid()
 
 name = 'Иванов Иван Иванович'
 date = '21.07.2023'
@@ -323,7 +322,6 @@ def get_text_from_procent(n):
         return 'Умеренно ускоренный'
     else:
         return 'Сильно ускоренный'
-    
 
 app = Dash(__name__)
 
@@ -347,22 +345,19 @@ app.layout = html.Div([
                 html.Div([
                     html.P('Пол:',style={'margin':'0px'}), html.B(f'{gender}',style={'margin':'0px','margin-left':'5px'})
                 ],style={'margin':'0px','display':'flex', 'justify-content':'left', 'width':'40%',}), 
-            ],style={'margin-top':'10px','margin-left':'25px','color':'black','font-family':'Calibri','font-size':'15px'}),
+            ],style={'margin-top':'10px','margin-left':'25px','color':'black','font-family':'Arial','font-size':'15px'}),
             
         ],style={'width':'80%','height':'100px', 'color':'white','margin':'0px','background-image':'url("/assets/rHeader.png")','background-repeat':'no-repeat','background-size':'100%','background-position':'center'}),
     ], style={'display':'flex', 'justify-content':'space-between','width':'100%','height':'100px','margin-bottom':'10px'}),
     html.Div([
         html.H1(children='Панорамный метаболомный обзор', style={'textAlign':'center','margin':'0px'}),]
-             , style={'width':'100%','background-color':'#336CA6', 'color':'white','font-family':'Calibri','margin':'0px'}),
+             , style={'width':'100%','background-color':'#0874bc', 'color':'white','font-family':'Arial','margin':'0px'}),
     html.Div([
         html.Div([
             html.P('На графике представлены функциональные группы метаболитов, которые были оценены по уровню риска на основе Ваших результатов метаболомного профилирования',
-                    style={'color':'black','font-family':'Calibri','font-size':'16px','margin':'0px','height':'60px'}),
-            # html.Br(),
-            # html.Img(src=app.get_asset_url('level_of_risk.png'), style={'width':'100%','height':'100%'}),
+                    style={'color':'black','font-family':'Arial','font-size':'16px','margin':'0px','height':'60px'}),
             html.Div([
-                html.H3(children='Уровень риска', style={'textAlign':'left', 'color':'#336CA6','font-family':'Calibri','margin':'0px','margin-top':'5px',}),
-                # html.Img(src=app.get_asset_url('rArrow.png'), style={'width':'25px'}),
+                html.H3(children='Уровень риска', style={'textAlign':'left', 'color':'#0874bc','font-family':'Arial','margin':'0px','margin-top':'5px',}),
             ],style={'display':'flex', 'width':'100%','height':'30px'}),
             html.Div([
                 html.Img(src=app.get_asset_url('risk_bar.png'), style={'width':'100%','pointer-events':'none', 'margin-left':'3px'}),
@@ -372,24 +367,21 @@ app.layout = html.Div([
             ], style={'display':'flex', 'justify-content':'space-between', 'width':'100%','height':'330px'}),
         ], style={ 'width':'65%',}),
         html.Div([
-            # html.Div([
-            #     html.Img(src=app.get_asset_url('people.png'), style={'width':'180px','height':'180px','margin':'0px','margin-top':'10px'}),
-            #           ], style={'height':'190px','text-align':'center'}),
-            html.P('На основании панорамного метаболомного профиля был оценен темп старения организма',style={'color':'black','height':'60px','font-family':'Calibri','font-size':'16px','margin':'0px','margin-left':'10px','text-align':"left ",'margin-top':'100px'}),
+            html.P('На основании панорамного метаболомного профиля был оценен темп старения организма',style={'color':'black','height':'60px','font-family':'Arial','font-size':'16px','margin':'0px','margin-left':'10px','text-align':"left ",'margin-top':'100px'}),
             html.Div([html.Img(src=app.get_asset_url(f'{normal_dist(N,a,procent_speed)}'), style={'width':'100%','margin-top':'10px'})], style={'height':'150px'}),
             html.Div([
                 html.P("медленно",style={'margin':'0px','margin-left':'10px'}),
                 html.P("нормально",style={'margin':'0px'}),
                 html.P("быстро",style={'margin':'0px','margin-right':'10px'}),
-            ],style={'height':'20px','display':'flex', 'justify-content':'space-between', 'width':'100%','font-family':'Calibri','font-size':'16px','margin':'0px'}),
+            ],style={'height':'20px','display':'flex', 'justify-content':'space-between', 'width':'100%','font-family':'Arial','font-size':'16px','margin':'0px'}),
             html.Div([
-                html.P(f'{get_text_from_procent(procent_speed)}',style={'margin':'0','font-size':'18px','color':'white','font-family':'Calibri','font-weight':'bold','line-height':'normal','display':'inline-block','vertical-align':'center'}),
+                html.P(f'{get_text_from_procent(procent_speed)}',style={'margin':'0','font-size':'18px','color':'white','font-family':'Arial','font-weight':'bold','line-height':'normal','display':'inline-block','vertical-align':'center'}),
             ], style={'height':'47px','background-color':f'{get_color_under_normal_dist(procent_speed)}','line-height':'47px','text-align':'center','margin-left':'40px','margin-right':'40px'}),    
         ], style={'width':'35%',}),
     ], style={'display':'flex', 'justify-content':'space-between', 'width':'100%'}),
     html.Div([
         html.P('Ниже показано, какие классы метаболитов составляют функциональные группы, и как изменение в классе метаболитов повлияло на результат Панорамного метаболомного обзора.',
-                style={'color':'black','font-family':'Calibri','font-size':'16px','margin':'0px','text-align':"left"}),
+                style={'color':'black','font-family':'Arial','font-size':'16px','margin':'0px','text-align':"left"}),
         ], style={'width':'100%'}),
     html.Div([
         html.Div([
@@ -398,14 +390,14 @@ app.layout = html.Div([
                 html.Div([
                     html.Div([],style={'width':f'{procent_validator(obmen_veshestv)}','background-color':f'{get_color_under_normal_dist(obmen_veshestv)}','border-radius':'2px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center','margin-left':'5px','margin-top':'6px'}),
                 ],style={'width':'50px','height':'18px','line-height':'18px'}),
-            ], style={'color':'black','font-family':'Calibri','font-size':'16px','margin':'0px','display':'flex', 'justify-content':'left','margin-bottom':'1px'}),
-            html.Hr(style={'margin':'0px','height':'2px','border-width':'0px','background-color':'#336CA6'}),
+            ], style={'color':'black','font-family':'Arial','font-size':'16px','margin':'0px','display':'flex', 'justify-content':'left','margin-bottom':'1px'}),
+            
             html.Div([
                 html.Div([
                     html.Div([],style={'width':f'{procent_validator(obmen_veshestv_list[0])}','background-color':f'{get_color(obmen_veshestv_list[0])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'23%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Карнитин',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
+                    html.P('Карнитин',style={'margin':'0px','font-size':'14px','font-family':'Arial','height':'18px','margin-left':'3px'})
                 ],style={'width':'75%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
             html.Div([
@@ -413,7 +405,7 @@ app.layout = html.Div([
                     html.Div([],style={'width':f'{procent_validator(obmen_veshestv_list[1])}','background-color':f'{get_color(obmen_veshestv_list[1])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'23%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Короткоцепочечные ацилкарнитины',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
+                    html.P('Короткоцепочечные ацилкарнитины',style={'margin':'0px','font-size':'14px','font-family':'Arial','height':'18px','margin-left':'3px'})
                 ],style={'width':'77%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
             html.Div([
@@ -421,7 +413,7 @@ app.layout = html.Div([
                     html.Div([],style={'width':f'{procent_validator(obmen_veshestv_list[2])}','background-color':f'{get_color(obmen_veshestv_list[2])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'23%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Среднецепочечные ацилкарнитины',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
+                    html.P('Среднецепочечные ацилкарнитины',style={'margin':'0px','font-size':'14px','font-family':'Arial','height':'18px','margin-left':'3px'})
                 ],style={'width':'77%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
             html.Div([
@@ -429,7 +421,7 @@ app.layout = html.Div([
                     html.Div([],style={'width':f'{procent_validator(obmen_veshestv_list[3])}','background-color':f'{get_color(obmen_veshestv_list[3])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'23%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Длинноцепочечные ацилкарнитины',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
+                    html.P('Длинноцепочечные ацилкарнитины',style={'margin':'0px','font-size':'14px','font-family':'Arial','height':'18px','margin-left':'3px'})
                 ],style={'width':'77%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
             html.Div([
@@ -437,7 +429,7 @@ app.layout = html.Div([
                     html.Div([],style={'width':f'{procent_validator(obmen_veshestv_list[4])}','background-color':f'{get_color(obmen_veshestv_list[4])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'23%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Функция эндотелия сосудов',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
+                    html.P('Функция эндотелия сосудов',style={'margin':'0px','font-size':'14px','font-family':'Arial','height':'18px','margin-left':'3px'})
                 ],style={'width':'77%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
 
@@ -448,14 +440,14 @@ app.layout = html.Div([
                 html.Div([
                     html.Div([],style={'width':f'{procent_validator(nutrieviy_status)}','background-color':f'{get_color_under_normal_dist(nutrieviy_status)}','border-radius':'2px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center','margin-left':'5px','margin-top':'6px'}),
                 ],style={'width':'50px','height':'18px','line-height':'18px'}),  
-            ], style={'color':'black','font-family':'Calibri','font-size':'16px','margin':'0px','display':'flex', 'justify-content':'left','margin-top':'24px','margin-bottom':'1px'}),
-            html.Hr(style={'margin':'0px','height':'2px','border-width':'0px','background-color':'#336CA6'}),
+            ], style={'color':'black','font-family':'Arial','font-size':'16px','margin':'0px','display':'flex', 'justify-content':'left','margin-top':'24px','margin-bottom':'1px'}),
+            
             html.Div([
                 html.Div([
                     html.Div([],style={'width':f'{procent_validator(nutrieviy_status_list[0])}','background-color':f'{get_color(nutrieviy_status_list[0])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'23%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Витамины',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
+                    html.P('Витамины',style={'margin':'0px','font-size':'14px','font-family':'Arial','height':'18px','margin-left':'3px'})
                 ],style={'width':'77%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
             html.Div([
@@ -463,7 +455,7 @@ app.layout = html.Div([
                     html.Div([],style={'width':f'{procent_validator(nutrieviy_status_list[1])}','background-color':f'{get_color(nutrieviy_status_list[1])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'23%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Метаболизм холина',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
+                    html.P('Метаболизм холина',style={'margin':'0px','font-size':'14px','font-family':'Arial','height':'18px','margin-left':'3px'})
                 ],style={'width':'77%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
             html.Div([
@@ -471,7 +463,7 @@ app.layout = html.Div([
                     html.Div([],style={'width':f'{procent_validator(nutrieviy_status_list[2])}','background-color':f'{get_color(nutrieviy_status_list[2])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'23%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Потребление рыбы',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
+                    html.P('Потребление рыбы',style={'margin':'0px','font-size':'14px','font-family':'Arial','height':'18px','margin-left':'3px'})
                 ],style={'width':'77%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
             html.Div([
@@ -479,7 +471,7 @@ app.layout = html.Div([
                     html.Div([],style={'width':f'{procent_validator(nutrieviy_status_list[3])}','background-color':f'{get_color(nutrieviy_status_list[3])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'23%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Потребление растительной пищи',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
+                    html.P('Потребление растительной пищи',style={'margin':'0px','font-size':'14px','font-family':'Arial','height':'18px','margin-left':'3px'})
                 ],style={'width':'77%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
             html.Div([
@@ -487,7 +479,7 @@ app.layout = html.Div([
                     html.Div([],style={'width':f'{procent_validator(nutrieviy_status_list[4])}','background-color':f'{get_color(nutrieviy_status_list[4])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'23%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Потребление мяса',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
+                    html.P('Потребление мяса',style={'margin':'0px','font-size':'14px','font-family':'Arial','height':'18px','margin-left':'3px'})
                 ],style={'width':'77%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
 
@@ -498,14 +490,14 @@ app.layout = html.Div([
                 html.Div([
                     html.Div([],style={'width':f'{procent_validator(toxicheskie_vosdeystvia)}','background-color':f'{get_color_under_normal_dist(toxicheskie_vosdeystvia)}','border-radius':'2px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center','margin-left':'5px','margin-top':'6px'}),
                 ],style={'width':'50px','height':'18px','line-height':'18px'}),
-            ], style={'color':'black','font-family':'Calibri','font-size':'16px','margin':'0px','display':'flex', 'justify-content':'left','margin-top':'6px','margin-bottom':'1px'}),
-            html.Hr(style={'margin':'0px','height':'2px','border-width':'0px','background-color':'#336CA6'}),
+            ], style={'color':'black','font-family':'Arial','font-size':'16px','margin':'0px','display':'flex', 'justify-content':'left','margin-top':'6px','margin-bottom':'1px'}),
+            
             html.Div([
                 html.Div([
                     html.Div([],style={'width':f'{procent_validator(toxicheskie_vosdeystvia_list[0])}','background-color':f'{get_color(toxicheskie_vosdeystvia_list[0])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'23%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Аллергия',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
+                    html.P('Аллергия',style={'margin':'0px','font-size':'14px','font-family':'Arial','height':'18px','margin-left':'3px'})
                 ],style={'width':'77%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
             html.Div([
@@ -513,7 +505,7 @@ app.layout = html.Div([
                     html.Div([],style={'width':f'{procent_validator(toxicheskie_vosdeystvia_list[1])}','background-color':f'{get_color(toxicheskie_vosdeystvia_list[1])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'23%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Окислительный стресс',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
+                    html.P('Окислительный стресс',style={'margin':'0px','font-size':'14px','font-family':'Arial','height':'18px','margin-left':'3px'})
                 ],style={'width':'77%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
             html.Div([
@@ -521,7 +513,7 @@ app.layout = html.Div([
                     html.Div([],style={'width':f'{procent_validator(toxicheskie_vosdeystvia_list[2])}','background-color':f'{get_color(toxicheskie_vosdeystvia_list[2])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'23%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Цикл мочевины',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
+                    html.P('Цикл мочевины',style={'margin':'0px','font-size':'14px','font-family':'Arial','height':'18px','margin-left':'3px'})
                 ],style={'width':'77%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
 
@@ -532,14 +524,14 @@ app.layout = html.Div([
                 html.Div([
                     html.Div([],style={'width':f'{procent_validator(vospalenie)}','background-color':f'{get_color_under_normal_dist(vospalenie)}','border-radius':'2px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center','margin-left':'5px','margin-top':'5px'}),
                 ],style={'width':'50px','height':'18px','line-height':'18px'}),
-            ], style={'color':'black','font-family':'Calibri','font-size':'16px','margin':'0px','display':'flex', 'justify-content':'left','margin-top':'6px','margin-bottom':'1px'}),
-            html.Hr(style={'margin':'0px','height':'2px','border-width':'0px','background-color':'#336CA6'}),
+            ], style={'color':'black','font-family':'Arial','font-size':'16px','margin':'0px','display':'flex', 'justify-content':'left','margin-top':'6px','margin-bottom':'1px'}),
+            
             html.Div([
                 html.Div([
                     html.Div([],style={'width':f'{procent_validator(vospalenie_list[0])}','background-color':f'{get_color(vospalenie_list[0])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'23%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Маркеры воспаления',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
+                    html.P('Маркеры воспаления',style={'margin':'0px','font-size':'14px','font-family':'Arial','height':'18px','margin-left':'3px'})
                 ],style={'width':'77%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
 
@@ -549,14 +541,14 @@ app.layout = html.Div([
                 html.Div([
                     html.Div([],style={'width':f'{procent_validator(functii_pecheni)}','background-color':f'{get_color_under_normal_dist(functii_pecheni)}','border-radius':'2px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center','margin-left':'5px','margin-top':'6px'}),
                 ],style={'width':'50px','height':'18px','line-height':'18px'}),  
-            ], style={'color':'black','font-family':'Calibri','font-size':'16px','margin':'0px','display':'flex', 'justify-content':'left','margin-top':'6px','margin-bottom':'1px'}),
-            html.Hr(style={'margin':'0px','height':'2px','border-width':'0px','background-color':'#336CA6'}),
+            ], style={'color':'black','font-family':'Arial','font-size':'16px','margin':'0px','display':'flex', 'justify-content':'left','margin-top':'6px','margin-bottom':'1px'}),
+            
             html.Div([
                 html.Div([
                     html.Div([],style={'width':f'{procent_validator(functii_pecheni_list[0])}','background-color':f'{get_color(functii_pecheni_list[0])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'23%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Индекс Фишера',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
+                    html.P('Индекс Фишера',style={'margin':'0px','font-size':'14px','font-family':'Arial','height':'18px','margin-left':'3px'})
                 ],style={'width':'77%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
             html.Div([
@@ -564,7 +556,7 @@ app.layout = html.Div([
                     html.Div([],style={'width':f'{procent_validator(functii_pecheni_list[1])}','background-color':f'{get_color(functii_pecheni_list[1])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'23%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Индекс Aor',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
+                    html.P('Индекс Aor',style={'margin':'0px','font-size':'14px','font-family':'Arial','height':'18px','margin-left':'3px'})
                 ],style={'width':'77%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
             html.Div([
@@ -572,7 +564,7 @@ app.layout = html.Div([
                     html.Div([],style={'width':f'{procent_validator(functii_pecheni_list[2])}','background-color':f'{get_color(functii_pecheni_list[2])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'23%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Индекс GABR',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
+                    html.P('Индекс GABR',style={'margin':'0px','font-size':'14px','font-family':'Arial','height':'18px','margin-left':'3px'})
                 ],style={'width':'77%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
             html.Div([
@@ -580,7 +572,7 @@ app.layout = html.Div([
                     html.Div([],style={'width':f'{procent_validator(functii_pecheni_list[3])}','background-color':f'{get_color(functii_pecheni_list[3])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'23%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Индекс GSG',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
+                    html.P('Индекс GSG',style={'margin':'0px','font-size':'14px','font-family':'Arial','height':'18px','margin-left':'3px'})
                 ],style={'width':'77%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
             
@@ -592,14 +584,13 @@ app.layout = html.Div([
                 html.Div([
                     html.Div([],style={'width':f'{procent_validator(obmen_aminokislot)}','background-color':f'{get_color_under_normal_dist(obmen_aminokislot)}','border-radius':'2px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center','margin-left':'5px','margin-top':'6px'}),
                 ],style={'width':'50px','height':'18px','line-height':'18px'}),  
-            ], style={'color':'black','font-family':'Calibri','font-size':'16px','margin':'0px','display':'flex', 'justify-content':'left','margin-top':'2px'}),
-            html.Hr(style={'margin':'0px','height':'2px','border-width':'0px','background-color':'#336CA6','width':'94%'}),
+            ], style={'color':'black','font-family':'Arial','font-size':'16px','margin':'0px','display':'flex', 'justify-content':'left','margin-top':'2px'}),
             html.Div([
                 html.Div([
                     html.Div([],style={'width':f'{procent_validator(obmen_aminokislot_list[0])}','background-color':f'{get_color(obmen_aminokislot_list[0])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'15%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Метаболизм фенилаланина',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
+                    html.P('Метаболизм фенилаланина',style={'margin':'0px','font-size':'14px','font-family':'Arial','height':'18px','margin-left':'3px'})
                 ],style={'width':'79%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
             html.Div([
@@ -607,7 +598,7 @@ app.layout = html.Div([
                     html.Div([],style={'width':f'{procent_validator(obmen_aminokislot_list[1])}','background-color':f'{get_color(obmen_aminokislot_list[1])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'15%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Метаболизм аминокислот с разветвленной боковой цепью',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
+                    html.P('Метаболизм аминокислот с разветвленной боковой цепью',style={'margin':'0px','font-size':'14px','font-family':'Arial','height':'18px','margin-left':'3px'})
                 ],style={'width':'79%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
             html.Div([
@@ -615,7 +606,7 @@ app.layout = html.Div([
                     html.Div([],style={'width':f'{procent_validator(obmen_aminokislot_list[2])}','background-color':f'{get_color(obmen_aminokislot_list[2])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'15%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Метаболизм триптофана',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
+                    html.P('Метаболизм триптофана',style={'margin':'0px','font-size':'14px','font-family':'Arial','height':'18px','margin-left':'3px'})
                 ],style={'width':'79%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
             html.Div([
@@ -623,7 +614,7 @@ app.layout = html.Div([
                     html.Div([],style={'width':f'{procent_validator(obmen_aminokislot_list[3])}','background-color':f'{get_color(obmen_aminokislot_list[3])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'15%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Метионин',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
+                    html.P('Метионин',style={'margin':'0px','font-size':'14px','font-family':'Arial','height':'18px','margin-left':'3px'})
                 ],style={'width':'79%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
             html.Div([
@@ -631,7 +622,7 @@ app.layout = html.Div([
                     html.Div([],style={'width':f'{procent_validator(obmen_aminokislot_list[4])}','background-color':f'{get_color(obmen_aminokislot_list[4])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'15%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Гистидин',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
+                    html.P('Гистидин',style={'margin':'0px','font-size':'14px','font-family':'Arial','height':'18px','margin-left':'3px'})
                 ],style={'width':'79%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
             html.Div([
@@ -639,7 +630,7 @@ app.layout = html.Div([
                     html.Div([],style={'width':f'{procent_validator(obmen_aminokislot_list[5])}','background-color':f'{get_color(obmen_aminokislot_list[5])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'15%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Глутаминовая кислота и аспарагиновая кислота',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
+                    html.P('Глутаминовая кислота и аспарагиновая кислота',style={'margin':'0px','font-size':'14px','font-family':'Arial','height':'18px','margin-left':'3px'})
                 ],style={'width':'79%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
 
@@ -650,14 +641,13 @@ app.layout = html.Div([
                 html.Div([
                     html.Div([],style={'width':f'{procent_validator(stress_i_neyromoderatory)}','background-color':f'{get_color_under_normal_dist(stress_i_neyromoderatory)}','border-radius':'2px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center','margin-left':'5px','margin-top':'6px'}),
                 ],style={'width':'50px','height':'18px','line-height':'18px'}),   
-            ], style={'color':'black','font-family':'Calibri','font-size':'16px','margin':'0px','display':'flex', 'justify-content':'left','margin-top':'8px'}),
-            html.Hr(style={'margin':'0px','height':'2px','border-width':'0px','background-color':'#336CA6','width':'94%'}),
+            ], style={'color':'black','font-family':'Arial','font-size':'16px','margin':'0px','display':'flex', 'justify-content':'left','margin-top':'8px'}),
             html.Div([
                 html.Div([
                     html.Div([],style={'width':f'{procent_validator(stress_i_neyromoderatory_list[0])}','background-color':f'{get_color(stress_i_neyromoderatory_list[0])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'15%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Стероидные гормоны',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
+                    html.P('Стероидные гормоны',style={'margin':'0px','font-size':'14px','font-family':'Arial','height':'18px','margin-left':'3px'})
                 ],style={'width':'79%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
             html.Div([
@@ -665,7 +655,7 @@ app.layout = html.Div([
                     html.Div([],style={'width':f'{procent_validator(stress_i_neyromoderatory_list[1])}','background-color':f'{get_color(stress_i_neyromoderatory_list[1])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'15%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Нейромедиаторы',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
+                    html.P('Нейромедиаторы',style={'margin':'0px','font-size':'14px','font-family':'Arial','height':'18px','margin-left':'3px'})
                 ],style={'width':'79%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
             html.Div([
@@ -673,7 +663,7 @@ app.layout = html.Div([
                     html.Div([],style={'width':f'{procent_validator(stress_i_neyromoderatory_list[2])}','background-color':f'{get_color(stress_i_neyromoderatory_list[2])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'15%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Метаболизм фенилаланина',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
+                    html.P('Метаболизм фенилаланина',style={'margin':'0px','font-size':'14px','font-family':'Arial','height':'18px','margin-left':'3px'})
                 ],style={'width':'79%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
             html.Div([
@@ -681,7 +671,7 @@ app.layout = html.Div([
                     html.Div([],style={'width':f'{procent_validator(stress_i_neyromoderatory_list[3])}','background-color':f'{get_color(stress_i_neyromoderatory_list[3])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'15%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Синтез серотонина и мелатонина',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
+                    html.P('Синтез серотонина и мелатонина',style={'margin':'0px','font-size':'14px','font-family':'Arial','height':'18px','margin-left':'3px'})
                 ],style={'width':'79%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
 
@@ -692,14 +682,14 @@ app.layout = html.Div([
                 html.Div([
                     html.Div([],style={'width':f'{procent_validator(markery_mikrobioty)}','background-color':f'{get_color_under_normal_dist(markery_mikrobioty)}','border-radius':'2px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center','margin-left':'5px','margin-top':'6px'}),
                 ],style={'width':'50px','height':'18px','line-height':'18px'}),    
-            ], style={'color':'black','font-family':'Calibri','font-size':'16px','margin':'0px','display':'flex', 'justify-content':'left','margin-top':'26px'}),
-            html.Hr(style={'margin':'0px','height':'2px','border-width':'0px','background-color':'#336CA6','width':'94%'}),
+            ], style={'color':'black','font-family':'Arial','font-size':'16px','margin':'0px','display':'flex', 'justify-content':'left','margin-top':'26px'}),
+            
             html.Div([
                 html.Div([
                     html.Div([],style={'width':f'{procent_validator(markery_mikrobioty_list[0])}','background-color':f'{get_color(markery_mikrobioty_list[0])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'15%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('ТМАО (триметиламин-N-оксид)',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
+                    html.P('ТМАО (триметиламин-N-оксид)',style={'margin':'0px','font-size':'14px','font-family':'Arial','height':'18px','margin-left':'3px'})
                 ],style={'width':'79%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
             html.Div([
@@ -707,7 +697,7 @@ app.layout = html.Div([
                     html.Div([],style={'width':f'{procent_validator(markery_mikrobioty_list[1])}','background-color':f'{get_color(markery_mikrobioty_list[1])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'15%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Индольный путь метаболизма триптофана',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
+                    html.P('Индольный путь метаболизма триптофана',style={'margin':'0px','font-size':'14px','font-family':'Arial','height':'18px','margin-left':'3px'})
                 ],style={'width':'79%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
 
@@ -718,14 +708,13 @@ app.layout = html.Div([
                 html.Div([
                     html.Div([],style={'width':f'{procent_validator(funcii_serdca)}','background-color':f'{get_color_under_normal_dist(funcii_serdca)}','border-radius':'2px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center','margin-left':'5px','margin-top':'6px'}),
                 ],style={'width':'50px','height':'18px','line-height':'18px'}),    
-            ], style={'color':'black','font-family':'Calibri','font-size':'16px','margin':'0px','display':'flex', 'justify-content':'left','margin-top':'26px'}),
-            html.Hr(style={'margin':'0px','height':'2px','border-width':'0px','background-color':'#336CA6','width':'94%'}),
+            ], style={'color':'black','font-family':'Arial','font-size':'16px','margin':'0px','display':'flex', 'justify-content':'left','margin-top':'26px'}),
             html.Div([
                 html.Div([
                     html.Div([],style={'width':f'{procent_validator(funcii_serdca_list[0])}','background-color':f'{get_color(funcii_serdca_list[0])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'15%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Метаболизм аминокислот с разветвленной боковой цепью',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
+                    html.P('Метаболизм аминокислот с разветвленной боковой цепью',style={'margin':'0px','font-size':'14px','font-family':'Arial','height':'18px','margin-left':'3px'})
                 ],style={'width':'79%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
                         html.Div([
@@ -733,7 +722,7 @@ app.layout = html.Div([
                     html.Div([],style={'width':f'{procent_validator(funcii_serdca_list[1])}','background-color':f'{get_color(funcii_serdca_list[1])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'15%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Окислительный стресс',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
+                    html.P('Окислительный стресс',style={'margin':'0px','font-size':'14px','font-family':'Arial','height':'18px','margin-left':'3px'})
                 ],style={'width':'79%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
                         html.Div([
@@ -741,7 +730,7 @@ app.layout = html.Div([
                     html.Div([],style={'width':f'{procent_validator(funcii_serdca_list[2])}','background-color':f'{get_color(funcii_serdca_list[2])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'15%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Функция эндотелия сосудов',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
+                    html.P('Функция эндотелия сосудов',style={'margin':'0px','font-size':'14px','font-family':'Arial','height':'18px','margin-left':'3px'})
                 ],style={'width':'79%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
                         html.Div([
@@ -749,231 +738,230 @@ app.layout = html.Div([
                     html.Div([],style={'width':f'{procent_validator(funcii_serdca_list[3])}','background-color':f'{get_color(funcii_serdca_list[3])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
                 ],style={'width':'15%','height':'18px','line-height':'18px'}),
                 html.Div([
-                    html.P('Системные маркеры',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
+                    html.P('Системные маркеры',style={'margin':'0px','font-size':'14px','font-family':'Arial','height':'18px','margin-left':'3px'})
                 ],style={'width':'79%'}),
             ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
         ], style={'width':'57%','height':'480px',})
     ], style={'display':'flex', 'justify-content':'space-between','height':'480px','margin-top':'5px'}),
     html.P('Результаты данного отчета не являются диагнозом и должны быть интерпретированы лечащим врачом на основании клинико-лабораторных данных и других диагностических исследований.',
-           style={'color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"left",'font-style':'italic','margin-top':'5px'}),
+           style={'color':'black','font-family':'Arial','font-size':'14px','margin':'0px','text-align':"left",'font-style':'italic','margin-top':'5px'}),
 
     # 2 страница
     html.Div([
         html.Div([],style={'height':'8mm','width':'100%'}),
         html.Div([
             html.Div([
-                html.B(f"Дата: {date}",style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
+                html.B(f"Дата: {date}",style={'margin':'0px','font-size':'18px','font-family':'Arial'}),
                 html.Div([
-                    html.B(f'Пациент: {name}',style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
+                    html.B(f'Пациент: {name}',style={'margin':'0px','font-size':'18px','font-family':'Arial'}),
                 ],style={'margin-top':'10px'}),
             ], style={'width':'33.3%'}),
             html.Div([
-                html.B("MetaboScan-Test01",style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
+                html.B("MetaboScan-Test01",style={'margin':'0px','font-size':'18px','font-family':'Arial'}),
             ], style={'width':'33.3%','text-align':'center'}),
             html.Div([
                 html.Img(src=app.get_asset_url('logo.jpg'),style={'height':'54px','float':'right'}),
             ], style={'width':'33.3%'}),
-        ], style={'display':'flex', 'justify-content':'space-between','width':'100%','height':'54px','color':'#336CA6'}),    
+        ], style={'display':'flex', 'justify-content':'space-between','width':'100%','height':'54px','color':'#0874bc'}),    
         html.Div([
-        html.H3(children='1. Аминокислоты', style={'textAlign':'center','margin':'0px','line-height':'normal','display':'inline-block','vertical-align':'center'}),]
-             , style={'width':'100%','background-color':'#336CA6', 'color':'white','font-family':'Calibri','margin':'0px','height':'35px','line-height':'35px','text-align':'center','margin-top':'5px'}),
+        html.H3(children='1. Аминокислоты', style={'textAlign':'left','margin':'0px','line-height':'normal','display':'inline-block','vertical-align':'center'}),]
+             , style={'width':'100%','background-color':'#0874bc', 'color':'white','font-family':'Arial','margin':'0px','height':'35px','line-height':'35px','text-align':'center','margin-top':'5px'}),
         html.Div([
             html.Div([
                html.Div([
-                html.Div([html.B('Метаболизм фенилаланина',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'40px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#4c86ae','line-height':'40px'}),
-                html.Div([html.B('Результат',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'8%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'40px'}),
-                html.Div([html.Img(src=app.get_asset_url('procent_head.png'),style={'width':'100%','height':'15px','line-height':'normal','display':'inline-block','vertical-align':'center'}),],style={'width':'27%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'40px'}),
-                html.Div([html.B('Референсные значения, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center'}),
+                html.Div([html.B('Метаболизм фенилаланина',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'40px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'40px'}),
+                html.Div([html.B('Результат',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'8%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'40px'}),
+                html.Div([html.Img(src=app.get_asset_url('procent_head.png'),style={'width':'100%','height':'15px','line-height':'normal','display':'inline-block','vertical-align':'center'}),],style={'width':'27%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'40px'}),
+                html.Div([html.B('Референсные значения, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'12px','font-family':'Arial','color':'black','text-align':'center'}),
             ], style={'width':'100%','display':'flex', 'justify-content':'space-between','height':'40px',}), 
             ], style={'margin':'0px','margin-left':'20px'}),
-            html.Hr(style={'margin':'0px','height':'2px','border-width':'0px','background-color':'#336CA6','width':'100%'}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Фенилаланин (Phe)',style={'height':'20px'}),html.P('Незаменимая глюко-, кетогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_1[0],ref_1[0])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_1[0]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_1[0],ref_1[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_1[0],ref_1[0])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_1[0]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Фенилаланин (Phe)',style={'height':'20px'}),html.P('Незаменимая глюко-, кетогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_1[0],ref_1[0])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_1[0]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_1[0],ref_1[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_1[0],ref_1[0])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_1[0]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px','background-color':'#dce6f2'}),
+            ],style={'margin':'0px','background-color':'#FFFFFF'}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Тирозин (Tyr)',style={'height':'20px'}),html.P('Заменимая глюко-, кетогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_1[1],ref_1[1])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_1[1]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_1[1],ref_1[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_1[1],ref_1[1])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_1[1]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Тирозин (Tyr)',style={'height':'20px'}),html.P('Заменимая глюко-, кетогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_1[1],ref_1[1])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_1[1]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_1[1],ref_1[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_1[1],ref_1[1])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_1[1]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
             ],style={'margin':'0px',}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Индекс ААAs [Phe + Tyr]',style={'height':'20px'}),html.P('Запас ароматических аминокислот ',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_1[2],ref_1[2])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_1[2]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_1[2],ref_1[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_1[2],ref_1[2])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_1[2]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Индекс ААAs [Phe + Tyr]',style={'height':'20px'}),html.P('Запас ароматических аминокислот ',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_1[2],ref_1[2])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_1[2]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_1[2],ref_1[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_1[2],ref_1[2])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_1[2]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px','background-color':'#dce6f2'}),
-            html.Hr(style={'margin':'0px','height':'2px','border-width':'0px','background-color':'#336CA6','width':'100%'}),
+            ],style={'margin':'0px','background-color':'#FFFFFF'}),
+            
             html.Div([
                html.Div([
-                html.Div([html.B('ВСАА – аминокислоты с разветвленной цепью',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'40px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#4c86ae','line-height':'40px'}),
-                html.Div([html.B('Результат',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'8%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'40px'}),
-                html.Div([html.Img(src=app.get_asset_url('procent_head.png'),style={'width':'100%','height':'15px','line-height':'normal','display':'inline-block','vertical-align':'center'}),],style={'width':'27%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'40px'}),
-                html.Div([html.B('Референсные значения, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center'}),
+                html.Div([html.B('BCAA – аминокислоты с разветвленной цепью',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'40px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#4c86ae','line-height':'40px'}),
+                html.Div([html.B('Результат',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'8%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'40px'}),
+                html.Div([html.Img(src=app.get_asset_url('procent_head.png'),style={'width':'100%','height':'15px','line-height':'normal','display':'inline-block','vertical-align':'center'}),],style={'width':'27%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'40px'}),
+                html.Div([html.B('Референсные значения, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center'}),
             ], style={'width':'100%','display':'flex', 'justify-content':'space-between','height':'40px',}), 
             ], style={'margin':'0px','margin-left':'20px'}),
-            html.Hr(style={'margin':'0px','height':'2px','border-width':'0px','background-color':'#336CA6','width':'100%'}),
+            
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Лейцин + Изолейцин (Leu+Ile)',style={'height':'20px'}),html.P('Незаменимая глюко-, кетогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_2[0],ref_2[0])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_2[0]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_2[0],ref_2[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_2[0],ref_2[0])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_2[0]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Лейцин + Изолейцин (Leu+Ile)',style={'height':'20px'}),html.P('Незаменимая глюко-, кетогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_2[0],ref_2[0])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_2[0]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_2[0],ref_2[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_2[0],ref_2[0])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_2[0]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px','background-color':'#dce6f2'}),
+            ],style={'margin':'0px','background-color':'#FFFFFF'}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Валин (Val)',style={'height':'20px'}),html.P('Незаменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_2[1],ref_2[1])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_2[1]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_2[1],ref_2[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_2[1],ref_2[1])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_2[1]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                    ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px',}),
-            html.Div([
-                html.Div([
-                    html.Div([
-                        html.Div([html.B('Индекс ВСААs [Leu + Ile + Val]',style={'height':'20px'}),html.P('Запас аминокислот с разветвленной боковой цепью',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_2[2],ref_2[2])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_2[2]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_2[2],ref_2[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_2[2],ref_2[0])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_2[2]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                    ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px','background-color':'#dce6f2'}),
-            html.Div([
-                html.Div([
-                    html.Div([
-                        html.Div([html.B('Индекс Фишера FR [BCAAs / AAAs]',style={'height':'20px'}),html.P('Отношение запаса аминокислот с разветвленной цепью к запасу ароматических аминокислот',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_2[3],ref_2[3])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_2[3]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_2[3],ref_2[3])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_2[3],ref_2[3])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_2[3]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Валин (Val)',style={'height':'20px'}),html.P('Незаменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_2[1],ref_2[1])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_2[1]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_2[1],ref_2[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_2[1],ref_2[1])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_2[1]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
             ],style={'margin':'0px',}),
-            html.Hr(style={'margin':'0px','height':'2px','border-width':'0px','background-color':'#336CA6','width':'100%'}),
+            html.Div([
+                html.Div([
+                    html.Div([
+                        html.Div([html.B('Индекс ВСААs [Leu + Ile + Val]',style={'height':'20px'}),html.P('Запас аминокислот с разветвленной боковой цепью',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_2[2],ref_2[2])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_2[2]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_2[2],ref_2[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_2[2],ref_2[0])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_2[2]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
+                    ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
+                ], style={'margin':'0px','margin-left':'20px'}),
+            ],style={'margin':'0px','background-color':'#FFFFFF'}),
+            html.Div([
+                html.Div([
+                    html.Div([
+                        html.Div([html.B('Индекс Фишера FR [BCAAs / AAAs]',style={'height':'20px'}),html.P('Отношение запаса аминокислот с разветвленной цепью к запасу ароматических аминокислот',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_2[3],ref_2[3])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_2[3]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_2[3],ref_2[3])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_2[3],ref_2[3])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_2[3]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
+                    ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
+                ], style={'margin':'0px','margin-left':'20px'}),
+            ],style={'margin':'0px',}),
+            
             html.Div([
                html.Div([
-                html.Div([html.B('Метаболизм гистидина',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'40px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#4c86ae','line-height':'40px'}),
-                html.Div([html.B('Результат',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'8%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'40px'}),
-                html.Div([html.Img(src=app.get_asset_url('procent_head.png'),style={'width':'100%','height':'15px','line-height':'normal','display':'inline-block','vertical-align':'center'}),],style={'width':'27%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'40px'}),
-                html.Div([html.B('Референсные значения, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center'}),
+                html.Div([html.B('Метаболизм гистидина',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'40px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#4c86ae','line-height':'40px'}),
+                html.Div([html.B('Результат',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'8%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'40px'}),
+                html.Div([html.Img(src=app.get_asset_url('procent_head.png'),style={'width':'100%','height':'15px','line-height':'normal','display':'inline-block','vertical-align':'center'}),],style={'width':'27%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'40px'}),
+                html.Div([html.B('Референсные значения, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center'}),
             ], style={'width':'100%','display':'flex', 'justify-content':'space-between','height':'40px',}), 
             ], style={'margin':'0px','margin-left':'20px'}),
-            html.Hr(style={'margin':'0px','height':'2px','border-width':'0px','background-color':'#336CA6','width':'100%'}),
+            
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Гистидин (His)',style={'height':'20px'}),html.P('Незаменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_3[0],ref_3[0])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_3[0]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_3[0],ref_3[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_3[0],ref_3[0])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_3[0]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Гистидин (His)',style={'height':'20px'}),html.P('Незаменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_3[0],ref_3[0])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_3[0]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_3[0],ref_3[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_3[0],ref_3[0])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_3[0]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px','background-color':'#dce6f2'}),
+            ],style={'margin':'0px','background-color':'#FFFFFF'}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Метилгистидин (MH)',style={'height':'20px'}),html.P('Метаболит карнозина',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_3[1],ref_3[1])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_3[1]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_3[1],ref_3[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_3[1],ref_3[1])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_3[1]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                    ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px',}),
-            html.Div([
-                html.Div([
-                    html.Div([
-                        html.Div([html.B('Треонин (Thr)',style={'height':'20px'}),html.P('Незаменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_3[2],ref_3[2])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_3[2]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_3[2],ref_3[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_3[2],ref_3[2])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_3[2]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                    ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px','background-color':'#dce6f2'}),
-            html.Div([
-                html.Div([
-                    html.Div([
-                        html.Div([html.B('Карнозин (Car)',style={'height':'20px'}),html.P('Дипептид, состоящий из аланина и гистидина',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_3[3],ref_3[3])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_3[3]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_3[3],ref_3[3])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_3[3],ref_3[3])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_3[3]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Метилгистидин (MH)',style={'height':'20px'}),html.P('Метаболит карнозина',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_3[1],ref_3[1])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_3[1]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_3[1],ref_3[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_3[1],ref_3[1])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_3[1]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
             ],style={'margin':'0px',}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Глицин (Gly)',style={'height':'20px'}),html.P('Заменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_3[4],ref_3[4])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_3[4]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_3[4],ref_3[4])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_3[4],ref_3[4])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_3[4]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Треонин (Thr)',style={'height':'20px'}),html.P('Незаменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_3[2],ref_3[2])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_3[2]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_3[2],ref_3[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_3[2],ref_3[2])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_3[2]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px','background-color':'#dce6f2'}),
+            ],style={'margin':'0px','background-color':'#FFFFFF'}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Диметилглицин (DMG)',style={'height':'20px'}),html.P('Промежуточный продукт синтеза глицина',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_3[5],ref_3[5])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_3[5]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_3[5],ref_3[5])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_3[5],ref_3[5])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_3[5]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Карнозин (Car)',style={'height':'20px'}),html.P('Дипептид, состоящий из аланина и гистидина',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_3[3],ref_3[3])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_3[3]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_3[3],ref_3[3])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_3[3],ref_3[3])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_3[3]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
             ],style={'margin':'0px',}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Серин (Ser)',style={'height':'20px'}),html.P('Заменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_3[6],ref_3[6])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_3[6]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_3[6],ref_3[6])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_3[6],ref_3[6])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_3[6]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Глицин (Gly)',style={'height':'20px'}),html.P('Заменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_3[4],ref_3[4])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_3[4]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_3[4],ref_3[4])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_3[4],ref_3[4])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_3[4]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px','background-color':'#dce6f2'}),
+            ],style={'margin':'0px','background-color':'#FFFFFF'}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Лизин (Lys)',style={'height':'20px'}),html.P('Незаменимая кетогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_3[7],ref_3[7])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_3[7]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_3[7],ref_3[7])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_3[7],ref_3[7])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_3[7]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Диметилглицин (DMG)',style={'height':'20px'}),html.P('Промежуточный продукт синтеза глицина',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_3[5],ref_3[5])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_3[5]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_3[5],ref_3[5])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_3[5],ref_3[5])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_3[5]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
             ],style={'margin':'0px',}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Глутаминовая кислота (Glu)',style={'height':'20px'}),html.P('Заменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_3[8],ref_3[8])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_3[8]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_3[8],ref_3[8])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_3[8],ref_3[8])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_3[8]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Серин (Ser)',style={'height':'20px'}),html.P('Заменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_3[6],ref_3[6])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_3[6]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_3[6],ref_3[6])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_3[6],ref_3[6])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_3[6]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px','background-color':'#dce6f2'}),
+            ],style={'margin':'0px','background-color':'#FFFFFF'}),
+            html.Div([
+                html.Div([
+                    html.Div([
+                        html.Div([html.B('Лизин (Lys)',style={'height':'20px'}),html.P('Незаменимая кетогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_3[7],ref_3[7])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_3[7]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_3[7],ref_3[7])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_3[7],ref_3[7])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_3[7]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
+                    ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
+                ], style={'margin':'0px','margin-left':'20px'}),
+            ],style={'margin':'0px',}),
+            html.Div([
+                html.Div([
+                    html.Div([
+                        html.Div([html.B('Глутаминовая кислота (Glu)',style={'height':'20px'}),html.P('Заменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_3[8],ref_3[8])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_3[8]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_3[8],ref_3[8])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_3[8],ref_3[8])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_3[8]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
+                    ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
+                ], style={'margin':'0px','margin-left':'20px'}),
+            ],style={'margin':'0px','background-color':'#FFFFFF'}),
         ], style={'margin':'0px'}),
     ]),
     html.Div([
         html.P('Результаты данного отчета не являются диагнозом и должны быть интерпретированы лечащим врачом на основании клинико-лабораторных данных и других диагностических исследований.',
-           style={'color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"left",'font-style':'italic','margin-top':'5px','width':'85%'}),
+           style={'color':'black','font-family':'Arial','font-size':'14px','margin':'0px','text-align':"left",'font-style':'italic','margin-top':'5px','width':'85%'}),
         html.P('|1',
-            style={'color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"right",'font-style':'italic','margin-top':'5px','width':'10%','margin-top':'20px'}),
+            style={'color':'black','font-family':'Arial','font-size':'14px','margin':'0px','text-align':"right",'font-style':'italic','margin-top':'5px','width':'10%','margin-top':'20px'}),
     ], style={'margin':'0px','display':'flex','justify-content':'space-between','width':'100%','margin-top':'55px'}),
     
     
@@ -982,218 +970,228 @@ app.layout = html.Div([
         html.Div([],style={'height':'8mm','width':'100%'}),
         html.Div([
             html.Div([
-                html.B(f"Дата: {date}",style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
+                html.B(f"Дата: {date}",style={'margin':'0px','font-size':'18px','font-family':'Arial'}),
                 html.Div([
-                    html.B(f'Пациент: {name}',style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
+                    html.B(f'Пациент: {name}',style={'margin':'0px','font-size':'18px','font-family':'Arial'}),
                 ],style={'margin-top':'10px'}),
             ], style={'width':'33.3%'}),
             html.Div([
-                html.B("MetaboScan-Test01",style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
+                html.B("MetaboScan-Test01",style={'margin':'0px','font-size':'18px','font-family':'Arial'}),
             ], style={'width':'33.3%','text-align':'center'}),
             html.Div([
                 html.Img(src=app.get_asset_url('logo.jpg'),style={'height':'53px','float':'right'}),
             ], style={'width':'33.3%'}),
-        ], style={'display':'flex', 'justify-content':'space-between','width':'100%','height':'53px','color':'#336CA6'}),    
+        ], style={'display':'flex', 'justify-content':'space-between','width':'100%','height':'53px','color':'#0874bc'}),    
         
         html.Div([
             html.Div([
                html.Div([
-                html.Div([html.B('Метаболизм гистидина',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'40px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#4c86ae','line-height':'40px'}),
-                html.Div([html.B('Результат',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'8%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'40px'}),
-                html.Div([html.Img(src=app.get_asset_url('procent_head.png'),style={'width':'100%','height':'15px','line-height':'normal','display':'inline-block','vertical-align':'center'}),],style={'width':'27%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'40px'}),
-                html.Div([html.B('Референсные значения, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center'}),
+                html.Div([html.B('Метаболизм гистидина',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'40px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#4c86ae','line-height':'40px'}),
+                html.Div([html.B('Результат',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'8%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'40px'}),
+                html.Div([html.Img(src=app.get_asset_url('procent_head.png'),style={'width':'100%','height':'15px','line-height':'normal','display':'inline-block','vertical-align':'center'}),],style={'width':'27%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'40px'}),
+                html.Div([html.B('Референсные значения, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center'}),
             ], style={'width':'100%','display':'flex', 'justify-content':'space-between','height':'40px',}), 
             ], style={'margin':'0px','margin-left':'20px'}),
-            html.Hr(style={'margin':'0px','height':'2px','border-width':'0px','background-color':'#336CA6','width':'100%'}),
+            
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Глутамин (Gln)',style={'height':'20px'}),html.P('Заменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_3[9],ref_3[9])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_3[9]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_3[9],ref_3[9])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_3[9],ref_3[9])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_3[9]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Глутамин (Gln)',style={'height':'20px'}),html.P('Заменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_3[9],ref_3[9])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_3[9]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_3[9],ref_3[9])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_3[9],ref_3[9])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_3[9]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px','background-color':'#dce6f2'}),
+            ],style={'margin':'0px','background-color':'#FFFFFF'}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Индекс [Glu / Gln]',style={'height':'20px'}),html.P('Активность глутаминсинтетазы',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_3[10],ref_3[10])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_3[10]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_3[10],ref_3[10])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_3[10],ref_3[10])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_3[10]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Индекс [Gln / Glu]',style={'height':'20px'}),html.P('Активность глутаминсинтетазы',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_3[10],ref_3[10])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_3[10]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_3[10],ref_3[10])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_3[10],ref_3[10])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_3[10]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
             ],style={'margin':'0px',}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Индекс GSG [Glu / (Ser + Gly)]',style={'height':'20px'}),html.P('Запас аминокислот для синтеза глутатиона',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_3[11],ref_3[11])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_3[11]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_3[11],ref_3[11])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_3[11],ref_3[11])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_3[11]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Индекс GSG [Glu / (Ser + Gly)]',style={'height':'20px'}),html.P('Запас аминокислот для синтеза глутатиона',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_3[11],ref_3[11])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_3[11]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_3[11],ref_3[11])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_3[11],ref_3[11])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_3[11]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px','background-color':'#dce6f2'}),
-            html.Hr(style={'margin':'0px','height':'2px','border-width':'0px','background-color':'#336CA6','width':'100%'}),
+            ],style={'margin':'0px','background-color':'#FFFFFF'}),
+            html.Div([
+                html.Div([
+                    html.Div([
+                        html.Div([html.B('Индекс [Gly / Ser]',style={'height':'20px'}),html.P('Активность глутаминсинтетазы',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_3[10],ref_3[10])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_3[10]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_3[10],ref_3[10])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_3[10],ref_3[10])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_3[10]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
+                    ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
+                ], style={'margin':'0px','margin-left':'20px'}),
+            ],style={'margin':'0px',}),
+            
             html.Div([
                html.Div([
-                html.Div([html.B('Метаболизм метионина',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'40px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#4c86ae','line-height':'40px'}),
-                html.Div([html.B('Результат',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'8%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'40px'}),
-                html.Div([html.Img(src=app.get_asset_url('procent_head.png'),style={'width':'100%','height':'15px','line-height':'normal','display':'inline-block','vertical-align':'center'}),],style={'width':'27%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'40px'}),
-                html.Div([html.B('Референсные значения, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center'}),
+                html.Div([html.B('Метаболизм метионина',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'40px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#4c86ae','line-height':'40px'}),
+                html.Div([html.B('Результат',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'8%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'40px'}),
+                html.Div([html.Img(src=app.get_asset_url('procent_head.png'),style={'width':'100%','height':'15px','line-height':'normal','display':'inline-block','vertical-align':'center'}),],style={'width':'27%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'40px'}),
+                html.Div([html.B('Референсные значения, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center'}),
             ], style={'width':'100%','display':'flex', 'justify-content':'space-between','height':'40px',}), 
             ], style={'margin':'0px','margin-left':'20px'}),
-            html.Hr(style={'margin':'0px','height':'2px','border-width':'0px','background-color':'#336CA6','width':'100%'}),
+            
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Метионин (Met)',style={'height':'20px'}),html.P('Незаменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_4[0],ref_4[0])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_4[0]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_4[0],ref_4[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_4[0],ref_4[0])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_4[0]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Метионин (Met)',style={'height':'20px'}),html.P('Незаменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_4[0],ref_4[0])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_4[0]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_4[0],ref_4[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_4[0],ref_4[0])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_4[0]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px','background-color':'#dce6f2'}),
+            ],style={'margin':'0px','background-color':'#FFFFFF'}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Метионин сульфоксид (MetSO4)',style={'height':'20px'}),html.P('Продукт окисления метионина',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_4[1],ref_4[1])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_4[1]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_4[1],ref_4[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_4[1],ref_4[1])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_4[1]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                    ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px',}),
-            html.Div([
-                html.Div([
-                    html.Div([
-                        html.Div([html.B('Цистатионин (Cys)',style={'height':'20px'}),html.P('Серосодержащая аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_4[2],ref_4[2])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_4[2]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_4[2],ref_4[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_4[2],ref_4[2])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_4[2]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                    ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px','background-color':'#dce6f2'}),
-            html.Div([
-                html.Div([
-                    html.Div([
-                        html.Div([html.B('Таурин (Tau)',style={'height':'20px'}),html.P('Заменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_4[3],ref_4[3])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_4[3]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_4[3],ref_4[3])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_4[3],ref_4[3])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_4[3]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Метионин сульфоксид (MetSO4)',style={'height':'20px'}),html.P('Продукт окисления метионина',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_4[1],ref_4[1])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_4[1]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_4[1],ref_4[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_4[1],ref_4[1])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_4[1]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
             ],style={'margin':'0px',}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Бетаин (Bet)',style={'height':'20px'}),html.P('Продукт метаболизма холина',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_4[4],ref_4[4])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_4[4]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_4[4],ref_4[4])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_4[4],ref_4[4])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_4[4]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Цистатионин (Cys)',style={'height':'20px'}),html.P('Серосодержащая аминокислота',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_4[2],ref_4[2])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_4[2]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_4[2],ref_4[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_4[2],ref_4[2])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_4[2]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px','background-color':'#dce6f2'}),
+            ],style={'margin':'0px','background-color':'#FFFFFF'}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Холин (Chl)',style={'height':'20px'}),html.P('Компонент мембран клеток, источник ацетилхолина',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_4[5],ref_4[5])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_4[5]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_4[5],ref_4[5])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_4[5],ref_4[5])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_4[5]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Таурин (Tau)',style={'height':'20px'}),html.P('Заменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_4[3],ref_4[3])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_4[3]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_4[3],ref_4[3])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_4[3],ref_4[3])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_4[3]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
             ],style={'margin':'0px',}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Триметиламин-N-оксид (TMAO)',style={'height':'20px'}),html.P('Продукт метаболизма холина, бетаина и др. бактериями ЖКТ',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_4[6],ref_4[6])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_4[6]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_4[6],ref_4[6])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_4[6],ref_4[6])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_4[6]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Бетаин (Bet)',style={'height':'20px'}),html.P('Продукт метаболизма холина',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_4[4],ref_4[4])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_4[4]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_4[4],ref_4[4])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_4[4],ref_4[4])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_4[4]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px','background-color':'#dce6f2'}),
+            ],style={'margin':'0px','background-color':'#FFFFFF'}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Индекс Chl / Bet',style={'height':'20px'}),html.P('Соотношение холина к бетаину',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_4[7],ref_4[7])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_4[7]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_4[7],ref_4[7])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_4[7],ref_4[7])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_4[7]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Холин (Chl)',style={'height':'20px'}),html.P('Компонент мембран клеток, источник ацетилхолина',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_4[5],ref_4[5])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_4[5]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_4[5],ref_4[5])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_4[5],ref_4[5])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_4[5]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
+                    ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
+                ], style={'margin':'0px','margin-left':'20px'}),
+            ],style={'margin':'0px',}),
+            html.Div([
+                html.Div([
+                    html.Div([
+                        html.Div([html.B('Триметиламин-N-оксид (TMAO)',style={'height':'20px'}),html.P('Продукт метаболизма холина, бетаина и др. бактериями ЖКТ',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_4[6],ref_4[6])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_4[6]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_4[6],ref_4[6])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_4[6],ref_4[6])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_4[6]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
+                    ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
+                ], style={'margin':'0px','margin-left':'20px'}),
+            ],style={'margin':'0px','background-color':'#FFFFFF'}),
+            html.Div([
+                html.Div([
+                    html.Div([
+                        html.Div([html.B('Индекс Chl / Bet',style={'height':'20px'}),html.P('Соотношение холина к бетаину',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_4[7],ref_4[7])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_4[7]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_4[7],ref_4[7])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_4[7],ref_4[7])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_4[7]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
             ],style={'margin':'0px'}),
             html.Div([
         html.H3(children='2. Метаболизм триптофана', style={'textAlign':'center','margin':'0px','line-height':'normal','display':'inline-block','vertical-align':'center'}),]
-             , style={'width':'100%','background-color':'#336CA6', 'color':'white','font-family':'Calibri','margin':'0px','height':'35px','line-height':'35px','text-align':'center','margin-top':'5px'}),
+             , style={'width':'100%','background-color':'#0874bc', 'color':'white','font-family':'Arial','margin':'0px','height':'35px','line-height':'35px','text-align':'center','margin-top':'5px'}),
             html.Div([
                html.Div([
-                html.Div([html.B('Кинурениновый путь',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#4c86ae','line-height':'40px'}),
-                html.Div([html.B('Результат',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'8%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'40px'}),
-                html.Div([html.Img(src=app.get_asset_url('procent_head.png'),style={'width':'100%','height':'15px','line-height':'normal','display':'inline-block','vertical-align':'center'}),],style={'width':'27%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'40px'}),
-                html.Div([html.B('Референсные значения, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center'}),
+                html.Div([html.B('Кинурениновый путь',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#4c86ae','line-height':'40px'}),
+                html.Div([html.B('Результат',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'8%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'40px'}),
+                html.Div([html.Img(src=app.get_asset_url('procent_head.png'),style={'width':'100%','height':'15px','line-height':'normal','display':'inline-block','vertical-align':'center'}),],style={'width':'27%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'40px'}),
+                html.Div([html.B('Референсные значения, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center'}),
             ], style={'width':'100%','display':'flex', 'justify-content':'space-between','height':'40px',}), 
             ], style={'margin':'0px','margin-left':'20px'}),
-            html.Hr(style={'margin':'0px','height':'2px','border-width':'0px','background-color':'#336CA6','width':'100%'}),
+            
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Триптофан (Trp)',style={'height':'20px'}),html.P('Незаменимая глюко-, кетогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_5[0],ref_5[0])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_5[0]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_5[0],ref_5[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_5[0],ref_5[0])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_5[0]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Триптофан (Trp)',style={'height':'20px'}),html.P('Незаменимая глюко-, кетогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_5[0],ref_5[0])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_5[0]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_5[0],ref_5[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_5[0],ref_5[0])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_5[0]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px','background-color':'#dce6f2'}),
+            ],style={'margin':'0px','background-color':'#FFFFFF'}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Кинуренин (Kyn)',style={'height':'20px'}),html.P('Продукт метаболизма триптофана по кинурениновому пути',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_5[1],ref_5[1])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_5[1]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_5[1],ref_5[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_5[1],ref_5[1])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_5[1]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                    ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px'}),
-            html.Div([
-                html.Div([
-                    html.Div([
-                        html.Div([html.B('Индекс Kyn / Trp',style={'height':'20px'}),html.P('Показывает активность ферментов, метаболизирующих триптофан до кинуренина',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_5[2],ref_5[2])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_5[2]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_5[2],ref_5[5])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_5[2],ref_5[2])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_5[2]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                    ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px','background-color':'#dce6f2'}),
-            html.Div([
-                html.Div([
-                    html.Div([
-                        html.Div([html.B('Антраниловая кислота (Ant)',style={'height':'20px'}),html.P('Продукт метаболизма кинуренина',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_5[3],ref_5[3])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_5[3]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_5[3],ref_5[3])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_5[3],ref_5[3])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_5[3]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Кинуренин (Kyn)',style={'height':'20px'}),html.P('Продукт метаболизма триптофана по кинурениновому пути',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_5[1],ref_5[1])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_5[1]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_5[1],ref_5[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_5[1],ref_5[1])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_5[1]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
             ],style={'margin':'0px'}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('3-Гидроксиантраниловая кислота',style={'height':'20px'}),html.P('Продукт метаболизма антраниловой кислоты',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_5[4],ref_5[4])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_5[4]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_5[4],ref_5[4])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_5[4],ref_5[4])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_5[4]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Индекс Kyn / Trp',style={'height':'20px'}),html.P('Показывает активность ферментов, метаболизирующих триптофан до кинуренина',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_5[2],ref_5[2])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_5[2]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_5[2],ref_5[5])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_5[2],ref_5[2])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_5[2]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px','background-color':'#dce6f2'}),
+            ],style={'margin':'0px','background-color':'#FFFFFF'}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Хинолиновая кислота (Qnl)',style={'height':'20px'}),html.P('Продукт метаболизма 3-гидроксиантраниловой кислоты',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_5[5],ref_5[5])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_5[5]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_5[5],ref_5[5])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_5[5],ref_5[5])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_5[5]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Антраниловая кислота (Ant)',style={'height':'20px'}),html.P('Продукт метаболизма кинуренина',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_5[3],ref_5[3])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_5[3]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_5[3],ref_5[3])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_5[3],ref_5[3])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_5[3]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
+                    ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
+                ], style={'margin':'0px','margin-left':'20px'}),
+            ],style={'margin':'0px'}),
+            html.Div([
+                html.Div([
+                    html.Div([
+                        html.Div([html.B('3-Гидроксиантраниловая кислота',style={'height':'20px'}),html.P('Продукт метаболизма антраниловой кислоты',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_5[4],ref_5[4])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_5[4]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_5[4],ref_5[4])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_5[4],ref_5[4])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_5[4]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
+                    ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
+                ], style={'margin':'0px','margin-left':'20px'}),
+            ],style={'margin':'0px','background-color':'#FFFFFF'}),
+            html.Div([
+                html.Div([
+                    html.Div([
+                        html.Div([html.B('Хинолиновая кислота (Qnl)',style={'height':'20px'}),html.P('Продукт метаболизма 3-гидроксиантраниловой кислоты',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_5[5],ref_5[5])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_5[5]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_5[5],ref_5[5])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_5[5],ref_5[5])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_5[5]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
             ],style={'margin':'0px'}),
@@ -1201,9 +1199,9 @@ app.layout = html.Div([
     ]),
     html.Div([
         html.P('Результаты данного отчета не являются диагнозом и должны быть интерпретированы лечащим врачом на основании клинико-лабораторных данных и других диагностических исследований.',
-           style={'color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"left",'font-style':'italic','margin-top':'5px','width':'85%'}),
+           style={'color':'black','font-family':'Arial','font-size':'14px','margin':'0px','text-align':"left",'font-style':'italic','margin-top':'5px','width':'85%'}),
         html.P('|2',
-            style={'color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"right",'font-style':'italic','margin-top':'5px','width':'10%','margin-top':'20px'}),
+            style={'color':'black','font-family':'Arial','font-size':'14px','margin':'0px','text-align':"right",'font-style':'italic','margin-top':'5px','width':'10%','margin-top':'20px'}),
     ], style={'margin':'0px','display':'flex','justify-content':'space-between','width':'100%','margin-top':'5px'}),
     
     #4 страница
@@ -1211,218 +1209,218 @@ app.layout = html.Div([
         html.Div([],style={'height':'8mm','width':'100%'}),
         html.Div([
             html.Div([
-                html.B(f"Дата: {date}",style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
+                html.B(f"Дата: {date}",style={'margin':'0px','font-size':'18px','font-family':'Arial'}),
                 html.Div([
-                    html.B(f'Пациент: {name}',style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
+                    html.B(f'Пациент: {name}',style={'margin':'0px','font-size':'18px','font-family':'Arial'}),
                 ],style={'margin-top':'10px'}),
             ], style={'width':'33.3%'}),
             html.Div([
-                html.B("MetaboScan-Test01",style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
+                html.B("MetaboScan-Test01",style={'margin':'0px','font-size':'18px','font-family':'Arial'}),
             ], style={'width':'33.3%','text-align':'center'}),
             html.Div([
                 html.Img(src=app.get_asset_url('logo.jpg'),style={'height':'53px','float':'right'}),
             ], style={'width':'33.3%'}),
-        ], style={'display':'flex', 'justify-content':'space-between','width':'100%','height':'53px','color':'#336CA6'}),    
+        ], style={'display':'flex', 'justify-content':'space-between','width':'100%','height':'53px','color':'#0874bc'}),    
         
         html.Div([
             html.Div([
                html.Div([
-                html.Div([html.B('Кинурениновый путь',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'40px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#4c86ae','line-height':'40px'}),
-                html.Div([html.B('Результат',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'8%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'40px'}),
-                html.Div([html.Img(src=app.get_asset_url('procent_head.png'),style={'width':'100%','height':'15px','line-height':'normal','display':'inline-block','vertical-align':'center'}),],style={'width':'27%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'40px'}),
-                html.Div([html.B('Референсные значения, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center'}),
+                html.Div([html.B('Кинурениновый путь',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'40px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#4c86ae','line-height':'40px'}),
+                html.Div([html.B('Результат',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'8%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'40px'}),
+                html.Div([html.Img(src=app.get_asset_url('procent_head.png'),style={'width':'100%','height':'15px','line-height':'normal','display':'inline-block','vertical-align':'center'}),],style={'width':'27%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'40px'}),
+                html.Div([html.B('Референсные значения, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center'}),
             ], style={'width':'100%','display':'flex', 'justify-content':'space-between','height':'40px',}), 
             ], style={'margin':'0px','margin-left':'20px'}),
-            html.Hr(style={'margin':'0px','height':'2px','border-width':'0px','background-color':'#336CA6','width':'100%'}),
+            
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Ксантуреновая кислота (Xnt)',style={'height':'20px'}),html.P('Продукт метаболизма кинуренина',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_5[6],ref_5[6])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_5[6]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_5[6],ref_5[6])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_5[6],ref_5[6])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_5[6]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Ксантуреновая кислота (Xnt)',style={'height':'20px'}),html.P('Продукт метаболизма кинуренина',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_5[6],ref_5[6])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_5[6]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_5[6],ref_5[6])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_5[6],ref_5[6])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_5[6]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px','background-color':'#dce6f2'}),
+            ],style={'margin':'0px','background-color':'#FFFFFF'}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Кинурениновая кислота (Kyna)',style={'height':'20px'}),html.P('Продукт метаболизма кинуренина',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_5[7],ref_5[7])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_5[7]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_5[7],ref_5[7])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_5[7],ref_5[7])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_5[7]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Кинурениновая кислота (Kyna)',style={'height':'20px'}),html.P('Продукт метаболизма кинуренина',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_5[7],ref_5[7])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_5[7]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_5[7],ref_5[7])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_5[7],ref_5[7])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_5[7]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
             ],style={'margin':'0px',}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Индекс Kyn / Qnl',style={'height':'20px'}),html.P('Соотношение кинуренина к хинолиновой кислоте',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_5[8],ref_5[8])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_5[8]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_5[8],ref_5[8])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_5[8],ref_5[8])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_5[8]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Индекс Kyn / Qnl',style={'height':'20px'}),html.P('Соотношение кинуренина к хинолиновой кислоте',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_5[8],ref_5[8])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_5[8]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_5[8],ref_5[8])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_5[8],ref_5[8])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_5[8]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px','background-color':'#dce6f2'}),
-            html.Hr(style={'margin':'0px','height':'2px','border-width':'0px','background-color':'#336CA6','width':'100%'}),
+            ],style={'margin':'0px','background-color':'#FFFFFF'}),
+            
             html.Div([
                html.Div([
-                html.Div([html.B('Серотониновый путь',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'40px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#4c86ae','line-height':'40px'}),
-                html.Div([html.B('Результат',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'8%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'40px'}),
-                html.Div([html.Img(src=app.get_asset_url('procent_head.png'),style={'width':'100%','height':'15px','line-height':'normal','display':'inline-block','vertical-align':'center'}),],style={'width':'27%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'40px'}),
-                html.Div([html.B('Референсные значения, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center'}),
+                html.Div([html.B('Серотониновый путь',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'40px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#4c86ae','line-height':'40px'}),
+                html.Div([html.B('Результат',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'8%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'40px'}),
+                html.Div([html.Img(src=app.get_asset_url('procent_head.png'),style={'width':'100%','height':'15px','line-height':'normal','display':'inline-block','vertical-align':'center'}),],style={'width':'27%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'40px'}),
+                html.Div([html.B('Референсные значения, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center'}),
             ], style={'width':'100%','display':'flex', 'justify-content':'space-between','height':'40px',}), 
             ], style={'margin':'0px','margin-left':'20px'}),
-            html.Hr(style={'margin':'0px','height':'2px','border-width':'0px','background-color':'#336CA6','width':'100%'}),
+            
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Серотонин',style={'height':'20px'}),html.P('Нейромедиатор',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_6[0],ref_6[0])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_6[0]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_6[0],ref_6[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_6[0],ref_6[0])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_6[0]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Серотонин',style={'height':'20px'}),html.P('Нейромедиатор',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_6[0],ref_6[0])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_6[0]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_6[0],ref_6[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_6[0],ref_6[0])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_6[0]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px','background-color':'#dce6f2'}),
+            ],style={'margin':'0px','background-color':'#FFFFFF'}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('5-Гидроксииндолуксусная кислота (5-HIAA)',style={'height':'20px'}),html.P('Метаболит серотонина',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_6[1],ref_6[1])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_6[1]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_6[1],ref_6[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_6[1],ref_6[1])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_6[1]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                    ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px',}),
-            html.Div([
-                html.Div([
-                    html.Div([
-                        html.Div([html.B('Индекс Qnl / 5-HIAA',style={'height':'20px'}),html.P('Соотношение 5-гидроксииндолуксусной кислоты к хинолиновой кислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_6[2],ref_6[2])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_6[2]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_6[2],ref_6[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_6[2],ref_6[2])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_6[2]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                    ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px','background-color':'#dce6f2'}),
-            html.Div([
-                html.Div([
-                    html.Div([
-                        html.Div([html.B('5-Гидрокситриптофан (5-HTP)',style={'height':'20px'}),html.P('Прекурсор серотонина',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_6[3],ref_6[3])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_6[3]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_6[3],ref_6[3])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_6[3],ref_6[3])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_6[3]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('5-Гидроксииндолуксусная кислота (5-HIAA)',style={'height':'20px'}),html.P('Метаболит серотонина',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_6[1],ref_6[1])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_6[1]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_6[1],ref_6[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_6[1],ref_6[1])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_6[1]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
             ],style={'margin':'0px',}),
-            html.Hr(style={'margin':'0px','height':'2px','border-width':'0px','background-color':'#336CA6','width':'100%'}),
+            html.Div([
+                html.Div([
+                    html.Div([
+                        html.Div([html.B('Индекс Qnl / 5-HIAA',style={'height':'20px'}),html.P('Соотношение 5-гидроксииндолуксусной кислоты к хинолиновой кислота',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_6[2],ref_6[2])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_6[2]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_6[2],ref_6[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_6[2],ref_6[2])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_6[2]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
+                    ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
+                ], style={'margin':'0px','margin-left':'20px'}),
+            ],style={'margin':'0px','background-color':'#FFFFFF'}),
+            html.Div([
+                html.Div([
+                    html.Div([
+                        html.Div([html.B('5-Гидрокситриптофан (5-HTP)',style={'height':'20px'}),html.P('Прекурсор серотонина',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_6[3],ref_6[3])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_6[3]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_6[3],ref_6[3])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_6[3],ref_6[3])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_6[3]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
+                    ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
+                ], style={'margin':'0px','margin-left':'20px'}),
+            ],style={'margin':'0px',}),
+            
             html.Div([
                html.Div([
-                html.Div([html.B('Индоловый путь',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'40px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#4c86ae','line-height':'40px'}),
-                html.Div([html.B('Результат',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'8%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'40px'}),
-                html.Div([html.Img(src=app.get_asset_url('procent_head.png'),style={'width':'100%','height':'15px','line-height':'normal','display':'inline-block','vertical-align':'center'}),],style={'width':'27%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'40px'}),
-                html.Div([html.B('Референсные значения, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center'}),
+                html.Div([html.B('Индоловый путь',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'40px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#4c86ae','line-height':'40px'}),
+                html.Div([html.B('Результат',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'8%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'40px'}),
+                html.Div([html.Img(src=app.get_asset_url('procent_head.png'),style={'width':'100%','height':'15px','line-height':'normal','display':'inline-block','vertical-align':'center'}),],style={'width':'27%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'40px'}),
+                html.Div([html.B('Референсные значения, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center'}),
             ], style={'width':'100%','display':'flex', 'justify-content':'space-between','height':'40px',}), 
             ], style={'margin':'0px','margin-left':'20px'}),
-            html.Hr(style={'margin':'0px','height':'2px','border-width':'0px','background-color':'#336CA6','width':'100%'}),
+            
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('3-Индолуксусная кислота (I3A)',style={'height':'20px'}),html.P('Продукт катаболизма триптофана кишечной микробиотой',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_7[0],ref_7[0])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_7[0]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_7[0],ref_7[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_7[0],ref_7[0])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_7[0]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('3-Индолуксусная кислота (I3A)',style={'height':'20px'}),html.P('Продукт катаболизма триптофана кишечной микробиотой',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_7[0],ref_7[0])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_7[0]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_7[0],ref_7[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_7[0],ref_7[0])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_7[0]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px','background-color':'#dce6f2'}),
+            ],style={'margin':'0px','background-color':'#FFFFFF'}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('3-Индолмолочная кислота (I3L)',style={'height':'20px'}),html.P('Продукт катаболизма триптофана кишечной микробиотой',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_7[1],ref_7[1])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_7[1]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_7[1],ref_7[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_7[1],ref_7[1])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_7[1]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                    ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px'}),
-            html.Div([
-                html.Div([
-                    html.Div([
-                        html.Div([html.B('3-Индолкарбоксальдегид (I3Al)',style={'height':'20px'}),html.P('Продукт катаболизма триптофана кишечной микробиотой',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_7[2],ref_7[2])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_7[2]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_7[2],ref_7[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_7[2],ref_7[2])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_7[2]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                    ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px','background-color':'#dce6f2'}),
-            html.Div([
-                html.Div([
-                    html.Div([
-                        html.Div([html.B('3-Индолпропионовая кислота (I3P)',style={'height':'20px'}),html.P('Продукт катаболизма триптофана кишечной микробиотой',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_7[3],ref_7[3])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_7[3]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_7[3],ref_7[3])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_7[3],ref_7[3])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_7[3]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('3-Индолмолочная кислота (I3L)',style={'height':'20px'}),html.P('Продукт катаболизма триптофана кишечной микробиотой',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_7[1],ref_7[1])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_7[1]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_7[1],ref_7[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_7[1],ref_7[1])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_7[1]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
             ],style={'margin':'0px'}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('3-Индолмасляная кислота (I3B)',style={'height':'20px'}),html.P('Продукт катаболизма триптофана кишечной микробиотой',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_7[4],ref_7[4])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_7[4]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_7[4],ref_7[4])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_7[4],ref_7[4])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_7[4]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('3-Индолкарбоксальдегид (I3Al)',style={'height':'20px'}),html.P('Продукт катаболизма триптофана кишечной микробиотой',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_7[2],ref_7[2])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_7[2]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_7[2],ref_7[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_7[2],ref_7[2])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_7[2]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px','background-color':'#dce6f2'}),
+            ],style={'margin':'0px','background-color':'#FFFFFF'}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Триптамин',style={'height':'20px'}),html.P('Продукт катаболизма триптофана кишечной микробиотой, прекурсор для нейромедиаторов',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_7[5],ref_7[5])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_7[5]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_7[5],ref_7[5])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_7[5],ref_7[5])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_7[5]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('3-Индолпропионовая кислота (I3P)',style={'height':'20px'}),html.P('Продукт катаболизма триптофана кишечной микробиотой',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_7[3],ref_7[3])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_7[3]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_7[3],ref_7[3])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_7[3],ref_7[3])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_7[3]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
             ],style={'margin':'0px'}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('5-Метокситриптамин',style={'height':'20px'}),html.P('Производное триптамина',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_7[6],ref_7[6])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_7[6]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_7[6],ref_7[6])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_7[6],ref_7[6])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_7[6]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('3-Индолмасляная кислота (I3B)',style={'height':'20px'}),html.P('Продукт катаболизма триптофана кишечной микробиотой',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_7[4],ref_7[4])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_7[4]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_7[4],ref_7[4])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_7[4],ref_7[4])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_7[4]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px','background-color':'#dce6f2'}),
+            ],style={'margin':'0px','background-color':'#FFFFFF'}),
+            html.Div([
+                html.Div([
+                    html.Div([
+                        html.Div([html.B('Триптамин',style={'height':'20px'}),html.P('Продукт катаболизма триптофана кишечной микробиотой, прекурсор для нейромедиаторов',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_7[5],ref_7[5])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_7[5]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_7[5],ref_7[5])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_7[5],ref_7[5])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_7[5]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
+                    ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
+                ], style={'margin':'0px','margin-left':'20px'}),
+            ],style={'margin':'0px'}),
+            html.Div([
+                html.Div([
+                    html.Div([
+                        html.Div([html.B('5-Метокситриптамин',style={'height':'20px'}),html.P('Производное триптамина',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_7[6],ref_7[6])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_7[6]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_7[6],ref_7[6])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_7[6],ref_7[6])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_7[6]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
+                    ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
+                ], style={'margin':'0px','margin-left':'20px'}),
+            ],style={'margin':'0px','background-color':'#FFFFFF'}),
             html.Div([
         html.H3(children='3. Метаболизм аргинина', style={'textAlign':'center','margin':'0px','line-height':'normal','display':'inline-block','vertical-align':'center'}),]
-             , style={'width':'100%','background-color':'#336CA6', 'color':'white','font-family':'Calibri','margin':'0px','height':'35px','line-height':'35px','text-align':'center','margin-top':'5px'}),
+             , style={'width':'100%','background-color':'#0874bc', 'color':'white','font-family':'Arial','margin':'0px','height':'35px','line-height':'35px','text-align':'center','margin-top':'5px'}),
             html.Div([
                html.Div([
-                html.Div([html.B('Метаболизм аргинина',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#4c86ae','line-height':'40px'}),
-                html.Div([html.B('Результат',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'8%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'40px'}),
-                html.Div([html.Img(src=app.get_asset_url('procent_head.png'),style={'width':'100%','height':'15px','line-height':'normal','display':'inline-block','vertical-align':'center'}),],style={'width':'27%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'40px'}),
-                html.Div([html.B('Референсные значения, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center'}),
+                html.Div([html.B('Метаболизм аргинина',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#4c86ae','line-height':'40px'}),
+                html.Div([html.B('Результат',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'8%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'40px'}),
+                html.Div([html.Img(src=app.get_asset_url('procent_head.png'),style={'width':'100%','height':'15px','line-height':'normal','display':'inline-block','vertical-align':'center'}),],style={'width':'27%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'40px'}),
+                html.Div([html.B('Референсные значения, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center'}),
             ], style={'width':'100%','display':'flex', 'justify-content':'space-between','height':'40px',}), 
             ], style={'margin':'0px','margin-left':'20px'}),
-            html.Hr(style={'margin':'0px','height':'2px','border-width':'0px','background-color':'#336CA6','width':'100%'}),
+            
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Пролин (Pro)',style={'height':'20px'}),html.P('Заменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_8[0],ref_8[0])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_8[0]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_8[0],ref_8[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_8[0],ref_8[0])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_8[0]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Пролин (Pro)',style={'height':'20px'}),html.P('Заменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_8[0],ref_8[0])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_8[0]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_8[0],ref_8[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_8[0],ref_8[0])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_8[0]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px','background-color':'#dce6f2'}),
+            ],style={'margin':'0px','background-color':'#FFFFFF'}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Гидроксипролин (Hyp)',style={'height':'20px'}),html.P('Источник коллагена',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_8[1],ref_8[1])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_8[1]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_8[1],ref_8[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_8[1],ref_8[1])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_8[1]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Гидроксипролин (Hyp)',style={'height':'20px'}),html.P('Источник коллагена',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_8[1],ref_8[1])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_8[1]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_8[1],ref_8[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_8[1],ref_8[1])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_8[1]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
             ],style={'margin':'0px'}),
@@ -1431,9 +1429,9 @@ app.layout = html.Div([
     ]),
     html.Div([
         html.P('Результаты данного отчета не являются диагнозом и должны быть интерпретированы лечащим врачом на основании клинико-лабораторных данных и других диагностических исследований.',
-           style={'color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"left",'font-style':'italic','margin-top':'5px','width':'85%'}),
+           style={'color':'black','font-family':'Arial','font-size':'14px','margin':'0px','text-align':"left",'font-style':'italic','margin-top':'5px','width':'85%'}),
         html.P('|3',
-            style={'color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"right",'font-style':'italic','margin-top':'5px','width':'10%','margin-top':'20px'}),
+            style={'color':'black','font-family':'Arial','font-size':'14px','margin':'0px','text-align':"right",'font-style':'italic','margin-top':'5px','width':'10%','margin-top':'20px'}),
     ], style={'margin':'0px','display':'flex','justify-content':'space-between','width':'100%','margin-top':'15px'}),
     
     # 5 страница
@@ -1441,218 +1439,218 @@ app.layout = html.Div([
         html.Div([],style={'height':'8mm','width':'100%'}),
         html.Div([
             html.Div([
-                html.B(f"Дата: {date}",style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
+                html.B(f"Дата: {date}",style={'margin':'0px','font-size':'18px','font-family':'Arial'}),
                 html.Div([
-                    html.B(f'Пациент: {name}',style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
+                    html.B(f'Пациент: {name}',style={'margin':'0px','font-size':'18px','font-family':'Arial'}),
                 ],style={'margin-top':'10px'}),
             ], style={'width':'33.3%'}),
             html.Div([
-                html.B("MetaboScan-Test01",style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
+                html.B("MetaboScan-Test01",style={'margin':'0px','font-size':'18px','font-family':'Arial'}),
             ], style={'width':'33.3%','text-align':'center'}),
             html.Div([
                 html.Img(src=app.get_asset_url('logo.jpg'),style={'height':'53px','float':'right'}),
             ], style={'width':'33.3%'}),
-        ], style={'display':'flex', 'justify-content':'space-between','width':'100%','height':'53px','color':'#336CA6'}),    
+        ], style={'display':'flex', 'justify-content':'space-between','width':'100%','height':'53px','color':'#0874bc'}),    
         
         html.Div([
             html.Div([
                html.Div([
-                html.Div([html.B('Метаболизм аргинина',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'40px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#4c86ae','line-height':'40px'}),
-                html.Div([html.B('Результат',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'8%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'40px'}),
-                html.Div([html.Img(src=app.get_asset_url('procent_head.png'),style={'width':'100%','height':'15px','line-height':'normal','display':'inline-block','vertical-align':'center'}),],style={'width':'27%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'40px'}),
-                html.Div([html.B('Референсные значения, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center'}),
+                html.Div([html.B('Метаболизм аргинина',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'40px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#4c86ae','line-height':'40px'}),
+                html.Div([html.B('Результат',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'8%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'40px'}),
+                html.Div([html.Img(src=app.get_asset_url('procent_head.png'),style={'width':'100%','height':'15px','line-height':'normal','display':'inline-block','vertical-align':'center'}),],style={'width':'27%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'40px'}),
+                html.Div([html.B('Референсные значения, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center'}),
             ], style={'width':'100%','display':'flex', 'justify-content':'space-between','height':'40px',}), 
             ], style={'margin':'0px','margin-left':'20px'}),
-            html.Hr(style={'margin':'0px','height':'2px','border-width':'0px','background-color':'#336CA6','width':'100%'}),
+            
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Асимметричный диметиларгинин (ADMA)',style={'height':'20px'}),html.P('Эндогенный ингибитор синтазы оксида азота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_8[2],ref_8[2])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_8[2]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_8[2],ref_8[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_8[2],ref_8[2])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_8[2]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Асимметричный диметиларгинин (ADMA)',style={'height':'20px'}),html.P('Эндогенный ингибитор синтазы оксида азота',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_8[2],ref_8[2])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_8[2]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_8[2],ref_8[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_8[2],ref_8[2])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_8[2]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px','background-color':'#dce6f2'}),
+            ],style={'margin':'0px','background-color':'#FFFFFF'}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Симметричный диметиларгинин (SDMA)',style={'height':'20px'}),html.P('Продукт метаболизма аргинина, выводится с почками',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_8[3],ref_8[3])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_8[3]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_8[3],ref_8[3])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_8[3],ref_8[3])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_8[3]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Симметричный диметиларгинин (SDMA)',style={'height':'20px'}),html.P('Продукт метаболизма аргинина, выводится с почками',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_8[3],ref_8[3])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_8[3]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_8[3],ref_8[3])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_8[3],ref_8[3])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_8[3]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
             ],style={'margin':'0px',}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Гомоаргинин',style={'height':'20px'}),html.P('Субстрат для синтазы оксида азота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_8[4],ref_8[4])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_8[4]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_8[4],ref_8[4])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_8[4],ref_8[4])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_8[4]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Гомоаргинин',style={'height':'20px'}),html.P('Субстрат для синтазы оксида азота',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_8[4],ref_8[4])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_8[4]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_8[4],ref_8[4])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_8[4],ref_8[4])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_8[4]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px','background-color':'#dce6f2'}),
+            ],style={'margin':'0px','background-color':'#FFFFFF'}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Аргинин',style={'height':'20px'}),html.P('Незаменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_8[5],ref_8[5])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_8[5]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_8[5],ref_8[5])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_8[5],ref_8[5])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_8[5]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                    ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px'}),
-            html.Div([
-                html.Div([
-                    html.Div([
-                        html.Div([html.B('Цитруллин (Cit)',style={'height':'20px'}),html.P('Метаболит цикла мочевины',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_8[6],ref_8[6])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_8[6]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_8[6],ref_8[6])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_8[6],ref_8[6])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_8[6]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                    ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px','background-color':'#dce6f2'}),
-            html.Div([
-                html.Div([
-                    html.Div([
-                        html.Div([html.B('Орнитин (Orn)',style={'height':'20px'}),html.P('Метаболит цикла мочевины',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_8[7],ref_8[7])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_8[7]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_8[7],ref_8[7])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_8[7],ref_8[7])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_8[7]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Аргинин',style={'height':'20px'}),html.P('Незаменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_8[5],ref_8[5])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_8[5]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_8[5],ref_8[5])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_8[5],ref_8[5])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_8[5]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
             ],style={'margin':'0px'}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Аспарагин (Asn)',style={'height':'20px'}),html.P('Заменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_8[8],ref_8[8])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_8[8]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_8[8],ref_8[8])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_8[8],ref_8[8])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_8[8]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Цитруллин (Cit)',style={'height':'20px'}),html.P('Метаболит цикла мочевины',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_8[6],ref_8[6])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_8[6]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_8[6],ref_8[6])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_8[6],ref_8[6])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_8[6]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px','background-color':'#dce6f2'}),
+            ],style={'margin':'0px','background-color':'#FFFFFF'}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Аспарагиновая кислота (Asp)',style={'height':'20px'}),html.P('Заменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_8[9],ref_8[9])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_8[9]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_8[9],ref_8[9])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_8[9],ref_8[9])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_8[9]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                    ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px'}),
-            html.Div([
-                html.Div([
-                    html.Div([
-                        html.Div([html.B('Индекс GABR [Arg / (Orn + Cit)]',style={'height':'20px'}),html.P('Общая биодоступность аргинина',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_8[10],ref_8[10])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_8[10]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_8[10],ref_8[10])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_8[10],ref_8[10])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_8[10]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                    ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px','background-color':'#dce6f2'}),
-            html.Div([
-                html.Div([
-                    html.Div([
-                        html.Div([html.B('Индекс AOR [Arg / Orn]',style={'height':'20px'}),html.P('Показывает активность аргиназы',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_8[11],ref_8[11])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_8[11]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_8[11],ref_8[11])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_8[11],ref_8[11])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_8[11]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Орнитин (Orn)',style={'height':'20px'}),html.P('Метаболит цикла мочевины',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_8[7],ref_8[7])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_8[7]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_8[7],ref_8[7])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_8[7],ref_8[7])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_8[7]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
             ],style={'margin':'0px'}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Индекс Asn / Asp',style={'height':'20px'}),html.P('Показывает активность аспарагинсинтетазы',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_8[12],ref_8[12])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_8[12]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_8[12],ref_8[12])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_8[12],ref_8[12])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_8[12]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Аспарагин (Asn)',style={'height':'20px'}),html.P('Заменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_8[8],ref_8[8])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_8[8]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_8[8],ref_8[8])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_8[8],ref_8[8])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_8[8]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px','background-color':'#dce6f2'}),
+            ],style={'margin':'0px','background-color':'#FFFFFF'}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Креатинин',style={'height':'20px'}),html.P('Продукт метаболизма аргинина',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_8[13],ref_8[13])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_8[13]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_8[13],ref_8[13])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_8[13],ref_8[13])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_8[13]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Аспарагиновая кислота (Asp)',style={'height':'20px'}),html.P('Заменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_8[9],ref_8[9])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_8[9]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_8[9],ref_8[9])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_8[9],ref_8[9])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_8[9]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
+                    ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
+                ], style={'margin':'0px','margin-left':'20px'}),
+            ],style={'margin':'0px'}),
+            html.Div([
+                html.Div([
+                    html.Div([
+                        html.Div([html.B('Индекс GABR [Arg / (Orn + Cit)]',style={'height':'20px'}),html.P('Общая биодоступность аргинина',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_8[10],ref_8[10])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_8[10]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_8[10],ref_8[10])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_8[10],ref_8[10])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_8[10]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
+                    ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
+                ], style={'margin':'0px','margin-left':'20px'}),
+            ],style={'margin':'0px','background-color':'#FFFFFF'}),
+            html.Div([
+                html.Div([
+                    html.Div([
+                        html.Div([html.B('Индекс AOR [Arg / Orn]',style={'height':'20px'}),html.P('Показывает активность аргиназы',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_8[11],ref_8[11])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_8[11]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_8[11],ref_8[11])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_8[11],ref_8[11])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_8[11]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
+                    ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
+                ], style={'margin':'0px','margin-left':'20px'}),
+            ],style={'margin':'0px'}),
+            html.Div([
+                html.Div([
+                    html.Div([
+                        html.Div([html.B('Индекс Asn / Asp',style={'height':'20px'}),html.P('Показывает активность аспарагинсинтетазы',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_8[12],ref_8[12])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_8[12]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_8[12],ref_8[12])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_8[12],ref_8[12])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_8[12]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
+                    ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
+                ], style={'margin':'0px','margin-left':'20px'}),
+            ],style={'margin':'0px','background-color':'#FFFFFF'}),
+            html.Div([
+                html.Div([
+                    html.Div([
+                        html.Div([html.B('Креатинин',style={'height':'20px'}),html.P('Продукт метаболизма аргинина',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_8[13],ref_8[13])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_8[13]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_8[13],ref_8[13])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_8[13],ref_8[13])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_8[13]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
             ],style={'margin':'0px'}),
             html.Div([
         html.H3(children='4. Метаболизм жирных кислот', style={'textAlign':'center','margin':'0px','line-height':'normal','display':'inline-block','vertical-align':'center'}),]
-             , style={'width':'100%','background-color':'#336CA6', 'color':'white','font-family':'Calibri','margin':'0px','height':'35px','line-height':'35px','text-align':'center','margin-top':'5px'}),
+             , style={'width':'100%','background-color':'#0874bc', 'color':'white','font-family':'Arial','margin':'0px','height':'35px','line-height':'35px','text-align':'center','margin-top':'5px'}),
             html.Div([
                html.Div([
-                html.Div([html.B('Метаболизм ацилкарнитинов',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#4c86ae','line-height':'40px'}),
-                html.Div([html.B('Результат',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'8%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'40px'}),
-                html.Div([html.Img(src=app.get_asset_url('procent_head.png'),style={'width':'100%','height':'15px','line-height':'normal','display':'inline-block','vertical-align':'center'}),],style={'width':'27%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'40px'}),
-                html.Div([html.B('Референсные значения, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center'}),
+                html.Div([html.B('Метаболизм ацилкарнитинов',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#4c86ae','line-height':'40px'}),
+                html.Div([html.B('Результат',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'8%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'40px'}),
+                html.Div([html.Img(src=app.get_asset_url('procent_head.png'),style={'width':'100%','height':'15px','line-height':'normal','display':'inline-block','vertical-align':'center'}),],style={'width':'27%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'40px'}),
+                html.Div([html.B('Референсные значения, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center'}),
             ], style={'width':'100%','display':'flex', 'justify-content':'space-between','height':'40px',}), 
             ], style={'margin':'0px','margin-left':'20px'}),
-            html.Hr(style={'margin':'0px','height':'2px','border-width':'0px','background-color':'#336CA6','width':'100%'}),
+            
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Аланин',style={'height':'20px'}),html.P('Заменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_9[0],ref_9[0])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_9[0]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_9[0],ref_9[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_9[0],ref_9[0])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_9[0]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Аланин',style={'height':'20px'}),html.P('Заменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_9[0],ref_9[0])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_9[0]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_9[0],ref_9[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_9[0],ref_9[0])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_9[0]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px','background-color':'#dce6f2'}),
+            ],style={'margin':'0px','background-color':'#FFFFFF'}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Карнитин (C0)',style={'height':'20px'}),html.P('Основа для ацилкарнитинов, транспорт жирных кислот',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_9[1],ref_9[1])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_9[1]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_9[1],ref_9[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_9[1],ref_9[1])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_9[1]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Карнитин (C0)',style={'height':'20px'}),html.P('Основа для ацилкарнитинов, транспорт жирных кислот',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_9[1],ref_9[1])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_9[1]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_9[1],ref_9[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_9[1],ref_9[1])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_9[1]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
             ],style={'margin':'0px'}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Ацетилкарнитин (C2)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_9[2],ref_9[2])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_9[2]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_9[2],ref_9[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_9[2],ref_9[2])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_9[2]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Ацетилкарнитин (C2)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_9[2],ref_9[2])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_9[2]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_9[2],ref_9[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_9[2],ref_9[2])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_9[2]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px','background-color':'#dce6f2'}),
-            html.Hr(style={'margin':'0px','height':'2px','border-width':'0px','background-color':'#336CA6','width':'100%'}),
+            ],style={'margin':'0px','background-color':'#FFFFFF'}),
+            
             html.Div([
                html.Div([
-                html.Div([html.B('Короткоцепочечные ацилкарнитины',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#4c86ae','line-height':'40px'}),
-                html.Div([html.B('Результат',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'8%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'40px'}),
-                html.Div([html.Img(src=app.get_asset_url('procent_head.png'),style={'width':'100%','height':'15px','line-height':'normal','display':'inline-block','vertical-align':'center'}),],style={'width':'27%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'40px'}),
-                html.Div([html.B('Референсные значения, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center'}),
+                html.Div([html.B('Короткоцепочечные ацилкарнитины',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#4c86ae','line-height':'40px'}),
+                html.Div([html.B('Результат',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'8%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'40px'}),
+                html.Div([html.Img(src=app.get_asset_url('procent_head.png'),style={'width':'100%','height':'15px','line-height':'normal','display':'inline-block','vertical-align':'center'}),],style={'width':'27%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'40px'}),
+                html.Div([html.B('Референсные значения, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center'}),
             ], style={'width':'100%','display':'flex', 'justify-content':'space-between','height':'40px',}), 
             ], style={'margin':'0px','margin-left':'20px'}),
-            html.Hr(style={'margin':'0px','height':'2px','border-width':'0px','background-color':'#336CA6','width':'100%'}),
+            
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Пропионилкарнитин (С3)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_10[0],ref_10[0])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_10[0]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_10[0],ref_10[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_10[0],ref_10[0])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_10[0]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Пропионилкарнитин (С3)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_10[0],ref_10[0])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_10[0]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_10[0],ref_10[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_10[0],ref_10[0])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_10[0]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px','background-color':'#dce6f2'}),
+            ],style={'margin':'0px','background-color':'#FFFFFF'}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Бутирилкарнитин (C4)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_10[1],ref_10[1])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_10[1]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_10[1],ref_10[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_10[1],ref_10[1])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_10[1]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Бутирилкарнитин (C4)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_10[1],ref_10[1])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_10[1]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_10[1],ref_10[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_10[1],ref_10[1])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_10[1]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
             ],style={'margin':'0px'}),
@@ -1660,9 +1658,9 @@ app.layout = html.Div([
     ]),
     html.Div([
         html.P('Результаты данного отчета не являются диагнозом и должны быть интерпретированы лечащим врачом на основании клинико-лабораторных данных и других диагностических исследований.',
-           style={'color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"left",'font-style':'italic','margin-top':'5px','width':'85%'}),
+           style={'color':'black','font-family':'Arial','font-size':'14px','margin':'0px','text-align':"left",'font-style':'italic','margin-top':'5px','width':'85%'}),
         html.P('|4',
-            style={'color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"right",'font-style':'italic','margin-top':'5px','width':'10%','margin-top':'20px'}),
+            style={'color':'black','font-family':'Arial','font-size':'14px','margin':'0px','text-align':"right",'font-style':'italic','margin-top':'5px','width':'10%','margin-top':'20px'}),
     ], style={'margin':'0px','display':'flex','justify-content':'space-between','width':'100%','margin-top':'5px'}),
     
     # 6 страница
@@ -1670,235 +1668,235 @@ app.layout = html.Div([
         html.Div([],style={'height':'8mm','width':'100%'}),
         html.Div([
             html.Div([
-                html.B(f"Дата: {date}",style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
+                html.B(f"Дата: {date}",style={'margin':'0px','font-size':'18px','font-family':'Arial'}),
                 html.Div([
-                    html.B(f'Пациент: {name}',style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
+                    html.B(f'Пациент: {name}',style={'margin':'0px','font-size':'18px','font-family':'Arial'}),
                 ],style={'margin-top':'10px'}),
             ], style={'width':'33.3%'}),
             html.Div([
-                html.B("MetaboScan-Test01",style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
+                html.B("MetaboScan-Test01",style={'margin':'0px','font-size':'18px','font-family':'Arial'}),
             ], style={'width':'33.3%','text-align':'center'}),
             html.Div([
                 html.Img(src=app.get_asset_url('logo.jpg'),style={'height':'54px','float':'right'}),
             ], style={'width':'33.3%'}),
-        ], style={'display':'flex', 'justify-content':'space-between','width':'100%','height':'54px','color':'#336CA6'}),    
+        ], style={'display':'flex', 'justify-content':'space-between','width':'100%','height':'54px','color':'#0874bc'}),    
         html.Div([
             html.Div([
                html.Div([
-                html.Div([html.B('Короткоцепочечные ацилкарнитины',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'40px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#4c86ae','line-height':'40px'}),
-                html.Div([html.B('Результат',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'8%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'40px'}),
-                html.Div([html.Img(src=app.get_asset_url('procent_head.png'),style={'width':'100%','height':'15px','line-height':'normal','display':'inline-block','vertical-align':'center'}),],style={'width':'27%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'40px'}),
-                html.Div([html.B('Референсные значения, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center'}),
+                html.Div([html.B('Короткоцепочечные ацилкарнитины',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'40px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#4c86ae','line-height':'40px'}),
+                html.Div([html.B('Результат',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'8%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'40px'}),
+                html.Div([html.Img(src=app.get_asset_url('procent_head.png'),style={'width':'100%','height':'15px','line-height':'normal','display':'inline-block','vertical-align':'center'}),],style={'width':'27%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'40px'}),
+                html.Div([html.B('Референсные значения, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center'}),
             ], style={'width':'100%','display':'flex', 'justify-content':'space-between','height':'40px',}), 
             ], style={'margin':'0px','margin-left':'20px'}),
-            html.Hr(style={'margin':'0px','height':'2px','border-width':'0px','background-color':'#336CA6','width':'100%'}),
+            
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Изовалерилкарнитин (С5)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_10[2],ref_10[2])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_10[2]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_10[2],ref_10[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_10[2],ref_10[2])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_10[2]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Изовалерилкарнитин (С5)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_10[2],ref_10[2])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_10[2]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_10[2],ref_10[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_10[2],ref_10[2])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_10[2]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px','background-color':'#dce6f2'}),
+            ],style={'margin':'0px','background-color':'#FFFFFF'}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Тиглилкарнитин (C5-1)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_10[3],ref_10[3])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_10[3]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_10[3],ref_10[3])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_10[3],ref_10[3])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_10[3]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Тиглилкарнитин (C5-1)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_10[3],ref_10[3])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_10[3]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_10[3],ref_10[3])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_10[3],ref_10[3])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_10[3]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
             ],style={'margin':'0px',}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Глутарилкарнитин (C5-DC)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_10[4],ref_10[4])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_10[4]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_10[4],ref_10[4])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_10[4],ref_10[4])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_10[4]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Глутарилкарнитин (C5-DC)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_10[4],ref_10[4])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_10[4]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_10[4],ref_10[4])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_10[4],ref_10[4])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_10[4]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px','background-color':'#dce6f2'}),
+            ],style={'margin':'0px','background-color':'#FFFFFF'}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Гидроксиизовалерилкарнитин (C5-OH)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_10[5],ref_10[5])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_10[5]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_10[5],ref_10[5])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_10[5],ref_10[5])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_10[5]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Гидроксиизовалерилкарнитин (C5-OH)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_10[5],ref_10[5])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_10[5]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_10[5],ref_10[5])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_10[5],ref_10[5])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_10[5]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
             ],style={'margin':'0px'}),
-            html.Hr(style={'margin':'0px','height':'2px','border-width':'0px','background-color':'#336CA6','width':'100%'}),
+            
             html.Div([
                html.Div([
-                html.Div([html.B('Среднецепочечные ацилкарнитины',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'40px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#4c86ae','line-height':'40px'}),
-                html.Div([html.B('Результат',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'8%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'40px'}),
-                html.Div([html.Img(src=app.get_asset_url('procent_head.png'),style={'width':'100%','height':'15px','line-height':'normal','display':'inline-block','vertical-align':'center'}),],style={'width':'27%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'40px'}),
-                html.Div([html.B('Референсные значения, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center'}),
+                html.Div([html.B('Среднецепочечные ацилкарнитины',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'40px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#4c86ae','line-height':'40px'}),
+                html.Div([html.B('Результат',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'8%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'40px'}),
+                html.Div([html.Img(src=app.get_asset_url('procent_head.png'),style={'width':'100%','height':'15px','line-height':'normal','display':'inline-block','vertical-align':'center'}),],style={'width':'27%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'40px'}),
+                html.Div([html.B('Референсные значения, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center'}),
             ], style={'width':'100%','display':'flex', 'justify-content':'space-between','height':'40px',}), 
             ], style={'margin':'0px','margin-left':'20px'}),
-            html.Hr(style={'margin':'0px','height':'2px','border-width':'0px','background-color':'#336CA6','width':'100%'}),
+            
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Гексаноилкарнитин (C6)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_11[0],ref_11[0])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_11[0]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_11[0],ref_11[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_11[0],ref_11[0])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_11[0]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Гексаноилкарнитин (C6)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_11[0],ref_11[0])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_11[0]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_11[0],ref_11[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_11[0],ref_11[0])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_11[0]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px','background-color':'#dce6f2'}),
+            ],style={'margin':'0px','background-color':'#FFFFFF'}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Адипоилкарнитин (C6-DC)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_11[1],ref_11[1])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_11[1]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_11[1],ref_11[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_11[1],ref_11[1])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_11[1]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                    ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px',}),
-            html.Div([
-                html.Div([
-                    html.Div([
-                        html.Div([html.B('Октаноилкарнитин (C8)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_11[2],ref_11[2])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_11[2]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_11[2],ref_11[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_11[2],ref_11[2])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_11[2]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                    ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px','background-color':'#dce6f2'}),
-            html.Div([
-                html.Div([
-                    html.Div([
-                        html.Div([html.B('Октеноилкарнитин (C8-1)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_11[3],ref_11[3])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_11[3]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_11[3],ref_11[3])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_11[3],ref_11[3])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_11[3]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Адипоилкарнитин (C6-DC)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_11[1],ref_11[1])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_11[1]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_11[1],ref_11[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_11[1],ref_11[1])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_11[1]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
             ],style={'margin':'0px',}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Деканоилкарнитин (C10)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_11[4],ref_11[4])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_11[4]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_11[4],ref_11[4])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_11[4],ref_11[4])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_11[4]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Октаноилкарнитин (C8)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_11[2],ref_11[2])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_11[2]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_11[2],ref_11[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_11[2],ref_11[2])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_11[2]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px','background-color':'#dce6f2'}),
+            ],style={'margin':'0px','background-color':'#FFFFFF'}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Деценоилкарнитин (C10-1)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_11[5],ref_11[5])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_11[5]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_11[5],ref_11[5])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_11[5],ref_11[5])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_11[5]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Октеноилкарнитин (C8-1)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_11[3],ref_11[3])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_11[3]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_11[3],ref_11[3])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_11[3],ref_11[3])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_11[3]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
             ],style={'margin':'0px',}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Декадиеноилкарнитин (C10-2)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_11[6],ref_11[6])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_11[6]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_11[6],ref_11[6])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_11[6],ref_11[6])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_11[6]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Деканоилкарнитин (C10)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_11[4],ref_11[4])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_11[4]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_11[4],ref_11[4])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_11[4],ref_11[4])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_11[4]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px','background-color':'#dce6f2'}),
+            ],style={'margin':'0px','background-color':'#FFFFFF'}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Додеканоилкарнитин (C12)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_11[7],ref_11[7])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_11[7]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_11[7],ref_11[7])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_11[7],ref_11[7])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_11[7]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Деценоилкарнитин (C10-1)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_11[5],ref_11[5])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_11[5]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_11[5],ref_11[5])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_11[5],ref_11[5])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_11[5]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
             ],style={'margin':'0px',}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Додеценоилкарнитин (C12-1)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_11[8],ref_11[8])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_11[8]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_11[8],ref_11[8])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_11[8],ref_11[8])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_11[8]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Декадиеноилкарнитин (C10-2)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_11[6],ref_11[6])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_11[6]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_11[6],ref_11[6])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_11[6],ref_11[6])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_11[6]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px','background-color':'#dce6f2'}),
-            html.Hr(style={'margin':'0px','height':'2px','border-width':'0px','background-color':'#336CA6','width':'100%'}),
+            ],style={'margin':'0px','background-color':'#FFFFFF'}),
+            html.Div([
+                html.Div([
+                    html.Div([
+                        html.Div([html.B('Додеканоилкарнитин (C12)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_11[7],ref_11[7])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_11[7]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_11[7],ref_11[7])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_11[7],ref_11[7])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_11[7]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
+                    ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
+                ], style={'margin':'0px','margin-left':'20px'}),
+            ],style={'margin':'0px',}),
+            html.Div([
+                html.Div([
+                    html.Div([
+                        html.Div([html.B('Додеценоилкарнитин (C12-1)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_11[8],ref_11[8])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_11[8]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_11[8],ref_11[8])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_11[8],ref_11[8])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_11[8]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
+                    ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
+                ], style={'margin':'0px','margin-left':'20px'}),
+            ],style={'margin':'0px','background-color':'#FFFFFF'}),
+            
             html.Div([
                html.Div([
-                html.Div([html.B('Длинноцепочечные ацилкарнитины',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'40px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#4c86ae','line-height':'40px'}),
-                html.Div([html.B('Результат',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'8%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'40px'}),
-                html.Div([html.Img(src=app.get_asset_url('procent_head.png'),style={'width':'100%','height':'15px','line-height':'normal','display':'inline-block','vertical-align':'center'}),],style={'width':'27%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'40px'}),
-                html.Div([html.B('Референсные значения, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center'}),
+                html.Div([html.B('Длинноцепочечные ацилкарнитины',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'40px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#4c86ae','line-height':'40px'}),
+                html.Div([html.B('Результат',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'8%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'40px'}),
+                html.Div([html.Img(src=app.get_asset_url('procent_head.png'),style={'width':'100%','height':'15px','line-height':'normal','display':'inline-block','vertical-align':'center'}),],style={'width':'27%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'40px'}),
+                html.Div([html.B('Референсные значения, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center'}),
             ], style={'width':'100%','display':'flex', 'justify-content':'space-between','height':'40px',}), 
             ], style={'margin':'0px','margin-left':'20px'}),
-            html.Hr(style={'margin':'0px','height':'2px','border-width':'0px','background-color':'#336CA6','width':'100%'}),
+            
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Тетрадеканоилкарнитин (C14)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_12[0],ref_12[0])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_12[0]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_12[0],ref_12[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_12[0],ref_12[0])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_12[0]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Тетрадеканоилкарнитин (C14)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_12[0],ref_12[0])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_12[0]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_12[0],ref_12[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_12[0],ref_12[0])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_12[0]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px','background-color':'#dce6f2'}),
+            ],style={'margin':'0px','background-color':'#FFFFFF'}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Тетрадеценоилкарнитин (С14-1)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_12[1],ref_12[1])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_12[1]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_12[1],ref_12[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_12[1],ref_12[1])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_12[1]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                    ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px'}),
-            html.Div([
-                html.Div([
-                    html.Div([
-                        html.Div([html.B('Тетрадекадиеноилкарнитин (C14-2)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_12[2],ref_12[2])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_12[2]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_12[2],ref_12[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_12[2],ref_12[2])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_12[2]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                    ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px','background-color':'#dce6f2'}),
-            html.Div([
-                html.Div([
-                    html.Div([
-                        html.Div([html.B('Гидрокситетрадеканоилкарнитин (C14-OH)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_12[3],ref_12[3])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_12[3]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_12[3],ref_12[3])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_12[3],ref_12[3])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_12[3]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Тетрадеценоилкарнитин (С14-1)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_12[1],ref_12[1])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_12[1]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_12[1],ref_12[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_12[1],ref_12[1])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_12[1]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
             ],style={'margin':'0px'}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Пальмитоилкарнитин (C16)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_12[4],ref_12[4])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_12[4]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_12[4],ref_12[4])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_12[4],ref_12[4])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_12[4]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Тетрадекадиеноилкарнитин (C14-2)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_12[2],ref_12[2])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_12[2]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_12[2],ref_12[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_12[2],ref_12[2])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_12[2]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px','background-color':'#dce6f2'}),
+            ],style={'margin':'0px','background-color':'#FFFFFF'}),
+            html.Div([
+                html.Div([
+                    html.Div([
+                        html.Div([html.B('Гидрокситетрадеканоилкарнитин (C14-OH)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_12[3],ref_12[3])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_12[3]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_12[3],ref_12[3])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_12[3],ref_12[3])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_12[3]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
+                    ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
+                ], style={'margin':'0px','margin-left':'20px'}),
+            ],style={'margin':'0px'}),
+            html.Div([
+                html.Div([
+                    html.Div([
+                        html.Div([html.B('Пальмитоилкарнитин (C16)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_12[4],ref_12[4])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_12[4]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_12[4],ref_12[4])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_12[4],ref_12[4])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_12[4]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
+                    ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
+                ], style={'margin':'0px','margin-left':'20px'}),
+            ],style={'margin':'0px','background-color':'#FFFFFF'}),
         ], style={'margin':'0px'}),
     ]),
     html.Div([
         html.P('Результаты данного отчета не являются диагнозом и должны быть интерпретированы лечащим врачом на основании клинико-лабораторных данных и других диагностических исследований.',
-           style={'color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"left",'font-style':'italic','margin-top':'5px','width':'85%'}),
+           style={'color':'black','font-family':'Arial','font-size':'14px','margin':'0px','text-align':"left",'font-style':'italic','margin-top':'5px','width':'85%'}),
         html.P('|5',
-            style={'color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"right",'font-style':'italic','margin-top':'5px','width':'10%','margin-top':'20px'}),
+            style={'color':'black','font-family':'Arial','font-size':'14px','margin':'0px','text-align':"right",'font-style':'italic','margin-top':'5px','width':'10%','margin-top':'20px'}),
     ], style={'margin':'0px','display':'flex','justify-content':'space-between','width':'100%','margin-top':'0px'}),
     
     #7 страница
@@ -1906,218 +1904,218 @@ app.layout = html.Div([
         html.Div([],style={'height':'8mm','width':'100%'}),
         html.Div([
             html.Div([
-                html.B(f"Дата: {date}",style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
+                html.B(f"Дата: {date}",style={'margin':'0px','font-size':'18px','font-family':'Arial'}),
                 html.Div([
-                    html.B(f'Пациент: {name}',style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
+                    html.B(f'Пациент: {name}',style={'margin':'0px','font-size':'18px','font-family':'Arial'}),
                 ],style={'margin-top':'10px'}),
             ], style={'width':'33.3%'}),
             html.Div([
-                html.B("MetaboScan-Test01",style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
+                html.B("MetaboScan-Test01",style={'margin':'0px','font-size':'18px','font-family':'Arial'}),
             ], style={'width':'33.3%','text-align':'center'}),
             html.Div([
                 html.Img(src=app.get_asset_url('logo.jpg'),style={'height':'53px','float':'right'}),
             ], style={'width':'33.3%'}),
-        ], style={'display':'flex', 'justify-content':'space-between','width':'100%','height':'53px','color':'#336CA6'}),    
+        ], style={'display':'flex', 'justify-content':'space-between','width':'100%','height':'53px','color':'#0874bc'}),    
         
         html.Div([
             html.Div([
                html.Div([
-                html.Div([html.B('Длинноцепочечные ацилкарнитины',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'40px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#4c86ae','line-height':'40px'}),
-                html.Div([html.B('Результат',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'8%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'40px'}),
-                html.Div([html.Img(src=app.get_asset_url('procent_head.png'),style={'width':'100%','height':'15px','line-height':'normal','display':'inline-block','vertical-align':'center'}),],style={'width':'27%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'40px'}),
-                html.Div([html.B('Референсные значения, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center'}),
+                html.Div([html.B('Длинноцепочечные ацилкарнитины',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'40px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#4c86ae','line-height':'40px'}),
+                html.Div([html.B('Результат',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'8%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'40px'}),
+                html.Div([html.Img(src=app.get_asset_url('procent_head.png'),style={'width':'100%','height':'15px','line-height':'normal','display':'inline-block','vertical-align':'center'}),],style={'width':'27%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'40px'}),
+                html.Div([html.B('Референсные значения, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center'}),
             ], style={'width':'100%','display':'flex', 'justify-content':'space-between','height':'40px',}), 
             ], style={'margin':'0px','margin-left':'20px'}),
-            html.Hr(style={'margin':'0px','height':'2px','border-width':'0px','background-color':'#336CA6','width':'100%'}),
+            
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Гексадецениолкарнитин (C16-1)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_12[5],ref_12[5])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_12[5]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_12[5],ref_12[5])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_12[5],ref_12[5])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_12[5]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Гексадецениолкарнитин (C16-1)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_12[5],ref_12[5])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_12[5]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_12[5],ref_12[5])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_12[5],ref_12[5])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_12[5]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px','background-color':'#dce6f2'}),
+            ],style={'margin':'0px','background-color':'#FFFFFF'}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Гидроксигексадецениолкарнитин (C16-1-OH)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_12[6],ref_12[6])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_12[6]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_12[6],ref_12[6])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_12[6],ref_12[6])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_12[6]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Гидроксигексадецениолкарнитин (C16-1-OH)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_12[6],ref_12[6])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_12[6]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_12[6],ref_12[6])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_12[6],ref_12[6])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_12[6]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
             ],style={'margin':'0px',}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Гидроксигексадеканоилкарнитин (C16-OH)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_12[7],ref_12[7])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_12[7]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_12[7],ref_12[7])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_12[7],ref_12[7])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_12[7]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Гидроксигексадеканоилкарнитин (C16-OH)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_12[7],ref_12[7])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_12[7]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_12[7],ref_12[7])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_12[7],ref_12[7])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_12[7]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px','background-color':'#dce6f2'}),
+            ],style={'margin':'0px','background-color':'#FFFFFF'}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Стеароилкарнитин (С18)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_12[8],ref_12[8])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_12[8]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_12[8],ref_12[8])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_12[8],ref_12[8])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_12[8]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                    ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px'}),
-            html.Div([
-                html.Div([
-                    html.Div([
-                        html.Div([html.B('Олеоилкарнитин (C18-1)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_12[9],ref_12[9])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_12[9]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_12[9],ref_12[9])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_12[9],ref_12[9])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_12[9]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                    ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px','background-color':'#dce6f2'}),
-            html.Div([
-                html.Div([
-                    html.Div([
-                        html.Div([html.B('Гидроксиоктадеценоилкарнитин (C18-1-OH)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_12[10],ref_12[10])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_12[10]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_12[10],ref_12[10])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_12[10],ref_12[10])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_12[10]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Стеароилкарнитин (С18)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_12[8],ref_12[8])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_12[8]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_12[8],ref_12[8])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_12[8],ref_12[8])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_12[8]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
             ],style={'margin':'0px'}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Линолеоилкарнитин (C18-2)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_12[11],ref_12[11])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_12[11]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_12[11],ref_12[11])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_12[11],ref_12[11])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_12[11]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Олеоилкарнитин (C18-1)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_12[9],ref_12[9])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_12[9]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_12[9],ref_12[9])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_12[9],ref_12[9])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_12[9]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px','background-color':'#dce6f2'}),
+            ],style={'margin':'0px','background-color':'#FFFFFF'}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Гидроксиоктадеканоилкарнитин (C18-OH)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_12[12],ref_12[12])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_12[12]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_12[12],ref_12[12])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_12[12],ref_12[12])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_12[12]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Гидроксиоктадеценоилкарнитин (C18-1-OH)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_12[10],ref_12[10])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_12[10]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_12[10],ref_12[10])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_12[10],ref_12[10])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_12[10]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
+                    ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
+                ], style={'margin':'0px','margin-left':'20px'}),
+            ],style={'margin':'0px'}),
+            html.Div([
+                html.Div([
+                    html.Div([
+                        html.Div([html.B('Линолеоилкарнитин (C18-2)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_12[11],ref_12[11])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_12[11]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_12[11],ref_12[11])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_12[11],ref_12[11])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_12[11]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
+                    ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
+                ], style={'margin':'0px','margin-left':'20px'}),
+            ],style={'margin':'0px','background-color':'#FFFFFF'}),
+            html.Div([
+                html.Div([
+                    html.Div([
+                        html.Div([html.B('Гидроксиоктадеканоилкарнитин (C18-OH)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_12[12],ref_12[12])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_12[12]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_12[12],ref_12[12])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_12[12],ref_12[12])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_12[12]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
             ],style={'margin':'0px'}),
             html.Div([
                 html.H3(children='4. Метаболизм жирных кислот', style={'textAlign':'center','margin':'0px','line-height':'normal','display':'inline-block','vertical-align':'center'}),]
-             , style={'width':'100%','background-color':'#336CA6', 'color':'white','font-family':'Calibri','margin':'0px','height':'35px','line-height':'35px','text-align':'center','margin-top':'5px'}),
+             , style={'width':'100%','background-color':'#0874bc', 'color':'white','font-family':'Arial','margin':'0px','height':'35px','line-height':'35px','text-align':'center','margin-top':'5px'}),
             html.Div([
                html.Div([
-                html.Div([html.B('Витамины и нейромедиаторы',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#4c86ae','line-height':'40px'}),
-                html.Div([html.B('Результат',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'8%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'40px'}),
-                html.Div([html.Img(src=app.get_asset_url('procent_head.png'),style={'width':'100%','height':'15px','line-height':'normal','display':'inline-block','vertical-align':'center'}),],style={'width':'27%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'40px'}),
-                html.Div([html.B('Референсные значения, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center'}),
+                html.Div([html.B('Витамины и нейромедиаторы',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#4c86ae','line-height':'40px'}),
+                html.Div([html.B('Результат',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'8%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'40px'}),
+                html.Div([html.Img(src=app.get_asset_url('procent_head.png'),style={'width':'100%','height':'15px','line-height':'normal','display':'inline-block','vertical-align':'center'}),],style={'width':'27%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'40px'}),
+                html.Div([html.B('Референсные значения, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center'}),
             ], style={'width':'100%','display':'flex', 'justify-content':'space-between','height':'40px',}), 
             ], style={'margin':'0px','margin-left':'20px'}),
-            html.Hr(style={'margin':'0px','height':'2px','border-width':'0px','background-color':'#336CA6','width':'100%'}),
+            
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Пантотеновая кислота',style={'height':'20px'}),html.P('Витамин B5',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_13[0],ref_13[0])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_13[0]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_13[0],ref_13[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_13[0],ref_13[0])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_13[0]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Пантотеновая кислота',style={'height':'20px'}),html.P('Витамин B5',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_13[0],ref_13[0])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_13[0]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_13[0],ref_13[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_13[0],ref_13[0])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_13[0]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px','background-color':'#dce6f2'}),
+            ],style={'margin':'0px','background-color':'#FFFFFF'}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Рибофлавин',style={'height':'20px'}),html.P('Витамин B2',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_13[1],ref_13[1])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_13[1]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_13[1],ref_13[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_13[1],ref_13[1])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_13[1]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Рибофлавин',style={'height':'20px'}),html.P('Витамин B2',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_13[1],ref_13[1])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_13[1]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_13[1],ref_13[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_13[1],ref_13[1])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_13[1]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
             ],style={'margin':'0px'}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Биотин',style={'height':'20px'}),html.P('Витамин H (B7)',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_13[2],ref_13[2])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_13[2]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_13[2],ref_13[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_13[2],ref_13[2])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_13[2]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Биотин',style={'height':'20px'}),html.P('Витамин H (B7)',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_13[2],ref_13[2])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_13[2]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_13[2],ref_13[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_13[2],ref_13[2])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_13[2]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px','background-color':'#dce6f2'}),
+            ],style={'margin':'0px','background-color':'#FFFFFF'}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Мелатонин',style={'height':'20px'}),html.P('Регулирует циркадные ритмы',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_13[3],ref_13[3])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_13[3]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_13[3],ref_13[3])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_13[3],ref_13[3])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_13[3]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                    ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px'}),
-            html.Hr(style={'margin':'0px','height':'2px','border-width':'0px','background-color':'#336CA6','width':'100%'}),
-            html.Div([
-               html.Div([
-                html.Div([html.B('Нуклеозиды',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#4c86ae','line-height':'40px'}),
-                html.Div([html.B('Результат',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'8%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'40px'}),
-                html.Div([html.Img(src=app.get_asset_url('procent_head.png'),style={'width':'100%','height':'15px','line-height':'normal','display':'inline-block','vertical-align':'center'}),],style={'width':'27%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'40px'}),
-                html.Div([html.B('Референсные значения, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center'}),
-            ], style={'width':'100%','display':'flex', 'justify-content':'space-between','height':'40px',}), 
-            ], style={'margin':'0px','margin-left':'20px'}),
-            html.Hr(style={'margin':'0px','height':'2px','border-width':'0px','background-color':'#336CA6','width':'100%'}),
-            html.Div([
-                html.Div([
-                    html.Div([
-                        html.Div([html.B('Уридин',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_14[0],ref_14[0])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_14[0]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_14[0],ref_14[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_14[0],ref_14[0])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_14[0]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                    ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px','background-color':'#dce6f2'}),
-            html.Div([
-                html.Div([
-                    html.Div([
-                        html.Div([html.B('Инозин',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_14[1],ref_14[1])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_14[1]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_14[1],ref_14[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_14[1],ref_14[1])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_14[1]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Мелатонин',style={'height':'20px'}),html.P('Регулирует циркадные ритмы',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_13[3],ref_13[3])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_13[3]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_13[3],ref_13[3])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_13[3],ref_13[3])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_13[3]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
             ],style={'margin':'0px'}),
-            html.Hr(style={'margin':'0px','height':'2px','border-width':'0px','background-color':'#336CA6','width':'100%'}),
+            
             html.Div([
                html.Div([
-                html.Div([html.B('Аллергия и стресс',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#4c86ae','line-height':'40px'}),
-                html.Div([html.B('Результат',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'8%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'40px'}),
-                html.Div([html.Img(src=app.get_asset_url('procent_head.png'),style={'width':'100%','height':'15px','line-height':'normal','display':'inline-block','vertical-align':'center'}),],style={'width':'27%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'40px'}),
-                html.Div([html.B('Референсные значения, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center'}),
+                html.Div([html.B('Нуклеозиды',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#4c86ae','line-height':'40px'}),
+                html.Div([html.B('Результат',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'8%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'40px'}),
+                html.Div([html.Img(src=app.get_asset_url('procent_head.png'),style={'width':'100%','height':'15px','line-height':'normal','display':'inline-block','vertical-align':'center'}),],style={'width':'27%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'40px'}),
+                html.Div([html.B('Референсные значения, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center'}),
             ], style={'width':'100%','display':'flex', 'justify-content':'space-between','height':'40px',}), 
             ], style={'margin':'0px','margin-left':'20px'}),
-            html.Hr(style={'margin':'0px','height':'2px','border-width':'0px','background-color':'#336CA6','width':'100%'}),
+            
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Кортизол',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_15[0],ref_15[0])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_15[0]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_15[0],ref_15[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_15[0],ref_15[0])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_15[0]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Уридин',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_14[0],ref_14[0])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_14[0]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_14[0],ref_14[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_14[0],ref_14[0])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_14[0]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
-            ],style={'margin':'0px','background-color':'#dce6f2'}),
+            ],style={'margin':'0px','background-color':'#FFFFFF'}),
             html.Div([
                 html.Div([
                     html.Div([
-                        html.Div([html.B('Гистамин',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_15[1],ref_15[1])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_15[1]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_15[1],ref_15[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_15[1],ref_15[1])}','line-height':'53px'}),
-                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#336CA6','line-height':'53px'}),
-                        html.Div([html.P(f'{ref_15[1]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                        html.Div([html.B('Инозин',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_14[1],ref_14[1])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_14[1]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_14[1],ref_14[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_14[1],ref_14[1])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_14[1]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
+                    ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
+                ], style={'margin':'0px','margin-left':'20px'}),
+            ],style={'margin':'0px'}),
+            
+            html.Div([
+               html.Div([
+                html.Div([html.B('Аллергия и стресс',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#4c86ae','line-height':'40px'}),
+                html.Div([html.B('Результат',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'8%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'40px'}),
+                html.Div([html.Img(src=app.get_asset_url('procent_head.png'),style={'width':'100%','height':'15px','line-height':'normal','display':'inline-block','vertical-align':'center'}),],style={'width':'27%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'40px'}),
+                html.Div([html.B('Референсные значения, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center'}),
+            ], style={'width':'100%','display':'flex', 'justify-content':'space-between','height':'40px',}), 
+            ], style={'margin':'0px','margin-left':'20px'}),
+            
+            html.Div([
+                html.Div([
+                    html.Div([
+                        html.Div([html.B('Кортизол',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_15[0],ref_15[0])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_15[0]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_15[0],ref_15[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_15[0],ref_15[0])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_15[0]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
+                    ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
+                ], style={'margin':'0px','margin-left':'20px'}),
+            ],style={'margin':'0px','background-color':'#000000'}),
+            html.Div([
+                html.Div([
+                    html.Div([
+                        html.Div([html.B('Гистамин',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Arial','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','margin-top':'5px'}),
+                        html.Div([html.Div([html.Div([html.B(f'{need_of_plus(value_15[1],ref_15[1])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_15[1]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_15[1],ref_15[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':f'{color_text_ref(value_15[1],ref_15[1])}','line-height':'53px'}),
+                        html.Div([html.Img(src=app.get_asset_url('123'),style={'width':'100%','height':'55px','line-height':'normal','display':'inline-block','vertical-align':'center','border':'1px solid black'}),],style={'width':'27%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'#0874bc','line-height':'53px'}),
+                        html.Div([html.P(f'{ref_15[1]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Arial','color':'black','text-align':'center','line-height':'53px'}),
                     ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                 ], style={'margin':'0px','margin-left':'20px'}),
             ],style={'margin':'0px'}),
@@ -2125,18 +2123,20 @@ app.layout = html.Div([
     ]),
     html.Div([
         html.P('Результаты данного отчета не являются диагнозом и должны быть интерпретированы лечащим врачом на основании клинико-лабораторных данных и других диагностических исследований.',
-           style={'color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"left",'font-style':'italic','margin-top':'5px','width':'85%'}),
+           style={'color':'black','font-family':'Arial','font-size':'14px','margin':'0px','text-align':"left",'font-style':'italic','margin-top':'5px','width':'85%'}),
         html.P('|6',
-            style={'color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"right",'font-style':'italic','margin-top':'5px','width':'10%','margin-top':'20px'}),
+            style={'color':'black','font-family':'Arial','font-size':'14px','margin':'0px','text-align':"right",'font-style':'italic','margin-top':'5px','width':'10%','margin-top':'20px'}),
     ], style={'margin':'0px','display':'flex','justify-content':'space-between','width':'100%','margin-top':'10px'}),
 
-    ],style={'margin-right':'5mm','width':'800px'})
-    
-    
+    ],style={'margin-right':'5mm','width':'800px'}) 
 
 if __name__ == '__main__':
-    app.run(debug=True)
-    pathToWkhtmltopdf = r'C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltopdf.exe'
-    config = pdfkit.configuration(wkhtmltopdf=pathToWkhtmltopdf)
-    pdfkit.from_url('http://127.0.0.1:8050/', 'out.pdf', configuration=config)
-    exit()
+    # Enable debug mode and automatic reloader
+    app.run_server(
+        debug=True,
+        dev_tools_hot_reload=True,
+        dev_tools_hot_reload_interval=1000,
+        dev_tools_hot_reload_watch_interval=1000,
+        dev_tools_hot_reload_max_retry=30
+    )
+
