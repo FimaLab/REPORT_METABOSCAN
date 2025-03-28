@@ -354,7 +354,7 @@ app.layout = html.Div([
              , style={'width':'100%','background-color':'#0874bc', 'color':'white','font-family':'Arial','margin':'0px'}),
     html.Div([
         html.Div([
-            html.P('На графике представлены функциональные группы метаболитов, которые были оценены по уровню риска на основе Ваших результатов метаболомного профилирования',
+            html.P('функциональные группы метаболитов, которые были оценены по уровню риска на основе Ваших результатов метаболомного профилирования',
                     style={'color':'black','font-family':'Arial','font-size':'16px','margin':'0px','height':'60px'}),
             html.Div([
                 html.H3(children='Уровень риска', style={'textAlign':'left', 'color':'#0874bc','font-family':'Arial','margin':'0px','margin-top':'5px',}),
