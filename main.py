@@ -2130,13 +2130,9 @@ app.layout = html.Div([
 
     ],style={'margin-right':'5mm','width':'800px'}) 
 
-if __name__ == '__main__':
-    # Enable debug mode and automatic reloader
+if __name__ == "__main__":
     app.run_server(
         debug=True,
-        dev_tools_hot_reload=True,
-        dev_tools_hot_reload_interval=1000,
-        dev_tools_hot_reload_watch_interval=1000,
-        dev_tools_hot_reload_max_retry=30
+        port=8050
     )
 
