@@ -20,9 +20,12 @@ logging.basicConfig(
 )
 
 from selenium.webdriver.chrome.options import Options
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
 
 def setup_chrome_driver():
-    """Configure Chrome WebDriver using system Chrome"""
+    """Configure Chrome WebDriver with automatic version management"""
     chrome_options = Options()
     chrome_options.add_argument("--headless=new")
     chrome_options.add_argument("--disable-gpu")
@@ -30,10 +33,9 @@ def setup_chrome_driver():
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("--window-size=1920,1080")
     
-    # Point to system Chrome binary
-    chrome_options.binary_location = "/usr/bin/chromium-browser"
-    
-    driver = webdriver.Chrome(options=chrome_options)
+    # Automatically download and manage ChromeDriver
+    service = Service(ChromeDriverManager().install())
+    driver = webdriver.Chrome(service=service, options=chrome_options)
     driver.set_page_load_timeout(45)
     return driver
 
