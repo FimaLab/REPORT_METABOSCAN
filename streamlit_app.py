@@ -19,8 +19,10 @@ logging.basicConfig(
     filename='report_generator.log'
 )
 
+from selenium.webdriver.chrome.options import Options
+
 def setup_chrome_driver():
-    """Configure Chrome WebDriver with extended timeout settings"""
+    """Configure Chrome WebDriver using system Chrome"""
     chrome_options = Options()
     chrome_options.add_argument("--headless=new")
     chrome_options.add_argument("--disable-gpu")
@@ -28,9 +30,11 @@ def setup_chrome_driver():
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("--window-size=1920,1080")
     
+    # Point to system Chrome binary
+    chrome_options.binary_location = "/usr/bin/chromium-browser"
+    
     driver = webdriver.Chrome(options=chrome_options)
     driver.set_page_load_timeout(45)
-    driver.set_script_timeout(30)
     return driver
 
 def is_dash_process(process):
