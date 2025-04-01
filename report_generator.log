@@ -652,3 +652,4 @@ Stacktrace:
 2025-04-01 19:08:38,913 - ERROR - Report generation error: invalid attr name 'connections'
 2025-04-01 19:09:17,950 - ERROR - Report generation error: invalid attr name 'connections'
 2025-04-01 19:09:32,308 - ERROR - Report generation error: invalid attr name 'connections'
+2025-04-01 19:11:41,014 - ERROR - PDF generation failed: Report content not found in page
