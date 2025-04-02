@@ -19,34 +19,19 @@ logging.basicConfig(
     filename='report_generator.log'
 )
 
-from selenium.webdriver.chrome.options import Options
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
-
 def setup_chrome_driver():
-    """Initialize ChromeDriver with validation"""
-    try:
-        chrome_options = Options()
-        chrome_options.add_argument("--headless=new")
-        chrome_options.add_argument("--disable-gpu")
-        chrome_options.add_argument("--no-sandbox")
-        chrome_options.add_argument("--disable-dev-shm-usage")
-        
-        # For cloud deployments
-        chrome_options.binary_location = "/usr/bin/chromium-browser"
-        
-        service = Service(ChromeDriverManager().install())
-        driver = webdriver.Chrome(service=service, options=chrome_options)
-        driver.set_page_load_timeout(45)
-        
-        # Verify driver is operational
-        driver.execute_script("return true;")
-        return driver
-        
-    except Exception as e:
-        logging.error(f"ChromeDriver initialization failed: {str(e)}")
-        return None
+    """Configure Chrome WebDriver with extended timeout settings"""
+    chrome_options = Options()
+    chrome_options.add_argument("--headless=new")
+    chrome_options.add_argument("--disable-gpu")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_options.add_argument("--window-size=1920,1080")
+    
+    driver = webdriver.Chrome(options=chrome_options)
+    driver.set_page_load_timeout(45)
+    driver.set_script_timeout(30)
+    return driver
 
 def is_dash_process(process):
     """Check if process is our Dash application"""
@@ -109,24 +94,25 @@ def wait_for_dash_app(timeout=45):
     return False
 
 def generate_pdf_report(patient_info, file1_path, file2_path, output_dir):
-    """Generate PDF report with robust error handling"""
+    """Generate PDF report with proper error handling"""
     dash_process = None
     driver = None
     
     try:
         # Clean up any existing Dash instance
         kill_dash_app(8050)
-        time.sleep(2)
+        time.sleep(2)  # Allow port to become available
         
-        # Start Dash process
+        # Start new Dash process
         dash_command = [
-            sys.executable, "main.py",
-            "--name", str(patient_info.get('name', '')),
-            "--age", str(patient_info.get('age', '')),
-            "--gender", str(patient_info.get('gender', '')),
-            "--date", str(patient_info.get('date', '')),
-            "--file1", str(file1_path),
-            "--file2", str(file2_path)
+            sys.executable,
+            "main.py",
+            "--name", patient_info['name'],
+            "--age", str(patient_info['age']),
+            "--gender", patient_info['gender'],
+            "--date", patient_info['date'],
+            "--file1", file1_path,
+            "--file2", file2_path
         ]
         
         dash_process = subprocess.Popen(
@@ -136,42 +122,29 @@ def generate_pdf_report(patient_info, file1_path, file2_path, output_dir):
             text=True
         )
         
-        if not wait_for_dash_app(30):
-            raise Exception("Dash app failed to start")
-
+        # Wait for Dash app to be ready
+        if not wait_for_dash_app():
+            raise Exception("Dash app failed to start or load content")
+        
+        # Initialize WebDriver and generate PDF
         driver = setup_chrome_driver()
-        if not driver:
-            raise Exception("Failed to initialize ChromeDriver")
-
+        
         try:
             driver.get("http://localhost:8050")
-            time.sleep(5)
+            time.sleep(5)  # Additional time for dynamic content
             
-            # Verify content exists
-            if not driver.find_elements("xpath", "//*[contains(text(), 'Patient Report')]"):
-                raise Exception("Report content not found")
-
             # Generate PDF
             pdf_path = os.path.join(output_dir, "report.pdf")
             print_settings = {
                 "printBackground": True,
                 "paperWidth": 8.3,
                 "paperHeight": 11.7,
-                "marginTop": 0,
-                "marginBottom": 0,
-                "marginLeft": 0,
-                "marginRight": 0
+                "scale": 1.0
             }
             
-            result = driver.execute_cdp_cmd("Page.printToPDF", print_settings)
-            if not result or 'data' not in result:
-                raise Exception("PDF generation returned empty result")
-            
+            pdf_data = driver.execute_cdp_cmd("Page.printToPDF", print_settings)
             with open(pdf_path, "wb") as f:
-                f.write(base64.b64decode(result['data']))
-            
-            if not os.path.exists(pdf_path):
-                raise Exception("PDF file was not created")
+                f.write(base64.b64decode(pdf_data['data']))
             
             return pdf_path
             
@@ -186,12 +159,12 @@ def generate_pdf_report(patient_info, file1_path, file2_path, output_dir):
         return None
         
     finally:
-        # Cleanup with verification
-        if driver:
-            try:
+        # Cleanup resources in order
+        try:
+            if driver:
                 driver.quit()
-            except:
-                pass
+        except:
+            pass
             
         if dash_process:
             try:
@@ -203,8 +176,9 @@ def generate_pdf_report(patient_info, file1_path, file2_path, output_dir):
                 except:
                     pass
         
+        # Final cleanup
         kill_dash_app(8050)
-        
+
 def wait_for_dash_app(timeout=30):
     """Check if Dash app is ready"""
     start_time = time.time()
