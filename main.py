@@ -97,7 +97,7 @@ def get_value_1(metabolite_data):
     """
     Processes the parsed metabolite data to extract specific values and rounds to 1 decimal place
     """
-    ref_1 = ['35.8 - 76.9', '27.8 - 83.3', '60.0 - 180.0']
+    ref_1 = ['35.8 - 76.9', '27.8 - 83.3', '63.6 - 160.2']
     value_1 = []
     
     try:
@@ -106,7 +106,7 @@ def get_value_1(metabolite_data):
         value_1.append(phenylalanine)
         
         # Get Tyrosin (handle different spellings) and round to 1 decimal
-        tyrosin = round(float(metabolite_data.get('Tyrosine', 0)), 1)
+        tyrosin = round(float(metabolite_data.get('Tyrosin', 0)), 1)
         value_1.append(tyrosin)
         
         # Calculate indexAAAs and round to 1 decimal
@@ -124,7 +124,7 @@ def get_value_2(metabolite_data):
     """
     Processes the parsed metabolite data to extract specific values and rounds to 1 decimal place
     """
-    ref_2 = ['92.6 - 310.0','133.0 - 317.1','212 - 577','3.0 - 3.5']
+    ref_2 = ['92.6 - 310.0','133.0 - 317.1','225.6 - 627.1','1.25 - 104.5']
     value_2 = []
     
     try:
@@ -146,7 +146,7 @@ def get_value_2(metabolite_data):
         indexAAAs = round(phenylalanine + tyrosin, 1)
         
         # Index fisher is ratio
-        index_fisher = round(index_BCAA / indexAAAs  , 1)
+        index_fisher = round(index_BCAA / indexAAAs  , 2)
         value_2.append(index_fisher)
         
         
@@ -160,7 +160,7 @@ def get_value_3(metabolite_data):
     """
     Processes the parsed metabolite data to extract specific values and rounds to 1 decimal place
     """
-    ref_3 = ['60 - 109','< 47.0','67.8 - 211.6','< 6.3','122 - 322','1.6 - 5.0','65 - 138','119 - 233','10 - 97','373 - 701','0.06 - 0.23','0.17 - 0.31']
+    ref_3 = ['60 - 109','< 47.0','67.8 - 211.6','< 6.3','122 - 322','1.6 - 5.0','65 - 138','119 - 233','10 - 97','373 - 701','3.8 - 70.1','0.02 - 0.5']
     value_3 = []
     
     try:
@@ -201,7 +201,7 @@ def get_value_4(metabolite_data):
     """
     Processes the parsed metabolite data to extract specific values and rounds to 1 decimal place
     """
-    ref_4 = ['16 - 34','0.5 - 5.0','0.07 - 0.55','50 - 139','21 - 71','5.2 - 13.0','< 6.2','2.6 - 7.7']
+    ref_4 = ['16 - 34','0.5 - 5.0','50 - 139','21 - 71','5.2 - 13.0','< 6.2','0.07 - 0.6']
     value_4 = []
     
     try:
@@ -212,13 +212,13 @@ def get_value_4(metabolite_data):
         value_4.append(Methionine_Sulfoxide)
         Taurine = round(float(metabolite_data.get('Taurine', 0)), 2)
         value_4.append(Taurine)
-        Betaine = round(float(metabolite_data.get('Betaine', 0)), 1)
+        Betaine = round(float(metabolite_data.get('Betaine', 0)), 2)
         value_4.append(Betaine)
-        Choline = round(float(metabolite_data.get('Choline', 0)), 1)
+        Choline = round(float(metabolite_data.get('Choline', 0)), 2)
         value_4.append(Choline)
         TMAO = round(float(metabolite_data.get('TMAO', 0)), 1)
         value_4.append(TMAO)
-        indexChl_Bet= round(Choline / Betaine, 1)
+        indexChl_Bet= round(Choline / Betaine, 2)
         value_4.append(indexChl_Bet)
         return ref_4, value_4
         
@@ -231,7 +231,7 @@ def get_value_5(metabolite_data):
     """
     Processes the parsed metabolite data to extract specific values and rounds to 1 decimal place
     """
-    ref_5 = ['40 - 91','< 4.4','0.018 - 0.101','0.0049 - 1.1158','0.04 - 0.30','0.0035 - 0.7642','0.002 - 0.037','0.032 - 0.167','0.44 - 5.00']
+    ref_5 = ['40 - 91','< 4.4','< 0.11','0.0049 - 1.1158','0.04 - 0.30','0.0035 - 0.7642','0.002 - 0.037','0.0026 - 10.6']
     value_5 = []
     
     try:
@@ -250,7 +250,7 @@ def get_value_5(metabolite_data):
         value_5.append(Xanthurenic_acid)
         Kynurenic_acid = round(float(metabolite_data.get('Kynurenic acid', 0)), 3)
         value_5.append(Kynurenic_acid)
-        indexKyn_Qnl= round(Kynurenic_acid / quinolinic_acid, 3)
+        indexKyn_Qnl= round(Kynurenic_acid / quinolinic_acid, 4)
         value_5.append(indexKyn_Qnl)
         return ref_5, value_5
         
@@ -263,7 +263,7 @@ def get_value_6(metabolite_data):
     """
     Processes the parsed metabolite data to extract specific values and rounds to 1 decimal place
     """
-    ref_6 = ['0.18 - 1.18','0.04 - 0.30','0.1 - 1.1','0.0153 - 0.0207']
+    ref_6 = ['0.18 - 1.18','0.04 - 0.30','0.01 - 19.1','0.0153 - 0.0207']
     value_6 = []
     
     try:
@@ -288,7 +288,7 @@ def get_value_7(metabolite_data):
     """
     Processes the parsed metabolite data to extract specific values and rounds to 1 decimal place
     """
-    ref_7 = ['0.3 - 23','0.08 - 5.0','0.01 - 0.20','0.5 - 12.0','0.001 - 0.400','< 0.003','0.048 - 0.230']
+    ref_7 = ['0.3 - 23','0.08 - 5.0','0.01 - 0.20','0.5 - 12.0','< 0.4','< 0.003']
     value_7 = []
     
     try:
@@ -316,7 +316,7 @@ def get_value_8(metabolite_data):
     """
     Processes the parsed metabolite data to extract specific values and rounds to 1 decimal place
     """
-    ref_8 = ['104 - 383','4.7 - 35.2','0.23 - 0.50','0.20 - 0.67','1.0 - 6.0','32 - 120','16 - 51','38 - 130','29.5 - 84.5','5.4 - 21.5','0.2 - 1.2','0.2 - 1.5','< 26.0','13 - 57']
+    ref_8 = ['104 - 383','4.7 - 35.2','0.23 - 0.50','0.20 - 0.67','1.0 - 6.0','32 - 120','16 - 51','38 - 130','29.5 - 84.5','5.4 - 21.5','0.18 - 2.2','0.25 - 3.16','0.06 - 0.7','13 - 57', '0.01 - 0.09']
     value_8 = []
     
     try:
@@ -349,6 +349,8 @@ def get_value_8(metabolite_data):
         value_8.append(index_asp_asn)
         creatine = round(float(metabolite_data.get('Creatinine', 0)), 1)
         value_8.append(creatine)
+        nmma = round(float(metabolite_data.get('NMMA', 0)), 2)
+        value_8.append(nmma)
         return ref_8, value_8
         
     except Exception as e:
@@ -493,7 +495,7 @@ def get_value_13(metabolite_data):
     
     try:
         # Pantotenic acid
-        pantotenic_acid = round(float(metabolite_data.get('Pantothenic acid', 0)), 2)
+        pantotenic_acid = round(float(metabolite_data.get('Pantothenic', 0)), 2)
         value_13.append(pantotenic_acid)
         riboflavin = round(float(metabolite_data.get('Riboflavin', 0)), 1)
         value_13.append(riboflavin)
@@ -519,7 +521,7 @@ def get_value_14(metabolite_data):
         value_14.append(uridine)
         adenosine = round(float(metabolite_data.get('Adenosin', 0)), 1)
         value_14.append(adenosine)
-        Citidine = round(float(metabolite_data.get('Cytidine', 0)), 1)
+        Citidine = round(float(metabolite_data.get('Cytidine', 0)), 2)
         value_14.append(Citidine)
         return ref_14, value_14
         
@@ -533,7 +535,7 @@ def get_value_15(metabolite_data):
     """
     Processes the parsed metabolite data to extract specific values and rounds to 1 decimal place
     """
-    ref_15 = ['0.1 - 0.5','0.0018 - 0.1329']
+    ref_15 = ['0.1 - 0.5','< 0.1329']
     value_15 = []
     
     try:
@@ -541,7 +543,7 @@ def get_value_15(metabolite_data):
         cortisol = round(float(metabolite_data.get('Cortisol', 0)), 2)
         value_15.append(cortisol)
         # Histamine
-        histamine = round(float(metabolite_data.get('Histamine', 0)), 1)
+        histamine = round(float(metabolite_data.get('Histamine', 0)), 4)
         value_15.append(histamine)
         return ref_15, value_15
         
@@ -1310,7 +1312,7 @@ def main():
                         ],style={'margin-top':'10px'}),
                     ], style={'width':'33.3%'}),
                     html.Div([
-                        html.B("MetaboScan-Test01",style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
+                        html.B("MetaboScan-Test01",style={'margin':'0px','font-size':'18px','font-family':'Calibri','color':'#FFFFFF'}),
                     ], style={'width':'33.3%','text-align':'center'}),
                     html.Div([
                         html.Img(src=app.get_asset_url('logo.jpg'),style={'height':'54px','float':'right'}),
@@ -1844,7 +1846,7 @@ def main():
                         ],style={'margin-top':'10px'}),
                     ], style={'width':'33.3%'}),
                     html.Div([
-                        html.B("MetaboScan-Test01",style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
+                        html.B("MetaboScan-Test01",style={'margin':'0px','font-size':'18px','font-family':'Calibri','color':'#FFFFFF'}),
                     ], style={'width':'33.3%','text-align':'center'}),
                     html.Div([
                         html.Img(src=app.get_asset_url('logo.jpg'),style={'height':'53px','float':'right'}),
@@ -2071,7 +2073,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Таурин (Tau)',style={'height':'20px'}),html.P('Заменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_4[2],ref_4[2])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_4[3]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_4[2],ref_4[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_4[2],ref_4[2])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_4[2],ref_4[2])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_4[2]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_4[2],ref_4[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_4[2],ref_4[2])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -2187,7 +2189,7 @@ def main():
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
-                                    html.Img(src=app.get_asset_url('progress_left.png'), 
+                                    html.Img(src=app.get_asset_url('progress.png'), 
                                             style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
                                                 'display': 'inline-block', 'vertical-align': 'center'}),
                                     # Pointer (arrow)
@@ -2283,7 +2285,7 @@ def main():
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
+                                    html.Img(src=app.get_asset_url('progress_left.png'), 
                                             style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
                                                 'display': 'inline-block', 'vertical-align': 'center'}),
                                     # Pointer (arrow)
@@ -2435,7 +2437,7 @@ def main():
                         ],style={'margin-top':'10px'}),
                     ], style={'width':'33.3%'}),
                     html.Div([
-                        html.B("MetaboScan-Test01",style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
+                        html.B("MetaboScan-Test01",style={'margin':'0px','font-size':'18px','font-family':'Calibri','color':'#FFFFFF'}),
                     ], style={'width':'33.3%','text-align':'center'}),
                     html.Div([
                         html.Img(src=app.get_asset_url('logo.jpg'),style={'height':'53px','float':'right'}),
@@ -2456,7 +2458,7 @@ def main():
                     html.Div([
                         html.Div([
                             html.Div([
-                                html.Div([html.B('Кинурениновая кислота (Kyna)',style={'height':'20px'}),html.P('Продукт метаболизма кинуренина',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
+                                html.Div([html.B('Кинуреновая кислота (Kyna)',style={'height':'20px'}),html.P('Продукт метаболизма кинуренина',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
                                 html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_5[6],ref_5[6])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_5[6]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_5[6],ref_5[6])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_5[6],ref_5[6])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
@@ -2758,10 +2760,10 @@ def main():
                             html.Div([
                                 html.Div([html.B('3-Индолмасляная кислота (I3B)',style={'height':'20px'}),html.P('Продукт катаболизма триптофана кишечной микробиотой',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
                                 html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_7[4],ref_7[4])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_7[4]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_7[4],ref_7[4])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_7[4],ref_7[4])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
+                                # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
+                                    html.Img(src=app.get_asset_url('progress_left.png'), 
                                             style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
                                                 'display': 'inline-block', 'vertical-align': 'center'}),
                                     # Pointer (arrow)
@@ -2809,34 +2811,6 @@ def main():
                             ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                         ], style={'margin':'0px','margin-left':'20px'}),
                     ],style={'margin':'0px'}),
-                    # html.Div([
-                    #     html.Div([
-                    #         html.Div([
-                    #             html.Div([html.B('5-Метокситриптамин',style={'height':'20px'}),html.P('Производное триптамина',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                    #             html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_7[6],ref_7[6])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_7[6]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_7[6],ref_7[6])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_7[6],ref_7[6])}','line-height':'53px'}),
-                    #                                     # Progress bar with pointer
-                                # html.Div([
-                                #     # Progress bar
-                                #     html.Img(src=app.get_asset_url('progress.png'), 
-                                #             style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                #                 'display': 'inline-block', 'vertical-align': 'center'}),
-                                #     # Pointer (arrow)
-                                #     html.Img(src=app.get_asset_url('pointer.png'), 
-                                #             style={
-                                #                 'position': 'absolute',
-                                #                 'height': '12px',
-                                #                 'width': '12px',
-                                #                 'left': f'{calculate_pointer_position(value_15[0], ref_15[0])}%',
-                                #                 'top': '8px',
-                                #                 'transform': 'translateX(-50%)'
-                                #             })
-                                # ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                #         'font-family': 'Calibri', 'color': '#0874bc', 'align-content': 'center',
-                                #         'position': 'relative'}),
-                    #             html.Div([html.P(f'{ref_7[6]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                    #         ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                    #     ], style={'margin':'0px','margin-left':'20px'}),
-                    # ],style={'margin':'0px','background-color':'#FFFFFF'}),
                     html.Div([
                 html.H3(children='3. Метаболизм аргинина', style={'textAlign':'center','margin':'0px','line-height':'normal','display':'inline-block','vertical-align':'center'}),]
                     , style={'width':'100%','background-color':'#0874bc', 'color':'white','font-family':'Calibri','margin':'0px','height':'35px','line-height':'35px','text-align':'center','margin-top':'5px'}),
@@ -2954,7 +2928,7 @@ def main():
                         ],style={'margin-top':'10px'}),
                     ], style={'width':'33.3%'}),
                     html.Div([
-                        html.B("MetaboScan-Test01",style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
+                        html.B("MetaboScan-Test01",style={'margin':'0px','font-size':'18px','font-family':'Calibri','color':'#FFFFFF'}),
                     ], style={'width':'33.3%','text-align':'center'}),
                     html.Div([
                         html.Img(src=app.get_asset_url('logo.jpg'),style={'height':'53px','float':'right'}),
@@ -2970,7 +2944,34 @@ def main():
                         html.Div([html.B('Референсные значения, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'14px','font-family':'Calibri','color':'black','text-align':'center'}),
                     ], style={'width':'100%','display':'flex', 'justify-content':'space-between','height':'40px',}), 
                     ], style={'margin':'0px','margin-left':'20px'}),
-                    
+                    html.Div([
+                        html.Div([
+                            html.Div([
+                                html.Div([html.B('Монометиларгинин (MMA)',style={'height':'20px'}),html.P('Эндогенный ингибитор синтазы оксида азота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_8[14],ref_8[14])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_8[14]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_8[14],ref_8[14])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_8[14],ref_8[14])}','line-height':'53px'}),
+                                                        # Progress bar with pointer
+                                html.Div([
+                                    # Progress bar
+                                    html.Img(src=app.get_asset_url('progress.png'), 
+                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
+                                                'display': 'inline-block', 'vertical-align': 'center'}),
+                                    # Pointer (arrow)
+                                    html.Img(src=app.get_asset_url('pointer.png'), 
+                                            style={
+                                                'position': 'absolute',
+                                                'height': '12px',
+                                                'width': '12px',
+                                                'left': f'{calculate_pointer_position(value_8[14],ref_8[14])}%',
+                                                'top': '8px',
+                                                'transform': 'translateX(-50%)'
+                                            })
+                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
+                                        'font-family': 'Calibri', 'color': '#0874bc', 'align-content': 'center',
+                                        'position': 'relative'}),
+                                html.Div([html.P(f'{ref_8[14]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
+                        ], style={'margin':'0px','margin-left':'20px'}),
+                    ],style={'margin':'0px',}),
                     
                     html.Div([
                         html.Div([
@@ -3232,7 +3233,7 @@ def main():
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
-                                    html.Img(src=app.get_asset_url('progress_left.png'), 
+                                    html.Img(src=app.get_asset_url('progress.png'), 
                                             style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
                                                 'display': 'inline-block', 'vertical-align': 'center'}),
                                     # Pointer (arrow)
@@ -3414,6 +3415,42 @@ def main():
                             ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                         ], style={'margin':'0px','margin-left':'20px'}),
                     ],style={'margin':'0px','background-color':'#FFFFFF'}),
+                    
+                ], style={'margin':'0px'}),
+            ]),
+            html.Div([
+                html.P('Результаты данного отчета не являются диагнозом и должны быть интерпретированы лечащим врачом на основании клинико-лабораторных данных и других диагностических исследований.',
+                style={'color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"left",'font-style':'italic','margin-top':'5px','width':'85%'}),
+                html.P('|4',
+                    style={'color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"right",'font-style':'italic','margin-top':'5px','width':'10%','margin-top':'20px'}),
+            ], style={'page-break-after': 'always','margin':'0px','display':'flex','justify-content':'space-between','width':'100%','margin-top':'5px'}),
+            
+            # 6 страница
+            html.Div([
+                html.Div([],style={'height':'8mm','width':'100%'}),
+                html.Div([
+                    html.Div([
+                        html.B(f"Дата: {date}",style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
+                        html.Div([
+                            html.B(f'Пациент: {name}',style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
+                        ],style={'margin-top':'10px'}),
+                    ], style={'width':'33.3%'}),
+                    html.Div([
+                        html.B("MetaboScan-Test01",style={'margin':'0px','font-size':'18px','font-family':'Calibri','color':'#FFFFFF'}),
+                    ], style={'width':'33.3%','text-align':'center'}),
+                    html.Div([
+                        html.Img(src=app.get_asset_url('logo.jpg'),style={'height':'54px','float':'right'}),
+                    ], style={'width':'33.3%'}),
+                ], style={'display':'flex', 'justify-content':'space-between','width':'100%','height':'54px','color':'#0874bc'}),    
+                html.Div([
+                    html.Div([
+                    html.Div([
+                        html.Div([html.B('Короткоцепочечные ацилкарнитины',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'40px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#0874bc','line-height':'40px'}),
+                        html.Div([html.B('Результат',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'8%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'40px'}),
+                        html.Div([html.Img(src=app.get_asset_url('procent_head.png'),style={'width':'100%','height':'15px','line-height':'normal','display':'inline-block','vertical-align':'center'}),],style={'width':'27%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#0874bc','line-height':'40px'}),
+                        html.Div([html.B('Референсные значения, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'14px','font-family':'Calibri','color':'black','text-align':'center'}),
+                    ], style={'width':'100%','display':'flex', 'justify-content':'space-between','height':'40px',}), 
+                    ], style={'margin':'0px','margin-left':'20px'}),
                     html.Div([
                         html.Div([
                             html.Div([
@@ -3442,42 +3479,6 @@ def main():
                             ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                         ], style={'margin':'0px','margin-left':'20px'}),
                     ],style={'margin':'0px'}),
-                ], style={'margin':'0px'}),
-            ]),
-            html.Div([
-                html.P('Результаты данного отчета не являются диагнозом и должны быть интерпретированы лечащим врачом на основании клинико-лабораторных данных и других диагностических исследований.',
-                style={'color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"left",'font-style':'italic','margin-top':'5px','width':'85%'}),
-                html.P('|4',
-                    style={'color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"right",'font-style':'italic','margin-top':'5px','width':'10%','margin-top':'20px'}),
-            ], style={'page-break-after': 'always','margin':'0px','display':'flex','justify-content':'space-between','width':'100%','margin-top':'5px'}),
-            
-            # 6 страница
-            html.Div([
-                html.Div([],style={'height':'8mm','width':'100%'}),
-                html.Div([
-                    html.Div([
-                        html.B(f"Дата: {date}",style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
-                        html.Div([
-                            html.B(f'Пациент: {name}',style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
-                        ],style={'margin-top':'10px'}),
-                    ], style={'width':'33.3%'}),
-                    html.Div([
-                        html.B("MetaboScan-Test01",style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
-                    ], style={'width':'33.3%','text-align':'center'}),
-                    html.Div([
-                        html.Img(src=app.get_asset_url('logo.jpg'),style={'height':'54px','float':'right'}),
-                    ], style={'width':'33.3%'}),
-                ], style={'display':'flex', 'justify-content':'space-between','width':'100%','height':'54px','color':'#0874bc'}),    
-                html.Div([
-                    html.Div([
-                    html.Div([
-                        html.Div([html.B('Короткоцепочечные ацилкарнитины',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'40px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#0874bc','line-height':'40px'}),
-                        html.Div([html.B('Результат',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'8%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'40px'}),
-                        html.Div([html.Img(src=app.get_asset_url('procent_head.png'),style={'width':'100%','height':'15px','line-height':'normal','display':'inline-block','vertical-align':'center'}),],style={'width':'27%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#0874bc','line-height':'40px'}),
-                        html.Div([html.B('Референсные значения, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'14px','font-family':'Calibri','color':'black','text-align':'center'}),
-                    ], style={'width':'100%','display':'flex', 'justify-content':'space-between','height':'40px',}), 
-                    ], style={'margin':'0px','margin-left':'20px'}),
-                    
                     html.Div([
                         html.Div([
                             html.Div([
@@ -3946,6 +3947,44 @@ def main():
                             ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                         ], style={'margin':'0px','margin-left':'20px'}),
                     ],style={'margin':'0px','background-color':'#FFFFFF'}),
+                    
+                    
+                ], style={'margin':'0px'}),
+            ]),
+            html.Div([
+                html.P('Результаты данного отчета не являются диагнозом и должны быть интерпретированы лечащим врачом на основании клинико-лабораторных данных и других диагностических исследований.',
+                style={'color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"left",'font-style':'italic','margin-top':'5px','width':'85%'}),
+                html.P('|5',
+                    style={'color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"right",'font-style':'italic','margin-top':'5px','width':'10%','margin-top':'20px'}),
+            ], style={'page-break-after': 'always','margin':'0px','display':'flex','justify-content':'space-between','width':'100%','margin-top':'0px'}),
+            
+            #7 страница
+            html.Div([
+                html.Div([],style={'height':'8mm','width':'100%'}),
+                html.Div([
+                    html.Div([
+                        html.B(f"Дата: {date}",style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
+                        html.Div([
+                            html.B(f'Пациент: {name}',style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
+                        ],style={'margin-top':'10px'}),
+                    ], style={'width':'33.3%'}),
+                    html.Div([
+                        html.B("MetaboScan-Test01",style={'margin':'0px','font-size':'18px','font-family':'Calibri','color':'#FFFFFF'}),
+                    ], style={'width':'33.3%','text-align':'center'}),
+                    html.Div([
+                        html.Img(src=app.get_asset_url('logo.jpg'),style={'height':'53px','float':'right'}),
+                    ], style={'width':'33.3%'}),
+                ], style={'display':'flex', 'justify-content':'space-between','width':'100%','height':'53px','color':'#0874bc'}),    
+                
+                html.Div([
+                    html.Div([
+                    html.Div([
+                        html.Div([html.B('Длинноцепочечные ацилкарнитины',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'40px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#0874bc','line-height':'40px'}),
+                        html.Div([html.B('Результат',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'8%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'40px'}),
+                        html.Div([html.Img(src=app.get_asset_url('procent_head.png'),style={'width':'100%','height':'15px','line-height':'normal','display':'inline-block','vertical-align':'center'}),],style={'width':'27%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#0874bc','line-height':'40px'}),
+                        html.Div([html.B('Референсные значения, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'14px','font-family':'Calibri','color':'black','text-align':'center'}),
+                    ], style={'width':'100%','display':'flex', 'justify-content':'space-between','height':'40px',}), 
+                    ], style={'margin':'0px','margin-left':'20px'}),
                     html.Div([
                         html.Div([
                             html.Div([
@@ -3974,43 +4013,6 @@ def main():
                             ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                         ], style={'margin':'0px','margin-left':'20px'}),
                     ],style={'margin':'0px'}),
-                    
-                ], style={'margin':'0px'}),
-            ]),
-            html.Div([
-                html.P('Результаты данного отчета не являются диагнозом и должны быть интерпретированы лечащим врачом на основании клинико-лабораторных данных и других диагностических исследований.',
-                style={'color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"left",'font-style':'italic','margin-top':'5px','width':'85%'}),
-                html.P('|5',
-                    style={'color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"right",'font-style':'italic','margin-top':'5px','width':'10%','margin-top':'20px'}),
-            ], style={'page-break-after': 'always','margin':'0px','display':'flex','justify-content':'space-between','width':'100%','margin-top':'0px'}),
-            
-            #7 страница
-            html.Div([
-                html.Div([],style={'height':'8mm','width':'100%'}),
-                html.Div([
-                    html.Div([
-                        html.B(f"Дата: {date}",style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
-                        html.Div([
-                            html.B(f'Пациент: {name}',style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
-                        ],style={'margin-top':'10px'}),
-                    ], style={'width':'33.3%'}),
-                    html.Div([
-                        html.B("MetaboScan-Test01",style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
-                    ], style={'width':'33.3%','text-align':'center'}),
-                    html.Div([
-                        html.Img(src=app.get_asset_url('logo.jpg'),style={'height':'53px','float':'right'}),
-                    ], style={'width':'33.3%'}),
-                ], style={'display':'flex', 'justify-content':'space-between','width':'100%','height':'53px','color':'#0874bc'}),    
-                
-                html.Div([
-                    html.Div([
-                    html.Div([
-                        html.Div([html.B('Длинноцепочечные ацилкарнитины',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'40px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#0874bc','line-height':'40px'}),
-                        html.Div([html.B('Результат',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'8%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'40px'}),
-                        html.Div([html.Img(src=app.get_asset_url('procent_head.png'),style={'width':'100%','height':'15px','line-height':'normal','display':'inline-block','vertical-align':'center'}),],style={'width':'27%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#0874bc','line-height':'40px'}),
-                        html.Div([html.B('Референсные значения, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'14px','font-family':'Calibri','color':'black','text-align':'center'}),
-                    ], style={'width':'100%','display':'flex', 'justify-content':'space-between','height':'40px',}), 
-                    ], style={'margin':'0px','margin-left':'20px'}),
                     html.Div([
                         html.Div([
                             html.Div([
@@ -4450,7 +4452,7 @@ def main():
                                 ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
                                         'font-family': 'Calibri', 'color': '#0874bc', 'align-content': 'center',
                                         'position': 'relative'}),
-                                html.Div([html.P(f'{ref_14[1]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
+                                html.Div([html.P(f'{ref_14[2]}',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
                             ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
                         ], style={'margin':'0px','margin-left':'20px'}),
                     ],style={'margin':'0px'}),
@@ -4461,7 +4463,7 @@ def main():
                         style={'color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"left",'font-style':'italic','margin-top':'5px','width':'85%'}),
                         html.P('|6',
                             style={'color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"right",'font-style':'italic','margin-top':'5px','width':'10%','margin-top':'20px'}),
-                    ], style={'page-break-after': 'always','margin':'0px','display':'flex','justify-content':'space-between','width':'100%','margin-top':'90px'}),      
+                    ], style={'page-break-after': 'always','margin':'0px','display':'flex','justify-content':'space-between','width':'100%','margin-top':'5px'}),      
                 ], style={'margin':'0px'}),
             ]),
             
@@ -4512,7 +4514,7 @@ def main():
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
+                                    html.Img(src=app.get_asset_url('progress_left.png'), 
                                             style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
                                                 'display': 'inline-block', 'vertical-align': 'center'}),
                                     # Pointer (arrow)
