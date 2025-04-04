@@ -210,16 +210,16 @@ def get_value_4(metabolite_data):
         value_4.append(methionine)
         Methionine_Sulfoxide = round(float(metabolite_data.get('Methionine-Sulfoxide', 0)), 1)
         value_4.append(Methionine_Sulfoxide)
-        Taurine = round(float(metabolite_data.get('Taurine', 0)), 2)
+        Taurine = round(float(metabolite_data.get('Taurine', 0)), 0)
         value_4.append(Taurine)
-        Betaine = round(float(metabolite_data.get('Betaine', 0)), 2)
+        Betaine = round(float(metabolite_data.get('Betaine', 0)), 0)
         value_4.append(Betaine)
-        Choline = round(float(metabolite_data.get('Choline', 0)), 2)
+        Choline = round(float(metabolite_data.get('Choline', 0)), 1)
         value_4.append(Choline)
         TMAO = round(float(metabolite_data.get('TMAO', 0)), 1)
         value_4.append(TMAO)
-        indexChl_Bet= round(Choline / Betaine, 2)
-        value_4.append(indexChl_Bet)
+        indexBet_Chl= round(Betaine / Choline, 2)
+        value_4.append(indexBet_Chl)
         return ref_4, value_4
         
     except Exception as e:
@@ -231,7 +231,7 @@ def get_value_5(metabolite_data):
     """
     Processes the parsed metabolite data to extract specific values and rounds to 1 decimal place
     """
-    ref_5 = ['40 - 91','< 4.4','< 0.11','0.0049 - 1.1158','0.04 - 0.30','0.0035 - 0.7642','0.002 - 0.037','0.0026 - 10.6']
+    ref_5 = ['40 - 91','< 4.4','< 0.11','0.0049 - 1.1158','0.0035 - 0.7642','0.002 - 0.037','0.032 - 0.167','0.0026 - 10.6']
     value_5 = []
     
     try:
@@ -244,9 +244,9 @@ def get_value_5(metabolite_data):
         value_5.append(indexKyn_Try)
         antranillic_acid = round(float(metabolite_data.get('Antranillic acid', 0)), 4)
         value_5.append(antranillic_acid)
-        quinolinic_acid = round(float(metabolite_data.get('Quinolinic acid', 0)), 2)
+        quinolinic_acid = round(float(metabolite_data.get('Quinolinic acid', 0)), 4)
         value_5.append(quinolinic_acid)
-        Xanthurenic_acid = round(float(metabolite_data.get('Xanthurenic acid', 0)), 4)
+        Xanthurenic_acid = round(float(metabolite_data.get('Xanthurenic acid', 0)), 3)
         value_5.append(Xanthurenic_acid)
         Kynurenic_acid = round(float(metabolite_data.get('Kynurenic acid', 0)), 3)
         value_5.append(Kynurenic_acid)
@@ -345,8 +345,8 @@ def get_value_8(metabolite_data):
         value_8.append(index_gabr)
         index_AOR = round(arginine / Orintine, 1)
         value_8.append(index_AOR)
-        index_asp_asn = round(asparagine / arginine, 1)
-        value_8.append(index_asp_asn)
+        index_asn_asp = round(asparagine / asparagine_acid, 1)
+        value_8.append(index_asn_asp)
         creatine = round(float(metabolite_data.get('Creatinine', 0)), 1)
         value_8.append(creatine)
         nmma = round(float(metabolite_data.get('NMMA', 0)), 2)
@@ -2184,7 +2184,7 @@ def main():
                     html.Div([
                         html.Div([
                             html.Div([
-                                html.Div([html.B('Индекс Chl / Bet',style={'height':'20px'}),html.P('Соотношение холина к бетаину',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
+                                html.Div([html.B('Индекс Bet / Chl',style={'height':'20px'}),html.P('Соотношение холина к бетаину',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
                                 html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_4[6],ref_4[6])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_4[6]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_4[6],ref_4[6])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_4[6],ref_4[6])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
@@ -3228,7 +3228,7 @@ def main():
                     html.Div([
                         html.Div([
                             html.Div([
-                                html.Div([html.B('Индекс Asp / Asn',style={'height':'20px'}),html.P('Показывает активность аспарагинсинтетазы',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
+                                html.Div([html.B('Индекс Asn / Asp',style={'height':'20px'}),html.P('Показывает активность аспарагинсинтетазы',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
                                 html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_8[12],ref_8[12])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_8[12]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_8[12],ref_8[12])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_8[12],ref_8[12])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
