@@ -124,7 +124,7 @@ def get_value_2(metabolite_data):
     """
     Processes the parsed metabolite data to extract specific values and rounds to 1 decimal place
     """
-    ref_2 = ['92.6 - 310.0','133.0 - 317.1','225.6 - 627.1','1.25 - 104.5']
+    ref_2 = ['92.6 - 310.0','133.0 - 317.1','225.6 - 627.1','1.25 - 9.9']
     value_2 = []
     
     try:
