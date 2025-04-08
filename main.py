@@ -14,26 +14,50 @@ date = '21.07.2023'
 age = 47
 gender = 'М'
 
-def safe_parse_metabolite_data(file_path):
+def safe_parse_metabolite_data(file_path, file_type):
     """Your existing parse_metabolite_data function with added safety checks"""
     if not os.path.exists(file_path):
         print(f"Error: File not found - {file_path}")
         return {}
     
     try:
-        df = pd.read_excel(file_path, header=None)
-        data_start_row = 2
-        metabolite_headers = df.iloc[0]
-        measurement_types = df.iloc[1]
-        metabolite_data = {}
+        if file_type == 'Файл с прибора':
+            df = pd.read_excel(file_path, header=None)
+            data_start_row = 2
+            metabolite_headers = df.iloc[0]
+            measurement_types = df.iloc[1]
+            metabolite_data = {}
+            
+            for col_idx in range(len(measurement_types)):
+                if measurement_types[col_idx] == 'Final Conc.':
+                    metabolite_name = str(metabolite_headers[col_idx]).replace(' Results', '').strip()
+                    if pd.isna(metabolite_name):
+                        continue
+                    
+                    conc_value = df.iloc[data_start_row, col_idx]
+                    try:
+                        if isinstance(conc_value, str):
+                            conc_value = float(conc_value.replace(',', '.'))
+                        elif pd.isna(conc_value):
+                            conc_value = 0.0
+                        metabolite_data[metabolite_name] = conc_value
+                    except:
+                        metabolite_data[metabolite_name] = 0.0
+            
+            return metabolite_data
         
-        for col_idx in range(len(measurement_types)):
-            if measurement_types[col_idx] == 'Final Conc.':
+        elif file_type == 'Изменненный вручную':
+            # here excel file is first column name of sample and next columns are metabolites with conc below
+            df = pd.read_excel(file_path, header=None)
+            metabolite_headers = df.iloc[0]
+            metabolite_data = {}
+            
+            for col_idx in range(1, len(metabolite_headers)):
                 metabolite_name = str(metabolite_headers[col_idx]).replace(' Results', '').strip()
                 if pd.isna(metabolite_name):
                     continue
                 
-                conc_value = df.iloc[data_start_row, col_idx]
+                conc_value = df.iloc[1, col_idx]
                 try:
                     if isinstance(conc_value, str):
                         conc_value = float(conc_value.replace(',', '.'))
@@ -42,55 +66,10 @@ def safe_parse_metabolite_data(file_path):
                     metabolite_data[metabolite_name] = conc_value
                 except:
                     metabolite_data[metabolite_name] = 0.0
-        
-        return metabolite_data
+            
+            return metabolite_data
     except Exception as e:
         print(f"Error processing file {file_path}: {str(e)}")
-        return {}
-    
-def parse_AC_metabolite_data(file_path):
-    """
-    Reads Excel file with two-row headers and extracts metabolite concentrations
-    """
-    try:
-        # Read Excel file without headers initially to inspect structure
-        df = pd.read_excel(file_path, header=None)
-        
-        # Find the row where data actually starts (after headers)
-        data_start_row = 2  # Assuming data starts at row 3 (0-based index 2)
-        
-        # Extract headers - first row has metabolite names, second has measurement types
-        metabolite_headers = df.iloc[0]  # First row - metabolite names
-        measurement_types = df.iloc[1]   # Second row - 'Final Conc.', 'Area', etc.
-        
-        # Initialize dictionary to store results
-        metabolite_data = {}
-        
-        # Iterate through columns to find 'Final Conc.' values
-        for col_idx in range(len(measurement_types)):
-            if measurement_types[col_idx] == 'Final Conc.':
-                metabolite_name = metabolite_headers[col_idx]
-                if pd.isna(metabolite_name):
-                    continue
-                
-                # Clean metabolite name
-                metabolite_name = str(metabolite_name).replace(' Results', '').strip()
-                
-                # Get concentration value from data row
-                conc_value = df.iloc[data_start_row, col_idx]
-                
-                # Convert to float, handling different formats
-                if isinstance(conc_value, str):
-                    conc_value = float(conc_value.replace(',', '.'))
-                elif pd.isna(conc_value):
-                    conc_value = 0.0
-                
-                metabolite_data[metabolite_name] = conc_value
-        
-        return metabolite_data
-
-    except Exception as e:
-        print(f"Error processing file: {e}")
         return {}
 
 def get_value_1(metabolite_data):
@@ -263,7 +242,7 @@ def get_value_6(metabolite_data):
     """
     Processes the parsed metabolite data to extract specific values and rounds to 1 decimal place
     """
-    ref_6 = ['0.18 - 1.18','0.04 - 0.30','0.01 - 19.1','0.0153 - 0.0207']
+    ref_6 = ['0.18 - 1.18','< 0.30','< 85.7','0.0153 - 0.0207']
     value_6 = []
     
     try:
@@ -273,7 +252,7 @@ def get_value_6(metabolite_data):
         hiaa = round(float(metabolite_data.get('HIAA', 0)), 2)
         value_6.append(hiaa)
         Quinolinic_acid = round(float(metabolite_data.get('Quinolinic acid', 0)), 2)
-        indexQnl_hiaa = round(Quinolinic_acid / hiaa, 1)
+        indexQnl_hiaa = round(hiaa / Quinolinic_acid, 1)
         value_6.append(indexQnl_hiaa)
         hydroxy_tryptophan = round(float(metabolite_data.get('5-hydroxytryptophan', 0)), 4)
         value_6.append(hydroxy_tryptophan)
@@ -851,6 +830,7 @@ def main():
     parser.add_argument('--date', required=True)
     parser.add_argument('--file1', required=True)
     parser.add_argument('--file2', required=True)
+    parser.add_argument('--file_type', required=True)
     args = parser.parse_args()
     # Register shutdown handler
     signal.signal(signal.SIGTERM, shutdown_handler)
@@ -861,10 +841,11 @@ def main():
         age = args.age
         gender = args.gender
         date = args.date
+        file_type = args.file_type
         
         # Process files with safety checks
-        metabolite_data = safe_parse_metabolite_data(args.file1)
-        metabolite_ac_data = safe_parse_metabolite_data(args.file2)
+        metabolite_data = safe_parse_metabolite_data(args.file1, file_type)
+        metabolite_ac_data = safe_parse_metabolite_data(args.file2, file_type)
         
         # Calculate all values using safe functions
         ref_1, value_1 = get_value_1(metabolite_data)
@@ -2557,7 +2538,7 @@ def main():
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
+                                    html.Img(src=app.get_asset_url('progress_left.png'), 
                                             style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
                                                 'display': 'inline-block', 'vertical-align': 'center'}),
                                     # Pointer (arrow)
@@ -2580,12 +2561,12 @@ def main():
                     html.Div([
                         html.Div([
                             html.Div([
-                                html.Div([html.B('Индекс Qnl / 5-HIAA',style={'height':'20px'}),html.P('Соотношение 5-гидроксииндолуксусной кислоты к хинолиновой кислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
+                                html.Div([html.B('Индекс 5-HIAA / Qnl',style={'height':'20px'}),html.P('Соотношение 5-гидроксииндолуксусной кислоты к хинолиновой кислоте',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
                                 html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_6[2],ref_6[2])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_6[2]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_6[2],ref_6[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_6[2],ref_6[2])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
+                                    html.Img(src=app.get_asset_url('progress_left.png'), 
                                             style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
                                                 'display': 'inline-block', 'vertical-align': 'center'}),
                                     # Pointer (arrow)

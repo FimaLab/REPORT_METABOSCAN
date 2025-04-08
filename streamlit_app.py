@@ -112,7 +112,8 @@ def generate_pdf_report(patient_info, file1_path, file2_path, output_dir):
             "--gender", patient_info['gender'],
             "--date", patient_info['date'],
             "--file1", file1_path,
-            "--file2", file2_path
+            "--file2", file2_path,
+            "--file_type", patient_info['file_type']
         ]
         
         dash_process = subprocess.Popen(
@@ -261,6 +262,7 @@ def validate_inputs(name, file1, file2):
     if not file1 or not file2:
         st.error("Please upload both data files")
         return False
+    
     return True
 
 def main():
@@ -285,6 +287,7 @@ def main():
         date = st.date_input("Дата отчета", datetime.now(), format="DD.MM.YYYY")
         
         st.header("Загрузите исходные файлы")
+        file_type = st.selectbox("Тип исходных файлов", ("Файл с прибора", "Изменненный вручную"), index=0, key="file_type")
         file1 = st.file_uploader(
             "Данные об АМИНОКИСЛОТАХ (Excel)",
             type=["xlsx", "xls"],
@@ -302,6 +305,7 @@ def main():
         patient_info = {
             "name": name.strip(),
             "age": age,
+            "file_type": file_type,
             "date": date.strftime("%d.%m.%Y"),
             "gender": gender,
         }
