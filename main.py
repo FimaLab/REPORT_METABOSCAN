@@ -201,7 +201,7 @@ def get_value_4(metabolite_data):
     """
     Processes the parsed metabolite data to extract specific values and rounds to 1 decimal place
     """
-    ref_4 = ['16 - 34','0.5 - 5.0','50 - 139','21 - 71','5.2 - 13.0','< 6.2','0.07 - 0.6']
+    ref_4 = ['16 - 34','0.5 - 5.0','50 - 139','21 - 71','5.2 - 13.0','< 6.2','1.6 - 13.7']
     value_4 = []
     
     try:
@@ -2184,7 +2184,7 @@ def main():
                     html.Div([
                         html.Div([
                             html.Div([
-                                html.Div([html.B('Индекс Bet / Chl',style={'height':'20px'}),html.P('Соотношение холина к бетаину',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
+                                html.Div([html.B('Индекс Bet / Chl',style={'height':'20px'}),html.P('Соотношение бетаина к холину',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
                                 html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_4[6],ref_4[6])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_4[6]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_4[6],ref_4[6])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_4[6],ref_4[6])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
@@ -4266,7 +4266,7 @@ def main():
                         ], style={'margin':'0px','margin-left':'20px'}),
                     ],style={'margin':'0px'}),
                     html.Div([
-                        html.H3(children='4. Метаболизм жирных кислот', style={'textAlign':'center','margin':'0px','line-height':'normal','display':'inline-block','vertical-align':'center'}),]
+                        html.H3(children='5. Метаболический баланс', style={'textAlign':'center','margin':'0px','line-height':'normal','display':'inline-block','vertical-align':'center'}),]
                     , style={'width':'100%','background-color':'#0874bc', 'color':'white','font-family':'Calibri','margin':'0px','height':'35px','line-height':'35px','text-align':'center','margin-top':'5px'}),
                     html.Div([
                     html.Div([
