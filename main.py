@@ -76,7 +76,7 @@ def get_value_1(metabolite_data):
     """
     Processes the parsed metabolite data to extract specific values and rounds to 1 decimal place
     """
-    ref_1 = ['35.8 - 76.9', '27.8 - 83.3', '63.6 - 160.2']
+    ref_1 = ['43.5 - 91.7', '36.8 - 98.3', '96.1 - 174.2']
     value_1 = []
     
     try:
@@ -103,7 +103,7 @@ def get_value_2(metabolite_data):
     """
     Processes the parsed metabolite data to extract specific values and rounds to 1 decimal place
     """
-    ref_2 = ['92.6 - 310.0','133.0 - 317.1','225.6 - 627.1','1.25 - 9.9']
+    ref_2 = ['115.2 - 290.0','137.0 - 288.5','299.7 - 531.0','1.82 - 4.27']
     value_2 = []
     
     try:
@@ -119,7 +119,7 @@ def get_value_2(metabolite_data):
         # Get Phenylalanine and round to 1 decimal
         phenylalanine = round(float(metabolite_data.get('Phenylalanine', 0)), 1)
         # Get Tyrosin (handle different spellings) and round to 1 decimal
-        tyrosin = round(float(metabolite_data.get('Tyrosin', 0) or metabolite_data.get('Tyrosine', 0)), 1)
+        tyrosin = round(float(metabolite_data.get('Tyrosin', 1) or metabolite_data.get('Tyrosine', 1)), 1)
 
         # Calculate indexAAAs and round to 1 decimal
         indexAAAs = round(phenylalanine + tyrosin, 1)
@@ -139,22 +139,22 @@ def get_value_3(metabolite_data):
     """
     Processes the parsed metabolite data to extract specific values and rounds to 1 decimal place
     """
-    ref_3 = ['60 - 109','< 47.0','67.8 - 211.6','< 6.3','122 - 322','1.6 - 5.0','65 - 138','119 - 233','10 - 97','373 - 701','3.8 - 70.1','0.02 - 0.5']
+    ref_3 = ['59.9 - 148.4','2.18 - 45.57','55.1 - 136.5','< 0.46','137.7 - 350.8','0.15 - 0.68','78.3 - 216.9','161.7 - 298.0','43.5 - 250.0','196.1 - 405.7','0.44 - 3.66','0.08 - 0.66']
     value_3 = []
     
     try:
         # Histidine
         histidine = round(float(metabolite_data.get('Histidine', 0)), 1)
         value_3.append(histidine)
-        metilhistidine = round(float(metabolite_data.get('Methylhistidine', 0)), 1)
+        metilhistidine = round(float(metabolite_data.get('Methylhistidine', 0)), 2)
         value_3.append(metilhistidine)
         treonine = round(float(metabolite_data.get('Threonine', 0)), 1)
         value_3.append(treonine)
-        carnosine = round(float(metabolite_data.get('Carnosine', 0)), 1)
+        carnosine = round(float(metabolite_data.get('Carnosine', 0)), 2)
         value_3.append(carnosine)
         glycine = round(float(metabolite_data.get('Glycine', 0)), 1)
         value_3.append(glycine)
-        dymetilglycine = round(float(metabolite_data.get('DMG', 0)), 1)
+        dymetilglycine = round(float(metabolite_data.get('DMG', 0)), 2)
         value_3.append(dymetilglycine)
         serine = round(float(metabolite_data.get('Serine', 0)), 1)
         value_3.append(serine)
@@ -180,22 +180,22 @@ def get_value_4(metabolite_data):
     """
     Processes the parsed metabolite data to extract specific values and rounds to 1 decimal place
     """
-    ref_4 = ['16 - 34','0.5 - 5.0','50 - 139','21 - 71','5.2 - 13.0','< 6.2','1.6 - 13.7']
+    ref_4 = ['0.09 - 0.97','17.4 - 47.4','27.7 - 145.8','28.6 - 82.7','5.68 - 19.88','0.26 - 7.17','1.14 - 7.57']
     value_4 = []
     
     try:
         # metionine
-        methionine = round(float(metabolite_data.get('Methionine', 0)), 1)
+        methionine = round(float(metabolite_data.get('Methionine', 0)), 3)
         value_4.append(methionine)
         Methionine_Sulfoxide = round(float(metabolite_data.get('Methionine-Sulfoxide', 0)), 1)
         value_4.append(Methionine_Sulfoxide)
-        Taurine = round(float(metabolite_data.get('Taurine', 0)), 0)
+        Taurine = round(float(metabolite_data.get('Taurine', 0)), 1)
         value_4.append(Taurine)
-        Betaine = round(float(metabolite_data.get('Betaine', 0)), 0)
+        Betaine = round(float(metabolite_data.get('Betaine', 0)), 1)
         value_4.append(Betaine)
-        Choline = round(float(metabolite_data.get('Choline', 0)), 1)
+        Choline = round(float(metabolite_data.get('Choline', 0)), 2)
         value_4.append(Choline)
-        TMAO = round(float(metabolite_data.get('TMAO', 0)), 1)
+        TMAO = round(float(metabolite_data.get('TMAO', 0)), 2)
         value_4.append(TMAO)
         indexBet_Chl= round(Betaine / Choline, 2)
         value_4.append(indexBet_Chl)
@@ -210,26 +210,26 @@ def get_value_5(metabolite_data):
     """
     Processes the parsed metabolite data to extract specific values and rounds to 1 decimal place
     """
-    ref_5 = ['40 - 91','< 4.4','< 0.11','0.0049 - 1.1158','0.0035 - 0.7642','0.002 - 0.037','0.032 - 0.167','0.0026 - 10.6']
+    ref_5 = ['36.2 - 72.9','1.01 - 2.41','0.01 - 0.05','0.14 - 0.67','0.13 - 0.64','< 0.04','0.02 - 0.08','0.98 - 7.90']
     value_5 = []
     
     try:
         #Tryptophan
         tryptophan = round(float(metabolite_data.get('Tryptophan', 0)), 1)
         value_5.append(tryptophan)
-        kynurenine = round(float(metabolite_data.get('Kynurenine', 0)), 1)
+        kynurenine = round(float(metabolite_data.get('Kynurenine', 0)), 2)
         value_5.append(kynurenine)
         indexKyn_Try = round(round(float(metabolite_data.get('Kynurenine', 0)), 3)/ round(float(metabolite_data.get('Tryptophan', 0)), 3), 3)
         value_5.append(indexKyn_Try)
         antranillic_acid = round(float(metabolite_data.get('Antranillic acid', 0)), 4)
         value_5.append(antranillic_acid)
-        quinolinic_acid = round(float(metabolite_data.get('Quinolinic acid', 0)), 4)
+        quinolinic_acid = round(float(metabolite_data.get('Quinolinic acid', 0)), 2)
         value_5.append(quinolinic_acid)
         Xanthurenic_acid = round(float(metabolite_data.get('Xanthurenic acid', 0)), 3)
         value_5.append(Xanthurenic_acid)
         Kynurenic_acid = round(float(metabolite_data.get('Kynurenic acid', 0)), 3)
         value_5.append(Kynurenic_acid)
-        indexKyn_Qnl= round(Kynurenic_acid / quinolinic_acid, 4)
+        indexKyn_Qnl= round(Kynurenic_acid / quinolinic_acid, 2)
         value_5.append(indexKyn_Qnl)
         return ref_5, value_5
         
@@ -242,7 +242,7 @@ def get_value_6(metabolite_data):
     """
     Processes the parsed metabolite data to extract specific values and rounds to 1 decimal place
     """
-    ref_6 = ['0.18 - 1.18','< 0.30','< 85.7','0.0153 - 0.0207']
+    ref_6 = ['0.02 - 1.45','< 0.09','< 0.26','0.08 - 0.25']
     value_6 = []
     
     try:
@@ -254,7 +254,7 @@ def get_value_6(metabolite_data):
         Quinolinic_acid = round(float(metabolite_data.get('Quinolinic acid', 0)), 2)
         indexQnl_hiaa = round(hiaa / Quinolinic_acid, 1)
         value_6.append(indexQnl_hiaa)
-        hydroxy_tryptophan = round(float(metabolite_data.get('5-hydroxytryptophan', 0)), 4)
+        hydroxy_tryptophan = round(float(metabolite_data.get('5-hydroxytryptophan', 0)), 2)
         value_6.append(hydroxy_tryptophan)
         return ref_6, value_6
         
@@ -267,18 +267,18 @@ def get_value_7(metabolite_data):
     """
     Processes the parsed metabolite data to extract specific values and rounds to 1 decimal place
     """
-    ref_7 = ['0.3 - 23','0.08 - 5.0','0.01 - 0.20','0.5 - 12.0','< 0.4','< 0.003']
+    ref_7 = ['0.54 - 2.38','0.33 - 1.15','0.01 - 0.06','0.14 - 2.04','< 0.29','< 0.18']
     value_7 = []
     
     try:
         # 3-indolacetic
-        indole_acetic_acid = round(float(metabolite_data.get('Indole-3-acetic acid', 0)), 1)
+        indole_acetic_acid = round(float(metabolite_data.get('Indole-3-acetic acid', 0)), 2)
         value_7.append(indole_acetic_acid)
-        indole_lactic_acid = round(float(metabolite_data.get('Indole-3-lactic acid', 0)), 2)
+        indole_lactic_acid = round(float(metabolite_data.get('Indole-3-lactic acid', 0)), 3)
         value_7.append(indole_lactic_acid)
         indole_carboxaldehyde = round(float(metabolite_data.get('Indole-3-carboxaldehyde', 0)), 2)
         value_7.append(indole_carboxaldehyde)
-        indole_propionic_acid = round(float(metabolite_data.get('Indole-3-propionic acid', 0)), 1)
+        indole_propionic_acid = round(float(metabolite_data.get('Indole-3-propionic acid', 0)), 2)
         value_7.append(indole_propionic_acid)
         indole_3_butyric = round(float(metabolite_data.get('Indole-3-butyric acid', 0)), 3)
         value_7.append(indole_3_butyric)
@@ -295,20 +295,20 @@ def get_value_8(metabolite_data):
     """
     Processes the parsed metabolite data to extract specific values and rounds to 1 decimal place
     """
-    ref_8 = ['104 - 383','4.7 - 35.2','0.23 - 0.50','0.20 - 0.67','1.0 - 6.0','32 - 120','16 - 51','38 - 130','29.5 - 84.5','5.4 - 21.5','0.18 - 2.2','0.25 - 3.16','0.06 - 0.7','13 - 57', '0.01 - 0.09']
+    ref_8 = ['106.7 - 358.0','3.16 - 14.09','0.29 - 1.01','0.28 - 1.04','1.31 - 6.42','45.9 - 164.7','26.5 - 58.3','31.1 - 115.8','15.6 - 33.7','13.8 - 101.3','0.29 - 1.53','0.28 - 2.59','0.07 - 0.79','16.8 - 61.8', '< 0.14']
     value_8 = []
     
     try:
         # Proline
         proline = round(float(metabolite_data.get('Proline', 0)), 1)
         value_8.append(proline)
-        hydroxyproline = round(float(metabolite_data.get('Hydroxyproline', 0)), 1)
+        hydroxyproline = round(float(metabolite_data.get('Hydroxyproline', 0)), 2)
         value_8.append(hydroxyproline)
         adma = round(float(metabolite_data.get('ADMA', 0)), 2)
         value_8.append(adma)
         sdma = round(float(metabolite_data.get('TotalDMA (SDMA)', 0)), 2)
         value_8.append(sdma)
-        homoarginine = round(float(metabolite_data.get('Homoarginine', 0)), 1)
+        homoarginine = round(float(metabolite_data.get('Homoarginine', 0)), 2)
         value_8.append(homoarginine)
         arginine = round(float(metabolite_data.get('Arginine', 0)), 1)
         value_8.append(arginine)
@@ -320,11 +320,11 @@ def get_value_8(metabolite_data):
         value_8.append(asparagine)
         asparagine_acid = round(float(metabolite_data.get('Aspartic acid', 0)), 1)
         value_8.append(asparagine_acid)
-        index_gabr = round(arginine / (Orintine + Citrulline), 1)
+        index_gabr = round(arginine / (Orintine + Citrulline), 2)
         value_8.append(index_gabr)
         index_AOR = round(arginine / Orintine, 1)
         value_8.append(index_AOR)
-        index_asn_asp = round(asparagine / asparagine_acid, 1)
+        index_asn_asp = round(asparagine / asparagine_acid, 2)
         value_8.append(index_asn_asp)
         creatine = round(float(metabolite_data.get('Creatinine', 0)), 1)
         value_8.append(creatine)
@@ -341,7 +341,7 @@ def get_value_9(metabolite_data, metabolite_ac_data):
     """
     Processes the parsed metabolite data to extract specific values and rounds to 1 decimal place
     """
-    ref_9 = ['209 - 516','19 - 48','3.23 - 10.30']
+    ref_9 = ['199.7 - 486.5','19.5 - 49.9','3.75 - 12.30']
     value_9 = []
     
     try:
@@ -349,7 +349,7 @@ def get_value_9(metabolite_data, metabolite_ac_data):
         alanine = round(float(metabolite_data.get('Alanine', 0)), 1)
         value_9.append(alanine)
         # c0
-        c0 = round(float(metabolite_ac_data.get('C0', 0)), 2)
+        c0 = round(float(metabolite_ac_data.get('C0', 0)), 1)
         value_9.append(c0)
         c2 = round(float(metabolite_ac_data.get('C2', 0)), 2)
         value_9.append(c2)
@@ -364,7 +364,7 @@ def get_value_10(metabolite_ac_data):
     """
     Processes the parsed metabolite data to extract specific values and rounds to 1 decimal place
     """
-    ref_10 = ['0.16 - 0.62','0.08 - 0.38','0.04 - 0.61','0.04 - 0.06','< 0.1','< 0.06']
+    ref_10 = ['0.13 - 0.54','0.06 - 0.31','0.03 - 0.14','< 0.02','< 0.001','< 0.01']
     value_10 = []
     
     try:
@@ -392,7 +392,7 @@ def get_value_11(metabolite_ac_data):
     """
     Processes the parsed metabolite data to extract specific values and rounds to 1 decimal place
     """
-    ref_11 = ['< 0.1','< 0.02','< 0.27','< 1.26','< 0.38','0.01 - 0.32','< 0.05','< 0.15','< 0.19']
+    ref_11 = ['0.01 - 0.06','< 0.01','0.03 - 0.22','0.01 - 0.06','0.03 - 0.22','0.02 - 0.16','< 0.01','0.01 - 0.07','< 0.03']
     value_11 = []
     
     try:
@@ -426,7 +426,7 @@ def get_value_12(metabolite_ac_data):
     """
     Processes the parsed metabolite data to extract specific values and rounds to 1 decimal place
     """
-    ref_12 = ['0.01 - 0.22','0.04 - 0.41','< 0.16','0.01 - 0.29','< 0.09','< 0.1','< 0.1','< 0.02','0.03 - 0.13','0.07 - 0.51','< 0.32','0.02 - 0.26','0.3 - 2.3']
+    ref_12 = ['0.01 - 0.03','0.01 - 0.12','< 0.06','< 0.02','0.03 - 0.08','< 0.02','< 0.002','0.01 - 0.02','0.02 - 0.05','0.04 - 0.12','< 0.002','0.02 - 0.07','0.001 - 0.003']
     value_12 = []
     
     try:
@@ -443,7 +443,7 @@ def get_value_12(metabolite_ac_data):
         value_12.append(c16)
         c16_1 = round(float(metabolite_ac_data.get('C16-1', 0)), 3)
         value_12.append(c16_1)
-        C16_1_OH = round(float(metabolite_ac_data.get('C16-1-OH', 0)), 3)
+        C16_1_OH = round(float(metabolite_ac_data.get('C16-1-OH', 0)), 4)
         value_12.append(C16_1_OH)
         c16_OH = round(float(metabolite_ac_data.get('C16-OH', 0)), 3)
         value_12.append(c16_OH)
@@ -451,11 +451,11 @@ def get_value_12(metabolite_ac_data):
         value_12.append(c18)
         c18_1 = round(float(metabolite_ac_data.get('C18-1', 0)), 3)
         value_12.append(c18_1)
-        c18_1_OH = round(float(metabolite_ac_data.get('C18-1-OH', 0)), 3)
+        c18_1_OH = round(float(metabolite_ac_data.get('C18-1-OH', 0)), 4)
         value_12.append(c18_1_OH)
         c18_2 = round(float(metabolite_ac_data.get('C18-2', 0)), 3)
         value_12.append(c18_2)
-        c18_OH = round(float(metabolite_ac_data.get('C18-OH', 0)), 3)
+        c18_OH = round(float(metabolite_ac_data.get('C18-OH', 0)), 4)
         value_12.append(c18_OH)
         return ref_12, value_12
         
@@ -469,16 +469,16 @@ def get_value_13(metabolite_data):
     """
     Processes the parsed metabolite data to extract specific values and rounds to 1 decimal place
     """
-    ref_13 = ['0.30 - 1.80','6.2 - 39.0','0.0002 - 0.0204']
+    ref_13 = ['0.09 - 0.25','0.03 - 0.16','0.01 - 0.03']
     value_13 = []
     
     try:
         # Pantotenic acid
         pantotenic_acid = round(float(metabolite_data.get('Pantothenic', 0)), 2)
         value_13.append(pantotenic_acid)
-        riboflavin = round(float(metabolite_data.get('Riboflavin', 0)), 1)
+        riboflavin = round(float(metabolite_data.get('Riboflavin', 0)), 2)
         value_13.append(riboflavin)
-        melatonine = round(float(metabolite_data.get('Melatonin', 0)), 4)
+        melatonine = round(float(metabolite_data.get('Melatonin', 0)), 3)
         value_13.append(melatonine)
         return ref_13, value_13
         
@@ -491,14 +491,14 @@ def get_value_14(metabolite_data):
     """
     Processes the parsed metabolite data to extract specific values and rounds to 1 decimal place
     """
-    ref_14 = ['0.23 - 2.58','0.1 - 0.3', '0.06 - 0.44']
+    ref_14 = ['0.70 - 5.07','0.12 - 0.29', '0.25 - 0.39']
     value_14 = []
     
     try:
         # Uridine
         uridine = round(float(metabolite_data.get('Uridine', 0)), 2)
         value_14.append(uridine)
-        adenosine = round(float(metabolite_data.get('Adenosin', 0)), 1)
+        adenosine = round(float(metabolite_data.get('Adenosin', 0)), 2)
         value_14.append(adenosine)
         Citidine = round(float(metabolite_data.get('Cytidine', 0)), 2)
         value_14.append(Citidine)
@@ -514,7 +514,7 @@ def get_value_15(metabolite_data):
     """
     Processes the parsed metabolite data to extract specific values and rounds to 1 decimal place
     """
-    ref_15 = ['0.1 - 0.5','< 0.1329']
+    ref_15 = ['0.29 - 0.80','< 0.03']
     value_15 = []
     
     try:
@@ -522,7 +522,7 @@ def get_value_15(metabolite_data):
         cortisol = round(float(metabolite_data.get('Cortisol', 0)), 2)
         value_15.append(cortisol)
         # Histamine
-        histamine = round(float(metabolite_data.get('Histamine', 0)), 4)
+        histamine = round(float(metabolite_data.get('Histamine', 0)), 3)
         value_15.append(histamine)
         return ref_15, value_15
         
@@ -1583,7 +1583,7 @@ def main():
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
-                                    html.Img(src=app.get_asset_url('progress_left.png'), 
+                                    html.Img(src=app.get_asset_url('progress.png'), 
                                             style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
                                                 'display': 'inline-block', 'vertical-align': 'center'}),
                                     # Pointer (arrow)
@@ -2238,7 +2238,7 @@ def main():
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
-                                    html.Img(src=app.get_asset_url('progress_left.png'), 
+                                    html.Img(src=app.get_asset_url('progress.png'), 
                                             style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
                                                 'display': 'inline-block', 'vertical-align': 'center'}),
                                     # Pointer (arrow)
@@ -2266,7 +2266,7 @@ def main():
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
-                                    html.Img(src=app.get_asset_url('progress_left.png'), 
+                                    html.Img(src=app.get_asset_url('progress.png'), 
                                             style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
                                                 'display': 'inline-block', 'vertical-align': 'center'}),
                                     # Pointer (arrow)
@@ -2378,7 +2378,7 @@ def main():
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
+                                    html.Img(src=app.get_asset_url('progress_left.png'), 
                                             style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
                                                 'display': 'inline-block', 'vertical-align': 'center'}),
                                     # Pointer (arrow)
@@ -2467,7 +2467,7 @@ def main():
                     html.Div([
                         html.Div([
                             html.Div([
-                                html.Div([html.B('Индекс Kyn / Qnl',style={'height':'20px'}),html.P('Соотношение кинуренина к хинолиновой кислоте',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
+                                html.Div([html.B('Индекс Kyna / Qnl',style={'height':'20px'}),html.P('Соотношение кинуренина к хинолиновой кислоте',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
                                 html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_5[7],ref_5[7])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_5[7]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_5[7],ref_5[7])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_5[7],ref_5[7])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
@@ -2933,7 +2933,7 @@ def main():
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
+                                    html.Img(src=app.get_asset_url('progress_left.png'), 
                                             style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
                                                 'display': 'inline-block', 'vertical-align': 'center'}),
                                     # Pointer (arrow)
@@ -3496,7 +3496,7 @@ def main():
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
+                                    html.Img(src=app.get_asset_url('progress_left.png'), 
                                             style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
                                                 'display': 'inline-block', 'vertical-align': 'center'}),
                                     # Pointer (arrow)
@@ -3590,7 +3590,7 @@ def main():
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
-                                    html.Img(src=app.get_asset_url('progress_left.png'), 
+                                    html.Img(src=app.get_asset_url('progress.png'), 
                                             style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
                                                 'display': 'inline-block', 'vertical-align': 'center'}),
                                     # Pointer (arrow)
@@ -3646,7 +3646,7 @@ def main():
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
-                                    html.Img(src=app.get_asset_url('progress_left.png'), 
+                                    html.Img(src=app.get_asset_url('progress.png'), 
                                             style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
                                                 'display': 'inline-block', 'vertical-align': 'center'}),
                                     # Pointer (arrow)
@@ -3674,7 +3674,7 @@ def main():
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
-                                    html.Img(src=app.get_asset_url('progress_left.png'), 
+                                    html.Img(src=app.get_asset_url('progress.png'), 
                                             style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
                                                 'display': 'inline-block', 'vertical-align': 'center'}),
                                     # Pointer (arrow)
@@ -3702,7 +3702,7 @@ def main():
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
-                                    html.Img(src=app.get_asset_url('progress_left.png'), 
+                                    html.Img(src=app.get_asset_url('progress.png'), 
                                             style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
                                                 'display': 'inline-block', 'vertical-align': 'center'}),
                                     # Pointer (arrow)
@@ -3786,7 +3786,7 @@ def main():
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
-                                    html.Img(src=app.get_asset_url('progress_left.png'), 
+                                    html.Img(src=app.get_asset_url('progress.png'), 
                                             style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
                                                 'display': 'inline-block', 'vertical-align': 'center'}),
                                     # Pointer (arrow)
@@ -3974,7 +3974,7 @@ def main():
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
+                                    html.Img(src=app.get_asset_url('progress_left.png'), 
                                             style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
                                                 'display': 'inline-block', 'vertical-align': 'center'}),
                                     # Pointer (arrow)
@@ -4170,7 +4170,7 @@ def main():
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
+                                    html.Img(src=app.get_asset_url('progress_left.png'), 
                                             style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
                                                 'display': 'inline-block', 'vertical-align': 'center'}),
                                     # Pointer (arrow)
