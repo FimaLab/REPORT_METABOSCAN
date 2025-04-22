@@ -180,14 +180,14 @@ def get_value_4(metabolite_data):
     """
     Processes the parsed metabolite data to extract specific values and rounds to 1 decimal place
     """
-    ref_4 = ['0.09 - 0.97','17.4 - 47.4','27.7 - 145.8','28.6 - 82.7','5.68 - 19.88','0.26 - 7.17','1.14 - 7.57']
+    ref_4 = ['17.4 - 47.4','0.09 - 0.97','27.7 - 145.8','28.6 - 82.7','5.68 - 19.88','0.26 - 7.17','1.14 - 7.57']
     value_4 = []
     
     try:
         # metionine
-        methionine = round(float(metabolite_data.get('Methionine', 0)), 3)
+        methionine = round(float(metabolite_data.get('Methionine', 0)), 1)
         value_4.append(methionine)
-        Methionine_Sulfoxide = round(float(metabolite_data.get('Methionine-Sulfoxide', 0)), 1)
+        Methionine_Sulfoxide = round(float(metabolite_data.get('Methionine-Sulfoxide', 2)), 1)
         value_4.append(Methionine_Sulfoxide)
         Taurine = round(float(metabolite_data.get('Taurine', 0)), 1)
         value_4.append(Taurine)
