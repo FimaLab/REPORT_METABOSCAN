@@ -1,4 +1,4 @@
-from dash import Dash, html
+from dash import Dash, html, dash_table
 import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib as mpl
@@ -14,60 +14,34 @@ date = '21.07.2023'
 age = 47
 gender = 'М'
 
-def safe_parse_metabolite_data(file_path, file_type):
+def safe_parse_metabolite_data(file_path):
     """Your existing parse_metabolite_data function with added safety checks"""
     if not os.path.exists(file_path):
         print(f"Error: File not found - {file_path}")
         return {}
     
     try:
-        if file_type == 'Файл с прибора':
-            df = pd.read_excel(file_path, header=None)
-            data_start_row = 2
-            metabolite_headers = df.iloc[0]
-            measurement_types = df.iloc[1]
-            metabolite_data = {}
-            
-            for col_idx in range(len(measurement_types)):
-                if measurement_types[col_idx] == 'Final Conc.':
-                    metabolite_name = str(metabolite_headers[col_idx]).replace(' Results', '').strip()
-                    if pd.isna(metabolite_name):
-                        continue
-                    
-                    conc_value = df.iloc[data_start_row, col_idx]
-                    try:
-                        if isinstance(conc_value, str):
-                            conc_value = float(conc_value.replace(',', '.'))
-                        elif pd.isna(conc_value):
-                            conc_value = 0.0
-                        metabolite_data[metabolite_name] = conc_value
-                    except:
-                        metabolite_data[metabolite_name] = 0.0
-            
-            return metabolite_data
+        # here excel file is first column name of sample and next columns are metabolites with conc below
+        df = pd.read_excel(file_path, header=None)
+        metabolite_headers = df.iloc[0]
+        metabolite_data = {}
         
-        elif file_type == 'Изменненный вручную':
-            # here excel file is first column name of sample and next columns are metabolites with conc below
-            df = pd.read_excel(file_path, header=None)
-            metabolite_headers = df.iloc[0]
-            metabolite_data = {}
+        for col_idx in range(1, len(metabolite_headers)):
+            metabolite_name = str(metabolite_headers[col_idx]).replace(' Results', '').strip()
+            if pd.isna(metabolite_name):
+                continue
             
-            for col_idx in range(1, len(metabolite_headers)):
-                metabolite_name = str(metabolite_headers[col_idx]).replace(' Results', '').strip()
-                if pd.isna(metabolite_name):
-                    continue
-                
-                conc_value = df.iloc[1, col_idx]
-                try:
-                    if isinstance(conc_value, str):
-                        conc_value = float(conc_value.replace(',', '.'))
-                    elif pd.isna(conc_value):
-                        conc_value = 0.0
-                    metabolite_data[metabolite_name] = conc_value
-                except:
-                    metabolite_data[metabolite_name] = 0.0
-            
-            return metabolite_data
+            conc_value = df.iloc[1, col_idx]
+            try:
+                if isinstance(conc_value, str):
+                    conc_value = float(conc_value.replace(',', '.'))
+                elif pd.isna(conc_value):
+                    conc_value = 0.0
+                metabolite_data[metabolite_name] = conc_value
+            except:
+                metabolite_data[metabolite_name] = 0.0
+        
+        return metabolite_data
     except Exception as e:
         print(f"Error processing file {file_path}: {str(e)}")
         return {}
@@ -337,7 +311,7 @@ def get_value_8(metabolite_data):
         
         return ref_8, [0.0, 0.0, 0.0]
 
-def get_value_9(metabolite_data, metabolite_ac_data):
+def get_value_9(metabolite_data):
     """
     Processes the parsed metabolite data to extract specific values and rounds to 1 decimal place
     """
@@ -349,9 +323,9 @@ def get_value_9(metabolite_data, metabolite_ac_data):
         alanine = round(float(metabolite_data.get('Alanine', 0)), 1)
         value_9.append(alanine)
         # c0
-        c0 = round(float(metabolite_ac_data.get('C0', 0)), 1)
+        c0 = round(float(metabolite_data.get('C0', 0)), 1)
         value_9.append(c0)
-        c2 = round(float(metabolite_ac_data.get('C2', 0)), 2)
+        c2 = round(float(metabolite_data.get('C2', 0)), 2)
         value_9.append(c2)
         return ref_9, value_9
         
@@ -360,7 +334,7 @@ def get_value_9(metabolite_data, metabolite_ac_data):
         
         return ref_9, [0.0, 0.0, 0.0]
 
-def get_value_10(metabolite_ac_data):
+def get_value_10(metabolite_data):
     """
     Processes the parsed metabolite data to extract specific values and rounds to 1 decimal place
     """
@@ -369,17 +343,17 @@ def get_value_10(metabolite_ac_data):
     
     try:
         # c3
-        c3 = round(float(metabolite_ac_data.get('C3', 0)), 2)
+        c3 = round(float(metabolite_data.get('C3', 0)), 2)
         value_10.append(c3)
-        c4 = round(float(metabolite_ac_data.get('C4', 0)), 2)
+        c4 = round(float(metabolite_data.get('C4', 0)), 2)
         value_10.append(c4)
-        c5 = round(float(metabolite_ac_data.get('C5', 0)), 2)
+        c5 = round(float(metabolite_data.get('C5', 0)), 2)
         value_10.append(c5)
-        c5_1 = round(float(metabolite_ac_data.get('C5-1', 0)), 2)
+        c5_1 = round(float(metabolite_data.get('C5-1', 0)), 2)
         value_10.append(c5_1)
-        c5_DC = round(float(metabolite_ac_data.get('C5-DC', 0)), 1)
+        c5_DC = round(float(metabolite_data.get('C5-DC', 0)), 1)
         value_10.append(c5_DC)
-        c5_OH = round(float(metabolite_ac_data.get('C5-OH', 0)), 2)
+        c5_OH = round(float(metabolite_data.get('C5-OH', 0)), 2)
         value_10.append(c5_OH)
         return ref_10, value_10
         
@@ -388,7 +362,7 @@ def get_value_10(metabolite_ac_data):
         
         return ref_10, [0.0, 0.0, 0.0]
 
-def get_value_11(metabolite_ac_data):
+def get_value_11(metabolite_data):
     """
     Processes the parsed metabolite data to extract specific values and rounds to 1 decimal place
     """
@@ -397,23 +371,23 @@ def get_value_11(metabolite_ac_data):
     
     try:
         # c6
-        c6 = round(float(metabolite_ac_data.get('C6', 0)), 2)
+        c6 = round(float(metabolite_data.get('C6', 0)), 2)
         value_11.append(c6)
-        c6_DC = round(float(metabolite_ac_data.get('C6-DC', 0)), 3)
+        c6_DC = round(float(metabolite_data.get('C6-DC', 0)), 3)
         value_11.append(c6_DC)
-        c8 = round(float(metabolite_ac_data.get('C8', 0)), 3)
+        c8 = round(float(metabolite_data.get('C8', 0)), 3)
         value_11.append(c8)
-        c8_1 = round(float(metabolite_ac_data.get('C8-1', 0)), 3)
+        c8_1 = round(float(metabolite_data.get('C8-1', 0)), 3)
         value_11.append(c8_1)
-        c10 = round(float(metabolite_ac_data.get('C10', 0)), 3)
+        c10 = round(float(metabolite_data.get('C10', 0)), 3)
         value_11.append(c10)
-        c10_1 = round(float(metabolite_ac_data.get('C10-1', 0)), 3)
+        c10_1 = round(float(metabolite_data.get('C10-1', 0)), 3)
         value_11.append(c10_1)
-        c10_2 = round(float(metabolite_ac_data.get('C10-2', 0)), 3)
+        c10_2 = round(float(metabolite_data.get('C10-2', 0)), 3)
         value_11.append(c10_2)
-        c12 = round(float(metabolite_ac_data.get('C12', 0)), 3)
+        c12 = round(float(metabolite_data.get('C12', 0)), 3)
         value_11.append(c12)
-        c12_1 = round(float(metabolite_ac_data.get('C12-1', 0)), 3)
+        c12_1 = round(float(metabolite_data.get('C12-1', 0)), 3)
         value_11.append(c12_1)
         return ref_11, value_11
         
@@ -422,7 +396,7 @@ def get_value_11(metabolite_ac_data):
         
         return ref_11, [0.0, 0.0, 0.0] 
 
-def get_value_12(metabolite_ac_data):
+def get_value_12(metabolite_data):
     """
     Processes the parsed metabolite data to extract specific values and rounds to 1 decimal place
     """
@@ -431,31 +405,31 @@ def get_value_12(metabolite_ac_data):
     
     try:
         # c14
-        c14 = round(float(metabolite_ac_data.get('C14', 0)), 3)
+        c14 = round(float(metabolite_data.get('C14', 0)), 3)
         value_12.append(c14)
-        c14_1 = round(float(metabolite_ac_data.get('C14-1', 0)), 3)
+        c14_1 = round(float(metabolite_data.get('C14-1', 0)), 3)
         value_12.append(c14_1)
-        c14_2 = round(float(metabolite_ac_data.get('C14-2', 0)), 3)
+        c14_2 = round(float(metabolite_data.get('C14-2', 0)), 3)
         value_12.append(c14_2)
-        c14_OH = round(float(metabolite_ac_data.get('C14-OH', 0)), 3)
+        c14_OH = round(float(metabolite_data.get('C14-OH', 0)), 3)
         value_12.append(c14_OH)
-        c16 = round(float(metabolite_ac_data.get('C16', 0)), 3)
+        c16 = round(float(metabolite_data.get('C16', 0)), 3)
         value_12.append(c16)
-        c16_1 = round(float(metabolite_ac_data.get('C16-1', 0)), 3)
+        c16_1 = round(float(metabolite_data.get('C16-1', 0)), 3)
         value_12.append(c16_1)
-        C16_1_OH = round(float(metabolite_ac_data.get('C16-1-OH', 0)), 4)
+        C16_1_OH = round(float(metabolite_data.get('C16-1-OH', 0)), 4)
         value_12.append(C16_1_OH)
-        c16_OH = round(float(metabolite_ac_data.get('C16-OH', 0)), 3)
+        c16_OH = round(float(metabolite_data.get('C16-OH', 0)), 3)
         value_12.append(c16_OH)
-        c18 = round(float(metabolite_ac_data.get('C18', 0)), 3)
+        c18 = round(float(metabolite_data.get('C18', 0)), 3)
         value_12.append(c18)
-        c18_1 = round(float(metabolite_ac_data.get('C18-1', 0)), 3)
+        c18_1 = round(float(metabolite_data.get('C18-1', 0)), 3)
         value_12.append(c18_1)
-        c18_1_OH = round(float(metabolite_ac_data.get('C18-1-OH', 0)), 4)
+        c18_1_OH = round(float(metabolite_data.get('C18-1-OH', 0)), 4)
         value_12.append(c18_1_OH)
-        c18_2 = round(float(metabolite_ac_data.get('C18-2', 0)), 3)
+        c18_2 = round(float(metabolite_data.get('C18-2', 0)), 3)
         value_12.append(c18_2)
-        c18_OH = round(float(metabolite_ac_data.get('C18-OH', 0)), 4)
+        c18_OH = round(float(metabolite_data.get('C18-OH', 0)), 4)
         value_12.append(c18_OH)
         return ref_12, value_12
         
@@ -760,14 +734,21 @@ def procent_validator(n):
     
 
 def get_color_under_normal_dist(n):
-    if n < 30:
-        return '#50c150'
-    elif n < 60:
-        return '#9fd047'
-    elif n < 80:
-        return '#feb61d'
+    if n <= 10:
+        return '#50c150'  # Light green (similar to 9-10)
+    elif n <= 20:
+        return '#9fd047'   # Light yellow (similar to 7-8)
+    elif n<= 30:
+        return '#feb61d'  # Light orange (similar to 5-6)
+    elif n <= 40:
+        return '#fe991d'  # Light orange (similar to 5-6)
+    elif n <= 50:
+        return '#f25708'  # Light orange (similar to 5-6)
+    
+    elif n <= 70:
+        return '#f21e08'  # Light orange (similar to 5-6)
     else:
-        return '#de6d54'
+        return '#c90909' # Orange-red (similar to 3-4)
     
 def get_text_from_procent(n):
     if n < 30:
@@ -778,6 +759,66 @@ def get_text_from_procent(n):
         return 'Умеренно ускоренный'
     else:
         return 'Сильно ускоренный'
+
+
+
+def generate_radial_diagram(df_result, output_path):
+    """Generate radial diagram and save to specified path"""
+    # Ensure df_result is a DataFrame (not a file path)
+    if isinstance(df_result, str):
+        df_result = pd.read_excel(df_result)
+    
+    labels = df_result['Группа риска'].tolist()
+    risk_levels = df_result['Риск-скор'].tolist()
+
+    num_vars = len(labels)
+    angles = np.linspace(0, 2 * np.pi, num_vars, endpoint=False).tolist()
+
+    # Close the circle
+    risk_levels += risk_levels[:1]
+    angles += angles[:1]
+
+    fig, ax = plt.subplots(figsize=(8, 8), subplot_kw=dict(polar=True))
+
+    # Gradient background
+    colors = [
+        'darkred', 'red', 'red', 'darkorange', 'orange', 
+        'gold', 'yellow', 'yellowgreen', 'limegreen', 'green', 'green'
+    ]
+
+    # Fill between levels
+    levels = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    for i in range(len(levels) - 1):
+        ax.fill_between(angles, levels[i], levels[i + 1], color=colors[i], alpha=0.3)
+    
+    # Plot data
+    ax.fill(angles, risk_levels, color='blue', alpha=0.25)
+    ax.plot(angles, risk_levels, color='blue', linewidth=2)
+    ax.set_xticks(angles[:-1])
+    ax.set_xticklabels(labels, fontsize=16)
+    
+    # Label adjustments
+    for label, angle in zip(ax.get_xticklabels(), angles[:-1]):
+        label.set_rotation_mode('anchor')
+        if np.pi/2 < angle < 3*np.pi/2:
+            rotation = np.degrees(angle) + 90
+            ha = 'right'
+        else:
+            rotation = np.degrees(angle) - 90
+            ha = 'left'
+        
+        label.set_rotation(rotation)
+        label.set_ha(ha)
+        label.set_va('center')
+        ax.plot([angle, angle], [10, 10.5], color='gray', linestyle='-', linewidth=0.5, alpha=0.5)
+    
+    ax.tick_params(axis='x', zorder=1000, pad=0)
+    ax.set_ylim(0, 10.5)
+
+    # Save the figure
+    fig.savefig(output_path, bbox_inches='tight', dpi=300)
+    plt.close(fig)
+        
     
 def calculate_pointer_position(value: float, ref_range: str):
     try:
@@ -798,7 +839,7 @@ def calculate_pointer_position(value: float, ref_range: str):
         
         # Calculate position (0-100)
         if value < ref_min:
-            return 0
+            return 50
         elif value > ref_max:
             return 100
         else:
@@ -808,6 +849,2714 @@ def calculate_pointer_position(value: float, ref_range: str):
     except (ValueError, AttributeError, TypeError):
         # Return middle position if there's any error
         return 50
+    
+def NO_syntase_Group(file_path, metabolite_data):
+    # Initialize scores for each metabolite
+    scores = {
+        'ADMA': 0,
+        'TotalDMA (SDMA)': 0,
+        'Arg/ADMA': 0,
+        '(Arg+HomoArg)/ADMA': 0
+    }
+    
+    try:
+        # Load the risk parameters
+        risk_params = pd.read_excel(file_path)
+        
+        # Convert metabolite_data from dict to Series for consistent access
+        metab_data = pd.Series(metabolite_data)
+        
+        # Calculate ratios if needed
+        if 'Arginine' in metab_data and 'ADMA' in metab_data:
+            metab_data['Arg/ADMA'] = metab_data['Arginine'] / metab_data['ADMA']
+        if 'Arginine' in metab_data and 'Homoarginine' in metab_data and 'ADMA' in metab_data:
+            metab_data['(Arg+HomoArg)/ADMA'] = (metab_data['Arginine'] + metab_data['Homoarginine']) / metab_data['ADMA']
+        
+        # Check each metabolite and assign scores
+        metabolites_to_check = [
+            ('ADMA', 1),
+            ('TotalDMA (SDMA)', 0.5),
+            ('Arg/ADMA', 0.5),
+            ('(Arg+HomoArg)/ADMA', 0.5)
+        ]
+        
+        for metabolite, score in metabolites_to_check:
+            if metabolite in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер / Соотношение'] == metabolite].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[metabolite]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[metabolite] = score
+                except (IndexError, KeyError):
+                    print(f"Warning: {metabolite} not found in risk parameters or missing norms")
+                    continue
+    
+    except Exception as e:
+        print(f"Error in NO_syntase_Group: {str(e)}")
+        return 50  # Return default score on error
+    
+    # Calculate the final score
+    total_score = (
+        scores['ADMA'] + 
+        scores['TotalDMA (SDMA)'] + 
+        scores['Arg/ADMA'] + 
+        scores['(Arg+HomoArg)/ADMA']
+    ) * 100 / 2.5
+    
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+
+def Inflammation_Group(file_path, metabolite_data):
+    scores = {
+        'Kyn/Trp': 0,
+        'Quin/HIAA': 0,
+        'Quinolinic acid': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        # Calculate ratios if needed
+        if 'Kynurenine' in metab_data and 'Tryptophan' in metab_data:
+            metab_data['Kyn/Trp'] = metab_data['Kynurenine'] / metab_data['Tryptophan']
+        if 'Quinolinic acid' in metab_data and 'HIAA' in metab_data:
+            metab_data['Quin/HIAA'] = metab_data['Quinolinic acid'] / metab_data['HIAA']
+        
+        markers = [
+            ('Kyn/Trp', 0.75),
+            ('Quin/HIAA', 0.3),
+            ('Quinolinic acid', 0.45)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Inflammation_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 1.5
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+
+def Methilation_Group(file_path, metabolite_data):
+    scores = {
+        'TMAO': 0,
+        'Betaine/choline': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        
+        markers = [
+            ('TMAO', 0.7),
+            ('Betaine/choline', 0.3)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Methilation_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 1.0
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+
+def Mitochondrial_Group(file_path, metabolite_data):
+    scores = {
+        'C0/(C16+C18)': 0,
+        '(C16+C18)/C2': 0,
+        'СДК': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('C0/(C16+C18)', 0.375),
+            ('(C16+C18)/C2', 0.375),
+            ('СДК', 0.75)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Mitochondrial_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 1.5
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+
+def Insulin_Resistance_Group(file_path, metabolite_data):
+    scores = {
+        'BCAA': 0,
+        'BCAA/AAA': 0,
+        'Alanine/Valine': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        # Calculate ratios
+        if 'Valine' in metab_data and 'Leucine' in metab_data and 'Isoleucine' in metab_data:
+            metab_data['BCAA'] = metab_data['Valine'] + metab_data['Leucine'] + metab_data['Isoleucine']
+        if 'BCAA' in metab_data and 'Phenylalanine' in metab_data and 'Tyrosine' in metab_data:
+            metab_data['BCAA/AAA'] = metab_data['BCAA'] / (metab_data['Phenylalanine'] + metab_data['Tyrosine'])
+        if 'Alanine' in metab_data and 'Valine' in metab_data:
+            metab_data['Alanine/Valine'] = metab_data['Alanine'] / metab_data['Valine']
+        
+        markers = [
+            ('BCAA', 0.75),
+            ('BCAA/AAA', 0.45),
+            ('Alanine/Valine', 0.3)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Insulin_Resistance_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 1.5
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+
+def Neurovegitative_Group(file_path, metabolite_data):
+    scores = {
+        'Serotonin': 0,
+        'Cortisol': 0,
+        'Melatonin': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('Serotonin', 0.6),
+            ('Cortisol', 0.8),
+            ('Melatonin', 0.6)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    # For some markers (like cortisol), only upper limit matters
+                    if marker == 'Cortisol':
+                        if value > norm2:
+                            scores[marker] = weight
+                    # For others (like serotonin, melatonin), both limits matter
+                    else:
+                        if not (norm1 <= value <= norm2):
+                            scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Neurovegitative_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 2.0
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+
+def Methionine_Exchange_Group(file_path, metabolite_data):
+    scores = {
+        'Methionine': 0,
+        'Methionine-Sulfoxide': 0,
+        'Betaine': 0,
+        'Choline': 0,
+        'Betaine/сholine': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('Methionine', 0.5),
+            ('Methionine-Sulfoxide', 0.5),
+            ('Betaine', 0.5),
+            ('Choline', 0.5),
+            ('Betaine/сholine', 1.0)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Methionine_Exchange_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 3.0  # Weight of this group is 3
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+
+# def Antoxidant_System_Group(file_path, metabolite_data):
+#     scores = {
+#         'GSH/GSG_index': 0
+#     }
+    
+#     try:
+#         risk_params = pd.read_excel(file_path)
+#         metab_data = pd.Series(metabolite_data)
+        
+#         markers = [
+#             ('GSH/GSG_index', 2.0)
+#         ]
+        
+#         for marker, weight in markers:
+#             if marker in metab_data:
+#                 try:
+#                     row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
+#                     norm1 = row['norm_1']
+#                     norm2 = row['norm_2']
+#                     value = metab_data[marker]
+                    
+#                     if not (norm1 <= value <= norm2):
+#                         scores[marker] = weight
+#                 except (IndexError, KeyError):
+#                     continue
+    
+#     except Exception as e:
+#         print(f"Error in Antoxidant_System_Group: {str(e)}")
+#         return 50
+    
+#     total_score = sum(scores.values()) * 100 / 2.0  # Weight of this group is 2
+#     if total_score >= 90:
+#         return 85
+#     else:
+#         return total_score
+
+def Protein_Exchange_Group(file_path, metabolite_data):
+    scores = {
+        'BCAA': 0,
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('BCAA', 1.0),
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Protein_Exchange_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 1.0  # Weight of this group is 2
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+
+def Aminoacid_Profile(file_path, metabolite_data):
+    scores = {
+        'Phe/Tyr': 0,
+        'BCAA/AAA': 0,
+        'Ornitine': 0,
+        'Citrulline': 0  
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('Phe/Tyr', 1),
+            ('BCAA/AAA', 1),
+            ('Ornitine', 0.5),
+            ('Citrulline', 0.5)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Aminoacid_Profile: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 3.0  # Weight of this group is 1
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+
+# def Conjugation_Detoxication(file_path, metabolite_data):
+#     scores = {
+#         'Hippuric acid': 0,
+#         'Indoxyl sulfate / IAA': 0,
+#         'Ornithine': 0,
+#         'Citrulline': 0
+#     }
+    
+#     try:
+#         risk_params = pd.read_excel(file_path)
+#         metab_data = pd.Series(metabolite_data)
+        
+#         markers = [
+#             ('Hippuric acid', 0.5),
+#             ('Indoxyl sulfate / IAA', 0.5),
+#             ('Ornithine', 0.5),
+#             ('Citrulline', 0.5)
+#         ]
+        
+#         for marker, weight in markers:
+#             if marker in metab_data:
+#                 try:
+#                     row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
+#                     norm1 = row['norm_1']
+#                     norm2 = row['norm_2']
+#                     value = metab_data[marker]
+                    
+#                     if not (norm1 <= value <= norm2):
+#                         scores[marker] = weight
+#                 except (IndexError, KeyError):
+#                     continue
+    
+#     except Exception as e:
+#         print(f"Error in Conjugation_Detoxication: {str(e)}")
+#         return 50
+    
+#     total_score = sum(scores.values()) * 100 / 2.0  # Weight of this group is 2
+#     if total_score >= 90:
+#         return 85
+#     else:
+#         return total_score
+
+def Oxidative_Stress_Group(file_path, metabolite_data):
+    scores = {
+        'Methionine-Sulfoxide': 0,
+        'GSG_index': 0,
+        'Taurine': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('Methionine-Sulfoxide', 1.75),
+            ('GSG_index', 1.75),
+            ('Taurine', 1.25)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Oxidative_Stress_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 4.75  # Total weight is already 4.75
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score  # Cap at 10
+    
+
+def Inflammation_and_Microbial_Group(file_path, metabolite_data):
+    scores = {
+        'Indole-3-propionic acid': 0,
+        'Indole-3-acetic acid': 0,
+        'Indole-3-carboxaldehyde': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('Indole-3-propionic acid', 0.75),
+            ('Indole-3-acetic acid', 0.75),
+            ('Indole-3-carboxaldehyde', 0.50)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Inflammation_and_Microbial_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 2.0  # Total weight is 2.0
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+
+# def Aromatic_Toxic_Group(file_path, metabolite_data):
+#     scores = {
+#         'Hippuric acid': 0,
+#         'Phenylacetic acid': 0
+#     }
+    
+#     try:
+#         risk_params = pd.read_excel(file_path)
+#         metab_data = pd.Series(metabolite_data)
+        
+#         markers = [
+#             ('Hippuric acid', 0.50),
+#             ('Phenylacetic acid', 0.50)
+#         ]
+        
+#         for marker, weight in markers:
+#             if marker in metab_data:
+#                 try:
+#                     row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
+#                     norm1 = row['norm_1']
+#                     norm2 = row['norm_2']
+#                     value = metab_data[marker]
+                    
+#                     if not (norm1 <= value <= norm2):
+#                         scores[marker] = weight
+#                 except (IndexError, KeyError):
+#                     continue
+    
+#     except Exception as e:
+#         print(f"Error in Aromatic_Toxic_Group: {str(e)}")
+#         return 50
+    
+#     total_score = sum(scores.values()) * 100 / 1.0  # Total weight is 1.0
+#     return min(total_score, 10)
+
+def Nitrogen_Toxic_Group(file_path, metabolite_data):
+    scores = {
+        'ADMA': 0,
+        'TotalDMA (SDMA)': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('ADMA', 0.75),
+            ('TotalDMA (SDMA)', 0.50)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Nitrogen_Toxic_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 1.25  # Total weight is 1.25
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+
+def Lipid_Toxic_Group(file_path, metabolite_data):
+    scores = {
+        '(C16+C18)/C2': 0,
+        'СДК': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        # Calculate ratios if needed
+        if 'C16' in metab_data and 'C18' in metab_data and 'C2' in metab_data:
+            metab_data['(C16+C18)/C2'] = (metab_data['C16'] + metab_data['C18']) / metab_data['C2']
+        
+        markers = [
+            ('(C16+C18)/C2', 0.50),
+            ('СДК', 0.50)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Lipid_Toxic_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 1
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+
+def Collagen_Group(file_path, metabolite_data):
+    scores = {
+        'Proline': 0,
+        'Hydroxyproline': 0,
+        'Glycine/Serine': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('Proline', 1.3),
+            ('Hydroxyproline', 1.3),
+            ('Glycine/Serine', 0.6)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Collagen_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 3.2  # Total weight is 3.2
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+
+def Regeneration_Group(file_path, metabolite_data):
+    scores = {
+        'Methionine': 0,
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('Methionine', 0.6),
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Regeneration_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 0.6 # Total weight is 1.2
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+
+def Dream_Group(file_path, metabolite_data):
+    scores = {
+        'Melatonin': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('Melatonin', 1.6)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Dream_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 1.6  # Total weight is 1.6
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+
+def Inflammation_and_Stress_Group(file_path, metabolite_data):
+    scores = {
+        'Serotonin': 0,
+        'Cortisol': 0,
+        'Indole-3-acetic acid': 0,
+        'Tryptamine / IAA': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('Serotonin', 0.6),
+            ('Cortisol', 0.6),
+            ('Indole-3-acetic acid', 0.3),
+            ('Tryptamine / IAA', 0.3)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Inflammation_and_Stress_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 1.8 # Total weight is 1.8
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+
+def Exchange_Serum_Group(file_path, metabolite_data):
+    scores = {
+        'Taurine': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('Taurine', 1.3)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Exchange_Serum_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 1.3  # Total weight is 1.3
+    
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+
+def Neuroinflammation_Group(file_path, metabolite_data):
+    scores = {
+        'Kynurenine': 0,
+        'Kyn/Trp': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        # Calculate ratios if needed
+        if 'Kynurenine' in metab_data and 'Tryptophan' in metab_data:
+            metab_data['Kyn/Trp'] = metab_data['Kynurenine'] / metab_data['Tryptophan']
+        
+        markers = [
+            ('Kynurenine', 0.3),
+            ('Kyn/Trp', 0.6)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Neuroinflammation_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 0.9  # Total weight is 0.9
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+    
+def Energy_Exchange_Group(file_path, metabolite_data):
+    scores = {
+        'C0': 0,
+        'C2': 0,
+        'C2/C0': 0,
+        '(C2+C3)/C0': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('C0', 1.2),
+            ('C2', 0.75),
+            ('C2/C0', 0.5),
+            ('(C2+C3)/C0', 0.5)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Energy_Exchange_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 2.95  # Total weight is 2.95
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+    
+def Energy_Exchange_Carnitine_Group(file_path, metabolite_data):
+    scores = {
+        'C0': 0,
+        'C2': 0,
+        'C2/C0': 0,
+        '(C2+C3)/C0': 0,
+        'C0/(C16+C18)': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('C0', 1),
+            ('C2', 1),
+            ('C2/C0', 0.75),
+            ('(C2+C3)/C0', 0.625),
+            ('C0/(C16+C18)', 0.625)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Energy_Exchange_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 4  # Total weight is 2.95
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+
+def Neuroadaptation_Group(file_path, metabolite_data):
+    scores = {
+        'Cortisol': 0,
+        'Serotonin': 0,
+        'Melatonin': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('Cortisol', 1.2),
+            ('Serotonin', 0.8),
+            ('Melatonin', 0.75)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Neuroadaptation_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 2.75  # Total weight is 2.75
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+
+def Stress_Aminoacid_Group(file_path, metabolite_data):
+    scores = {
+        'Tyrosin': 0,
+        'Histidine': 0,
+        'Arginine': 0,
+        '(Arg+HomoArg)/ADMA': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('Tyrosin', 0.5),
+            ('Histidine', 0.5),
+            ('Arginine', 0.5),
+            ('(Arg+HomoArg)/ADMA', 0.75)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Stress_Aminoacid_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 2.25  # Total weight is 2.25
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+
+def Metochondria_Creatinine_Group(file_path, metabolite_data):
+    scores = {
+        'Creatinine': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('Creatinine', 0.5)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Metochondria_Creatinine_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 0.5  # Total weight is 0.5
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+
+def Glutamate_Exchange_Group(file_path, metabolite_data):
+    scores = {
+        'Glutamine/Glutamate': 0,
+        'GSG_index': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('Glutamine/Glutamate', 0.75),
+            ('GSG_index', 0.75)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Glutamate_Exchange_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 1.5  # Total weight is 1.55
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+
+def Tryptophan_Metabolism_Group(file_path, metabolite_data):
+    scores = {
+        'Indole-3-acetic acid': 0,
+        'Indole-3-propionic acid': 0,
+        'Indole-3-lactic acid': 0,
+        'Tryptamine': 0,
+        'Tryptophan': 0,
+        'Indole-3-carboxaldehyde': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('Indole-3-acetic acid', 1.5),
+            ('Indole-3-propionic acid', 1.5),
+            ('Indole-3-lactic acid', 1.0),
+            ('Tryptamine', 0.5),
+            ('Tryptophan', 0.5),
+            ('Indole-3-carboxaldehyde', 0.75)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Tryptophan_Metabolism_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 5.75  # Total weight is 5.0
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+
+# def Microbial_Stress_Group(file_path, metabolite_data):
+#     scores = {
+#         'Hippuric acid': 0,
+#         'Phenylacetic acid': 0,
+#         'p-Cresol sulfate': 0,
+#         'Indole-3-carboxaldehyde': 0
+#     }
+    
+#     try:
+#         risk_params = pd.read_excel(file_path)
+#         metab_data = pd.Series(metabolite_data)
+        
+#         markers = [
+#             ('Hippuric acid', 1.0),
+#             ('Phenylacetic acid', 0.5),
+#             ('p-Cresol sulfate', 1.5),
+#             ('Indole-3-carboxaldehyde', 0.75)
+#         ]
+        
+#         for marker, weight in markers:
+#             if marker in metab_data:
+#                 try:
+#                     row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
+#                     norm1 = row['norm_1']
+#                     norm2 = row['norm_2']
+#                     value = metab_data[marker]
+                    
+#                     if not (norm1 <= value <= norm2):
+#                         scores[marker] = weight
+#                 except (IndexError, KeyError):
+#                     continue
+    
+#     except Exception as e:
+#         print(f"Error in Microbial_Stress_Group: {str(e)}")
+#         return 50
+    
+#     total_score = sum(scores.values()) * 100 / 3.75  # Total weight is 3.75
+#         if total_score >= 90:
+    #     return 85
+    # else:
+    #     return total_score
+
+def Inflammation_and_Immune_Group(file_path, metabolite_data):
+    scores = {
+        'Kyn/Trp': 0,
+        'Quin/HIAA': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('Kyn/Trp', 0.75),
+            ('Quin/HIAA', 0.5)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Inflammation_and_Immune_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 1.25  # Total weight is 1.25
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+    
+def Tryptophan_Inflammation_Group(file_path, metabolite_data):
+    scores = {
+        'Kyn/Trp': 0,
+        'Trp/(Kyn+QA)': 0,
+        'Quin/HIAA': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('Kyn/Trp', 1.3),
+            ('Trp/(Kyn+QA)', 1.3),
+            ('Quin/HIAA', 0.6)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Tryptophan_Inflammation_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 3.2  # Total weight is 3.2
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+
+def Neuroendocrine_Group(file_path, metabolite_data):
+    scores = {
+        'Melatonin': 0,
+        'Serotonin': 0,
+        'Cortisol': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('Melatonin', 0.8),
+            ('Serotonin', 0.45),
+            ('Cortisol', 0.55)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Neuroendocrine_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 1.8  # Total weight is 1.8
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+
+def Integrative_Index_Group(file_path, metabolite_data):
+    scores = {
+        'ADMA': 0,
+        'TMAO': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('ADMA', 0.65),
+            ('TMAO', 0.45)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Integrative_Index_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 1.1  # Total weight is 1.1
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+
+def Ido_Path_Tryptophan_Group(file_path, metabolite_data):
+    scores = {
+        'Kyn/Trp': 0,
+        'Trp/(Kyn+QA)': 0,
+        'Quin/HIAA': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('Kyn/Trp', 1.88),
+            ('Trp/(Kyn+QA)', 1.50),
+            ('Quin/HIAA', 0.75)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Ido_Path_Tryptophan_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 4.13  # Total weight is 4.13
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+
+def Neuromediators_Group(file_path, metabolite_data):
+    scores = {
+        'Serotonin': 0,
+        'HIAA': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('Serotonin', 0.88),
+            ('HIAA', 0.38)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Neuromediators_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 1.26  # Total weight is 1.26
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+    
+def Neuromediators_Neuro_Group(file_path, metabolite_data):
+    scores = {
+        'Serotonin': 0,
+        'Melatonin': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('Serotonin', 0.625),
+            ('Melatonin', 0.625)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Neuromediators_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 1.25  # Total weight is 1.26
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+
+def Indols_and_Phenols_Group(file_path, metabolite_data):
+    scores = {
+        'Indole-3-acetic acid': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('Indole-3-acetic acid', 1.00),
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Indols_and_Phenols_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 1  # Total weight is 1.75
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+
+def General_Stress_Immune_Group(file_path, metabolite_data):
+    scores = {
+        'Cortisol': 0,
+        'ADMA': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('Cortisol', 0.63),
+            ('ADMA', 0.75)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in General_Stress_Immune_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 1.38  # Total weight is 1.38
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+
+def Complex_Index_Group(file_path, metabolite_data):
+    scores = {
+        'Quinolinic acid': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('Quinolinic acid', 1.50)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Complex_Index_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 1.50  # Total weight is 1.50
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+    
+def Amiac_Detox_Group(file_path, metabolite_data):
+    scores = {
+        'Ornitine': 0,
+        'Citrulline': 0,
+        'Arginine': 0
+    }
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('Ornitine', 0.78),
+            ('Citrulline', 0.56),
+            ('Arginine', 0.56)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Amiac_Detox_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 1.88 
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+    
+def Vitamine_B2_Group(file_path, metabolite_data):
+    scores = {
+        'Riboflavin': 0,
+        'Glutamine/Glutamate': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('Riboflavin', 1.76),
+            ('Glutamine/Glutamate', 0.59)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Vitamine_B2_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 2.35  # Total weight is 2.35
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+
+def Vitamine_B5_Group(file_path, metabolite_data):
+    scores = {
+        'Pantothenic acid': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('Pantothenic acid', 1.18)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Vitamine_B5_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 1.18  # Total weight is 1.18
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+
+def Vitamine_B6_Group(file_path, metabolite_data):
+    scores = {
+        'Kynurenine': 0,
+        'Kynurenic acid / Kynurenine': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('Kynurenine', 0.59),
+            ('Kynurenic acid / Kynurenine', 0.59)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Vitamine_B6_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 1.18  # Total weight is 1.18
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+
+def Vitamine_B9_B12_Group(file_path, metabolite_data):
+    scores = {
+        'Methionine': 0,
+        'Methionine-Sulfoxide': 0,
+        'Betaine/сholine': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('Methionine', 0.59),
+            ('Methionine-Sulfoxide', 0.59),
+            ('Betaine/сholine', 1.18)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Vitamine_B9_B12_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 2.36  # Total weight is 2.36
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+
+def Vitamine_B3_NAD_Group(file_path, metabolite_data):
+    scores = {
+        'Quinolinic acid': 0,
+        'Trp/(Kyn+QA)': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        # Calculate ratio if needed
+        if 'Tryptophan' in metab_data and 'Kynurenine' in metab_data and 'Quinolinic acid' in metab_data:
+            metab_data['Trp/(Kyn+QA)'] = metab_data['Tryptophan'] / (metab_data['Kynurenine'] + metab_data['Quinolinic acid'])
+        
+        markers = [
+            ('Quinolinic acid', 0.35),
+            ('Trp/(Kyn+QA)', 0.35)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Vitamine_B3_NAD_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 0.70  # Total weight is 0.70
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+
+def Serum_Aminoacids_Group(file_path, metabolite_data):
+    scores = {
+        'Methionine + Taurine': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('Methionine + Taurine', 1.18)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Serum_Aminoacids_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 1.18  # Total weight is 1.18
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+
+def Neurotroph_Reserv_Group(file_path, metabolite_data):
+    scores = {
+        'Tyrosin': 0,
+        'Tryptophan': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('Tyrosin', 0.24),
+            ('Tryptophan', 0.24)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Neurotroph_Reserv_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 0.48  # Total weight is 0.48
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+    
+def Over_Sugar_Group(file_path, metabolite_data):
+    scores = {
+        'Alanine': 0,
+        'Glutamine/Glutamate': 0,
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('Alanine', 1.11),
+            ('Glutamine/Glutamate', 0.89),
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Over_Sugar_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 2  # Total weight is 2.78
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+
+def Over_Lipid_Group(file_path, metabolite_data):
+    scores = {
+        'СДК': 0,
+        '(C16+C18)/C2': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('СДК', 1.11),
+            ('(C16+C18)/C2', 0.89)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Over_Lipid_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 2.00  # Total weight is 2.00
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+
+def Over_Protein_Group(file_path, metabolite_data):
+    scores = {
+        'BCAA': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('BCAA', 0.89)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Over_Protein_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 0.89  # Total weight is 1.45
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+
+def Deficit_Nutrients_Group(file_path, metabolite_data):
+    scores = {
+        'Methionine': 0,
+        'Tryptophan': 0,
+        'Riboflavin/Pantothenic': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        # Calculate ratio if needed
+        if 'Riboflavin' in metab_data and 'Pantothenic acid' in metab_data:
+            metab_data['Riboflavin/Pantothenic'] = metab_data['Riboflavin'] / metab_data['Pantothenic acid']
+        
+        markers = [
+            ('Methionine', 0.67),
+            ('Tryptophan', 0.67),
+            ('Riboflavin/Pantothenic', 0.56)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Deficit_Nutrients_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 1.90  # Total weight is 1.90
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+
+def Supply_Group(file_path, metabolite_data):
+    scores = {
+        'Serotonin': 0,
+        'Cortisol': 0,
+        'Betaine/choline': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('Serotonin', 0.56),
+            ('Cortisol', 0.56),
+            ('Betaine/choline', 0.78)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Supply_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 1.90  # Total weight is 1.90
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+    
+def AA_Exchange_Group(file_path, metabolite_data):
+    scores = {
+        'BCAA': 0,
+        'BCAA/AAA': 0,
+        'Phe/Tyr': 0,
+        'Glycine/Serine': 0,
+        'Glutamine/Glutamate': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('BCAA', 1.25),
+            ('BCAA/AAA', 1.0),
+            ('Phe/Tyr', 0.75),
+            ('Glycine/Serine', 0.625),
+            ('Glutamine/Glutamate', 0.625)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in AA_Exchange_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 4.25  # Total weight is 4.25
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+
+def Sug_Exchange_Group(file_path, metabolite_data):
+    scores = {
+        'Alanine': 0,
+        'Valine / Alanine': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('Alanine', 1.0),
+            ('Valine / Alanine', 0.5)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Sug_Exchange_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 1.5  # Total weight is 1.5
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+
+def Lip_Exchange_Group(file_path, metabolite_data):
+    scores = {
+        '(C16+C18)/C2': 0,
+        'СДК': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('(C16+C18)/C2', 1.0),
+            ('СДК', 0.75)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Lip_Exchange_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 1.75  # Total weight is 1.75
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+
+def Insulin_Exchange_Group(file_path, metabolite_data):
+    scores = {
+        'Tyrosin': 0,
+        'Trp/Kyn': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('Tyrosin', 0.75),
+            ('Trp/Kyn', 0.5)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Insulin_Exchange_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 1.25  # Total weight is 1.25
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+
+def Hormone_Exchange_Group(file_path, metabolite_data):
+    scores = {
+        'Cortisol': 0,
+        'Serotonin': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('Cortisol', 0.625),
+            ('Serotonin', 0.625)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Hormone_Exchange_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 1.25  # Total weight is 1.25
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+    
+def Chronic_Inflammation_Group(file_path, metabolite_data):
+    scores = {
+        'Kyn/Trp': 0,
+        'Quinolinic acid': 0,
+        'Quin/HIAA': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('Kyn/Trp', 1.05),
+            ('Quinolinic acid', 1.05),
+            ('Quin/HIAA', 0.74)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Chronic_Inflammation_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 2.84  # Total weight is 2.84
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+
+def Ox_Stress_Group(file_path, metabolite_data):
+    scores = {
+        'Methionine-Sulfoxide': 0,
+        'ADMA / NMMA': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('Methionine-Sulfoxide', 0.74),
+            ('ADMA / NMMA', 0.84)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Ox_Stress_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 1.58  # Total weight is 1.58
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+
+def Metil_Epigen_Group(file_path, metabolite_data):
+    scores = {
+        'Betaine/сholine': 0,
+        'DMG / Choline': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('Betaine/сholine', 0.74),
+            ('DMG / Choline', 0.74)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Metil_Epigen_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 1.48  # Total weight is 1.48
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+
+def Microbiota_Detox_Group(file_path, metabolite_data):
+    scores = {
+        'Indole-3-carboxaldehyde': 0,
+        'Indole-3-propionic acid': 0,
+        'Indole-3-acetic acid': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('Indole-3-carboxaldehyde', 0.53),
+            ('Indole-3-propionic acid', 0.53),
+            ('Indole-3-acetic acid', 0.53)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Microbiota_Detox_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 1.59  # Total weight is 1.59
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+
+def Metabolic_Stress_Group(file_path, metabolite_data):
+    scores = {
+        'Glutamine/Glutamate': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('Glutamine/Glutamate', 0.74)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Metabolic_Stress_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 0.74  # Total weight is 0.74
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+
+def Neuroendocrine_Controle_Group(file_path, metabolite_data):
+    scores = {
+        'Serotonin': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('Serotonin', 0.53)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Neuroendocrine_Controle_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 0.53  # Total weight is 0.53
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+
+def Prolifiration_Mitosis_Group(file_path, metabolite_data):
+    scores = {
+        'Tryptamine': 0,
+        'Melatonin': 0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('Tryptamine', 0.53),
+            ('Melatonin', 0.74)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Prolifiration_Mitosis_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 1.27  # Total weight is 1.27
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+    
+def Ido_Neuroinflam_Group(file_path, metabolite_data):
+    scores = {
+        'Kyn/Trp': 0,
+        'Quin/HIAA': 0,
+        'Quinolinic acid': 0,
+        'Kynurenic acid': 0,
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('Kyn/Trp', 1.25),
+            ('Quin/HIAA', 1),
+            ('Quinolinic acid', 1.25),
+            ('Kynurenic acid', 0.75)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Ido_Neuroinflam_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 4.5  # Total weight is 4.5
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+    
+def Disbalance_Metabolites_Group(file_path, metabolite_data):
+    scores = {
+        'Kynurenine': 0,
+        'Xanthurenic acid': 0,
+        'Trp/(Kyn+QA)': 0,
+        'Kyn/Quin': 0,
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('Kynurenine', 0.75),
+            ('Xanthurenic acid', 0.625),
+            ('Trp/(Kyn+QA)', 0.625),
+            ('Kyn/Quin', 0.625)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Disbalance_Metabolites_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 2.625  # Total weight is 2.625
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
+    
+def Mitochondria_Stress_Group(file_path, metabolite_data):
+    scores = {
+        'Cortisol': 0,
+        'Methionine-Sulfoxide':0
+    }
+    
+    try:
+        risk_params = pd.read_excel(file_path)
+        metab_data = pd.Series(metabolite_data)
+        
+        markers = [
+            ('Cortisol', 0.625),
+            ('Methionine-Sulfoxide', 0.625)
+        ]
+        
+        for marker, weight in markers:
+            if marker in metab_data:
+                try:
+                    row = risk_params[risk_params['Маркер'] == marker].iloc[0]
+                    norm1 = row['norm_1']
+                    norm2 = row['norm_2']
+                    value = metab_data[marker]
+                    
+                    if not (norm1 <= value <= norm2):
+                        scores[marker] = weight
+                except (IndexError, KeyError):
+                    continue
+    
+    except Exception as e:
+        print(f"Error in Mitochondria_Stress_Group: {str(e)}")
+        return 50
+    
+    total_score = sum(scores.values()) * 100 / 1.25  # Total weight is 1.875
+    if total_score >= 90:
+        return 85
+    else:
+        return total_score
 
 app = Dash(__name__)
 
@@ -828,9 +3577,9 @@ def main():
     parser.add_argument('--age', required=True)
     parser.add_argument('--gender', required=True)
     parser.add_argument('--date', required=True)
-    parser.add_argument('--file1', required=True)
-    parser.add_argument('--file2', required=True)
-    parser.add_argument('--file_type', required=True)
+    parser.add_argument('--metabolomic_data', required=True)
+    parser.add_argument('--risk_scores', required=True)
+    parser.add_argument('--risk_params', required=True)
     args = parser.parse_args()
     # Register shutdown handler
     signal.signal(signal.SIGTERM, shutdown_handler)
@@ -841,11 +3590,18 @@ def main():
         age = args.age
         gender = args.gender
         date = args.date
-        file_type = args.file_type
+        metabolomic_data_path = args.metabolomic_data
+        risk_scores_path = args.risk_scores
+        risk_params_path = args.risk_params
         
         # Process files with safety checks
-        metabolite_data = safe_parse_metabolite_data(args.file1, file_type)
-        metabolite_ac_data = safe_parse_metabolite_data(args.file2, file_type)
+        metabolite_data = safe_parse_metabolite_data(metabolomic_data_path)
+        
+        risk_scores = pd.read_excel(risk_scores_path)
+        
+        # Generate radial diagram
+        radial_path = os.path.join('assets', "radial_diagram.png")
+        generate_radial_diagram(risk_scores, radial_path)
         
         # Calculate all values using safe functions
         ref_1, value_1 = get_value_1(metabolite_data)
@@ -856,433 +3612,3279 @@ def main():
         ref_6, value_6 = get_value_6(metabolite_data)
         ref_7, value_7 = get_value_7(metabolite_data)
         ref_8, value_8 = get_value_8(metabolite_data)
-        ref_9, value_9 = get_value_9(metabolite_data, metabolite_ac_data)
-        ref_10, value_10 = get_value_10(metabolite_ac_data)
-        ref_11, value_11 = get_value_11(metabolite_ac_data)
-        ref_12, value_12 = get_value_12(metabolite_ac_data)
+        ref_9, value_9 = get_value_9(metabolite_data)
+        ref_10, value_10 = get_value_10(metabolite_data)
+        ref_11, value_11 = get_value_11(metabolite_data)
+        ref_12, value_12 = get_value_12(metabolite_data)
         ref_13, value_13 = get_value_13(metabolite_data)
         ref_14, value_14 = get_value_14(metabolite_data)
         ref_15, value_15 = get_value_15(metabolite_data)
+        
+        # РИСК ССЗ
+        no_syntase_score = NO_syntase_Group(risk_params_path, metabolite_data)
+        inflammation_score = Inflammation_Group(risk_params_path, metabolite_data)
+        methilation_score = Methilation_Group(risk_params_path, metabolite_data)
+        mitochondrial_score = Mitochondrial_Group(risk_params_path, metabolite_data)
+        insuline_resistance_score = Insulin_Resistance_Group(risk_params_path, metabolite_data)
+        neurovegitative_score = Neurovegitative_Group(risk_params_path, metabolite_data)
+        
+        # Печеночные функции
+        Methionine_exchange = Methionine_Exchange_Group(risk_params_path, metabolite_data)
+        # antoxidant_system = Antoxidant_System_Group(risk_params_path, metabolite_data)
+        protein_exchange = Protein_Exchange_Group(risk_params_path, metabolite_data)
+        aminoacid_profile = Aminoacid_Profile(risk_params_path, metabolite_data)
+        # conjugation_detoxication = Conjugation_Detoxication(risk_params_path, metabolite_data)
+        
+        # Влияние факторов среды
+        oxidative_stress_score = Oxidative_Stress_Group(risk_params_path, metabolite_data)
+        inflam_and_microbiotic_score = Inflammation_and_Microbial_Group(risk_params_path, metabolite_data)
+        # aromatic_toxic_score = Aromatic_Toxic_Group(risk_params_path, metabolite_data)
+        nitrogen_toxic_score = Nitrogen_Toxic_Group(risk_params_path, metabolite_data)
+        lipid_toxic_score = Lipid_Toxic_Group(risk_params_path, metabolite_data)
+        
+        
+        #состояние кожи и волос
+        collagen_score = Collagen_Group(risk_params_path, metabolite_data)
+        regeneration_score = Regeneration_Group(risk_params_path, metabolite_data)
+        dream_score = Dream_Group(risk_params_path, metabolite_data)
+        inflam_stress_score = Inflammation_and_Stress_Group(risk_params_path, metabolite_data)
+        exchange_serum_score = Exchange_Serum_Group(risk_params_path, metabolite_data)
+        neuro_inflammation_score = Neuroinflammation_Group(risk_params_path, metabolite_data)
+        
+        # Адаптивные возможности организма
+        energy_exchange_score = Energy_Exchange_Group(risk_params_path, metabolite_data)
+        neuroadaptation_score = Neuroadaptation_Group(risk_params_path, metabolite_data)
+        stress_aminoacid_score = Stress_Aminoacid_Group(risk_params_path, metabolite_data)
+        metochondria_creatinine_score = Metochondria_Creatinine_Group(risk_params_path, metabolite_data)
+        glutamate_exchange_score = Glutamate_Exchange_Group(risk_params_path, metabolite_data)
+        
+        # Здоровье микробиоты
+        tryptophan_metabolism_score = Tryptophan_Metabolism_Group(risk_params_path, metabolite_data)
+        # microbial_stress_score = Microbial_Stress_Group(risk_params_path, metabolite_data)
+        inflam_immune_score = Inflammation_and_Immune_Group(risk_params_path, metabolite_data)
+        
+        # Темп биологического старения
+        tryptophan_inflam_score = Tryptophan_Inflammation_Group(risk_params_path, metabolite_data)
+        # оксидативный стресс уже существует
+        # метахондрии уже есть
+        neuro_endocrine_score = Neuroendocrine_Group(risk_params_path, metabolite_data)
+        integrative_index_score = Integrative_Index_Group(risk_params_path, metabolite_data)
+        
+        # Степень воспалительных процессов
+        ido_path_tryptophan_score = Ido_Path_Tryptophan_Group(risk_params_path, metabolite_data)
+        neuromediators_score = Neuromediators_Group(risk_params_path, metabolite_data)
+        indols_phenols_score = Indols_and_Phenols_Group(risk_params_path, metabolite_data)
+        general_stress_immune_score = General_Stress_Immune_Group(risk_params_path, metabolite_data)
+        complex_index = Complex_Index_Group(risk_params_path, metabolite_data)
+        
+        # Токсическая нагрузка и детоксикация
+        amiac_detox_score =  Amiac_Detox_Group(risk_params_path, metabolite_data)
+        # оксидативная нагрузка уже есть
+        # азотистая нагрузка тоже есть
+        
+        # Митохондриальное здоровье
+        energy_exchange_carnitine_score = Energy_Exchange_Carnitine_Group(risk_params_path, metabolite_data)
+        
+        # Нутриентный статус организма
+        vitamine_b2_score = Vitamine_B2_Group(risk_params_path, metabolite_data)
+        vitamine_b5_score = Vitamine_B5_Group(risk_params_path, metabolite_data)
+        vitamine_b6_score = Vitamine_B6_Group(risk_params_path, metabolite_data)
+        vitamine_b9_b12_score = Vitamine_B9_B12_Group(risk_params_path, metabolite_data)
+        vitamine_b3_nad_score = Vitamine_B3_NAD_Group(risk_params_path, metabolite_data)
+        serum_aminoacids_score = Serum_Aminoacids_Group(risk_params_path, metabolite_data)
+        # energy exchange
+        neurotroph_reserv_score = Neurotroph_Reserv_Group(risk_params_path, metabolite_data)
+        
+        # # Риск алиментарно-зависимых заболеваний
+        over_sugar_score = Over_Sugar_Group(risk_params_path, metabolite_data)
+        over_lipid_score = Over_Lipid_Group(risk_params_path, metabolite_data)
+        over_protein_score = Over_Protein_Group(risk_params_path, metabolite_data)
+        deficit_nutrients_score = Deficit_Nutrients_Group(risk_params_path, metabolite_data)
+        supply_score = Supply_Group(risk_params_path, metabolite_data)
+        
+        # Обмен веществ
+        aa_exchange = AA_Exchange_Group(risk_params_path, metabolite_data)
+        sug_exchange = Sug_Exchange_Group(risk_params_path, metabolite_data)
+        lip_exchange = Lip_Exchange_Group(risk_params_path, metabolite_data)
+        insulin_exchange = Insulin_Exchange_Group(risk_params_path, metabolite_data)
+        hormone_exchange = Hormone_Exchange_Group(risk_params_path, metabolite_data)
+        
+        # Риск онкологических заболеваний
+        chronic_inflamm_score = Chronic_Inflammation_Group(risk_params_path, metabolite_data)
+        ox_stress_score = Ox_Stress_Group(risk_params_path, metabolite_data)
+        metil_epigen_score = Metil_Epigen_Group(risk_params_path, metabolite_data)
+        microbiota_detox_score = Microbiota_Detox_Group(risk_params_path, metabolite_data)
+        metabolic_stress_score = Metabolic_Stress_Group(risk_params_path, metabolite_data)
+        neuro_endocrine_controle_score = Neuroendocrine_Controle_Group(risk_params_path, metabolite_data)
+        prolifiration_mitosis_score = Prolifiration_Mitosis_Group(risk_params_path, metabolite_data)
+        
+        # риска нейродегенеративных заболеваний
+        ido_neuroinflam_score = Ido_Neuroinflam_Group(risk_params_path, metabolite_data)
+        disbalance_metabolites_score = Disbalance_Metabolites_Group(risk_params_path, metabolite_data)
+        neuromediators_neuro_score = Neuromediators_Neuro_Group(risk_params_path, metabolite_data)
+        mitochondria_stress_score = Mitochondria_Stress_Group(risk_params_path, metabolite_data)
+        
         def create_layout():
             """Your complete existing layout using all the variables"""
             return html.Div([
-            # # 1 страница
-            # html.Div([
-            #     html.Div([
-            #         html.Img(src=app.get_asset_url('logo-sechenov.png'), style={'width':'100%','height':'100%','margin':'0px'})
-            #     ],style={'width':'20%','height':'100px', 'margin':'0px'}),
-            #     html.Div([
-            #         html.Div([
-            #             html.Div([
-            #                 html.P('ФИО:',style={'margin':'0px'}), html.B(f'{name}',style={'margin':'0px','margin-left':'5px'})
-            #             ],style={'margin':'0px','display':'flex', 'justify-content':'left', 'width':'40%'}),
-            #             html.Div([
-            #                 html.P('Дата:',style={'margin':'0px'}), html.B(f'{date}',style={'margin':'0px','margin-left':'5px'})
-            #             ],style={'margin':'0px','display':'flex', 'justify-content':'left', 'width':'40%'}),
-            #             html.Div([
-            #                 html.P('Возраст:',style={'margin':'0px'}), html.B(f'{age}',style={'margin':'0px','margin-left':'5px'})
-            #             ],style={'margin':'0px','display':'flex', 'justify-content':'left', 'width':'40%'}),
-            #             html.Div([
-            #                 html.P('Пол:',style={'margin':'0px'}), html.B(f'{gender}',style={'margin':'0px','margin-left':'5px'})
-            #             ],style={'margin':'0px','display':'flex', 'justify-content':'left', 'width':'40%',}), 
-            #         ],style={'margin-top':'10px','margin-left':'25px','color':'black','font-family':'Calibri','font-size':'15px'}),
+            # 1 страница
+            html.Div([
+                html.Div([
+                    html.Div([
+                        html.Div([
+                            html.P('ФИО:',style={'margin':'0px'}), html.B(f'{name}',style={'margin':'0px','margin-left':'5px'})
+                        ],style={'margin':'0px','display':'flex', 'justify-content':'left', 'width':'40%'}),
+                        html.Div([
+                            html.P('Дата:',style={'margin':'0px'}), html.B(f'{date}',style={'margin':'0px','margin-left':'5px'})
+                        ],style={'margin':'0px','display':'flex', 'justify-content':'left', 'width':'40%'}),
+                        html.Div([
+                            html.P('Возраст:',style={'margin':'0px'}), html.B(f'{age}',style={'margin':'0px','margin-left':'5px'})
+                        ],style={'margin':'0px','display':'flex', 'justify-content':'left', 'width':'40%'}),
+                        html.Div([
+                            html.P('Пол:',style={'margin':'0px'}), html.B(f'{gender}',style={'margin':'0px','margin-left':'5px'})
+                        ],style={'margin':'0px','display':'flex', 'justify-content':'left', 'width':'40%',}), 
+                    ],style={'margin-top':'10px','margin-left':'25px','color':'black','font-family':'Calibri','font-size':'15px'}),
                     
-            #     ],style={'width':'80%','height':'100px', 'color':'white','margin':'0px','background-image':'url("/assets/rHeader.png")','background-repeat':'no-repeat','background-size':'100%','background-position':'center'}),
-            # ], style={'display':'flex', 'justify-content':'space-between','width':'100%','height':'100px','margin-bottom':'10px'}),
-            # html.Div([
-            #     html.H1(children='Панорамный метаболомный обзор', style={'textAlign':'center','margin':'0px'}),]
-            #          , style={'width':'100%','background-color':'#0874bc', 'color':'white','font-family':'Calibri','margin':'0px'}),
-            # html.P('На графике представлены функциональные группы метаболитов, которые были оценены по уровню риска на основе Ваших результатов метаболомного профилирования',
-            #                 style={'color':'black','font-family':'Calibri','font-size':'16px','margin':'0px'}),
-            # html.Div([
-            #     html.Div([
-            #         html.Div([
-            #             html.H3(children='Уровень риска', style={'textAlign':'left', 'color':'#0874bc','font-family':'Calibri','margin':'0px','margin-top':'5px',}),
-            #         ],style={'display':'flex', 'width':'100%','height':'30px'}),
-            #         html.Div([
-            #             html.Img(src=app.get_asset_url('risk_bar.png'), style={'width':'100%','pointer-events':'none', 'margin-left':'3px'}),
-            #         ], style={'margin':'0px','height':'50px','margin-right':'10px'}),
-            #         html.Div([
-            #             html.Img(src=app.get_asset_url(f'{main_plot(part=part)}'), style={'width':'100%','margin-top':'10px'}),
-            #         ], style={'display':'flex', 'justify-content':'space-between', 'width':'100%','height':'330px'}),
-            #     ], style={ 'width':'65%',}),
-            #     html.Div([
-            #         html.P('На основании панорамного метаболомного профиля был оценен темп старения организма',style={'color':'black','height':'60px','font-family':'Calibri','font-size':'16px','margin':'0px','margin-left':'10px','text-align':"left ",'margin-top':'100px'}),
-            #         html.Div([html.Img(src=app.get_asset_url(f'{normal_dist(N,a,procent_speed)}'), style={'width':'100%','margin-top':'10px'})], style={'height':'150px'}),
-            #         html.Div([
-            #             html.P("медленно",style={'margin':'0px','margin-left':'10px'}),
-            #             html.P("нормально",style={'margin':'0px'}),
-            #             html.P("быстро",style={'margin':'0px','margin-right':'10px'}),
-            #         ],style={'height':'20px','display':'flex', 'justify-content':'space-between', 'width':'100%','font-family':'Calibri','font-size':'16px','margin':'0px'}),
-            #         html.Div([
-            #             html.P(f'{get_text_from_procent(procent_speed)}',style={'margin':'0','font-size':'18px','color':'white','font-family':'Calibri','font-weight':'bold','line-height':'normal','display':'inline-block','vertical-align':'center'}),
-            #         ], style={'height':'47px','background-color':f'{get_color_under_normal_dist(procent_speed)}','line-height':'47px','text-align':'center','margin-left':'40px','margin-right':'40px'}),    
-            #     ], style={'width':'35%',}),
-            # ], style={'display':'flex', 'justify-content':'space-between', 'width':'100%'}),
-            # html.Div([
-            #     html.P('Ниже показано, какие классы метаболитов составляют функциональные группы, и как изменение в классе метаболитов повлияло на результат Панорамного метаболомного обзора.',
-            #             style={'color':'black','font-family':'Calibri','font-size':'16px','margin':'0px','text-align':"left"}),
-            #     ], style={'width':'100%'}),
-            # html.Div([
-            #     html.Div([
-            #         html.Div([
-            #             html.P('1. Обмен веществ – (',style={'margin':'0px','margin-bottom':'1px'}),html.B(f'{obmen_veshestv}%',style={'margin':'0px'}),html.P(')',style={'margin':'0px'}),
-            #             html.Div([
-            #                 html.Div([],style={'width':f'{procent_validator(obmen_veshestv)}','background-color':f'{get_color_under_normal_dist(obmen_veshestv)}','border-radius':'2px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center','margin-left':'5px','margin-top':'6px'}),
-            #             ],style={'width':'50px','height':'18px','line-height':'18px'}),
-            #         ], style={'color':'black','font-family':'Calibri','font-size':'16px','margin':'0px','display':'flex', 'justify-content':'left','margin-bottom':'1px'}),
+                ],style={'width':'80%','height':'100px', 'color':'white','margin':'0px','background-image':'url("/assets/rHeader.png")','background-repeat':'no-repeat','background-size':'100%','background-position':'center'}),
+            ], style={'display':'flex', 'justify-content':'right','width':'100%','height':'100px','margin-bottom':'10px'}),
+            html.Div([
+                html.H1(children='Панорамный метаболомный обзор', style={'textAlign':'center','margin':'0px'}),]
+                     , style={'width':'100%','background-color':'#0874bc', 'color':'white','font-family':'Calibri','margin':'0px'}),
+
+            html.Img(src=app.get_asset_url('radial_diagram.png'), style={'width':'100%','height':'auto','margin-top':'12px', 'margin-bottom':'2px'}),
+            #  Make table with columns Балл and Интерпретация
+            dash_table.DataTable(
+                    columns=[
+                        {"name": "Балл", "id": "Балл"},
+                        {"name": "Интерпретация", "id": "Интерпретация"},
+                    ],
+                    data=[
+                        {"Балл": "9-10", "Интерпретация": "Метаболческая ось в хорошем или оптимальном состоянии"},
+                        {"Балл": "7-8", "Интерпретация": "Незначительные отклонения, компенсаторные механизмы работают"},
+                        {"Балл": "5-6", "Интерпретация": "Умеренные нарушения — не критично, но уже требует коррекции"},
+                        {"Балл": "3-4", "Интерпретация": "Существенные изменения — снижен резерв, хроническая нагрузка"},
+                        {"Балл": "1-2", "Интерпретация": "Выраженные патологии, декомпенсация, высокий риск"},
+                    ],
+                    style_header={
+                        'backgroundColor': '#3990c9',
+                        'color': 'white',
+                        'font-family': 'Calibri',
+                        'fontSize': '15px',
+                        'fontWeight': 'bold',
+                        'textAlign': 'center',
+                        'padding': '0px 10px',
+                    },
+                    style_cell={
+                        'font-family': 'Calibri',
+                        'fontSize': '13px',
+                        'color': 'black !important',
+                        'textAlign': 'center',
+                        'padding': '0px 20px',
+                    },
+                    style_table={
+                        'width': 'auto',
+                        'align': 'center',
+                        'padding': '0px 60px',
+                        'border-collapse': 'collapse'
+                    },
+                    style_data_conditional=[
+                        {
+                            'if': {
+                                'filter_query': '{Балл} eq "9-10"',
+                                'column_id': 'Балл'
+                            },
+                            'background-color': 'rgba(190,235,190,255)'
+                        },
+                        {
+                            'if': {
+                                'filter_query': '{Балл} eq "7-8"',
+                                'column_id': 'Балл'
+                            },
+                            'background-color': 'rgba(255,255,175,255)',
+                        },
+                        {
+                            'if': {
+                                'filter_query': '{Балл} eq "5-6"',
+                                'column_id': 'Балл'
+                            },
+                            'background-color': 'rgba(255,225,175,255)'
+                        },
+                        {
+                            'if': {
+                                'filter_query': '{Балл} eq "3-4"',
+                                'column_id': 'Балл'
+                            },
+                            'background-color': 'rgb(234, 102, 25, 0.3)',
+                        },
+                        {
+                            'if': {
+                                'filter_query': '{Балл} eq "1-2"',
+                                'column_id': 'Балл'
+                            },
+                            'background-color': 'rgb(234, 25, 25, 0.3)'
+                        },
+                    ]
+                ),
+            
+            html.Div([
+            # ADD info icon
+            
+            html.Img(src=app.get_asset_url('info_icon.png'), style={'width':'20px','height':'20px','margin-right':'15px'}),
+            
+            html.P('Ниже показано, какие классы метаболитов составляют функциональные группы, и как изменение в классе метаболитов повлияло на результат Панорамного метаболомного обзора.',
+                    style={'color':'black','font-family':'Calibri','font-size':'16px','text-align':"left"}),
+            ], style={'display': 'flex','margin-top':'10px','margin-bottom':'10px', 'flex-direction': 'row','align-items': 'center', 'width':'fit-content', 'border-radius': '5px', 'padding': '0px 0px 0px 15px', 'background-color': '#fffede'}),
+            
+            # Plot risk_scores table
+            html.Div([
+                html.Div([
+                    html.Div([
+                        html.P('1. Сердечно-сосудистые заболевания', style={'margin': '0px', 'margin-bottom': '1px'}),
+                        html.Div([
+                            html.Div([
+                                html.Div([], style={
+                                    'width': f"{risk_scores.loc[risk_scores['Группа риска'] == 'Риск ССЗ', 'Риск-скор'].values[0] * 10}%",
+                                    'background-color': get_color_under_normal_dist(
+                                        100-(risk_scores.loc[risk_scores['Группа риска'] == 'Риск ССЗ', 'Риск-скор'].values[0] * 10)
+                                    ),
+                                    'border-radius': '2px',
+                                    'height': '13px',
+                                    'line-height': 'normal',
+                                    'display': 'inline-block',
+                                    'vertical-align': 'center',
+                                }),
+                            ], style={'display': 'flex', 'align-self': 'center','width': '70px', 'height': '13px','line-height': 'normal', 'border-radius': '2px','background-color':  'lightgrey', 'margin-left':'5px', 'margin-right':'5px'}),
+                            html.B(
+                                f"{risk_scores.loc[risk_scores['Группа риска'] == 'Риск ССЗ', 'Риск-скор'].values[0]} из 10",
+                                style={'margin': '0px'}
+                            )
+                        ], style ={'display': 'flex', 'flex-direction': 'row', 'flex-wrap': 'nowrap'})
+                    ],  style={
+                        'color': 'black',
+                        'font-family': 'Calibri',
+                        'font-size': '16px',
+                        'margin': '0px',
+                        'display': 'flex',
+                        'justify-content': 'space-between',
+                        'margin-bottom': '0px',
+                        'margin-top': '5px'
+                    }),
                     
-            #         html.Div([
-            #             html.Div([
-            #                 html.Div([],style={'width':f'{procent_validator(obmen_veshestv_list[0])}','background-color':f'{get_color(obmen_veshestv_list[0])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
-            #             ],style={'width':'23%','height':'18px','line-height':'18px'}),
-            #             html.Div([
-            #                 html.P('Карнитин',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
-            #             ],style={'width':'75%'}),
-            #         ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
-            #         html.Div([
-            #             html.Div([
-            #                 html.Div([],style={'width':f'{procent_validator(obmen_veshestv_list[1])}','background-color':f'{get_color(obmen_veshestv_list[1])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
-            #             ],style={'width':'23%','height':'18px','line-height':'18px'}),
-            #             html.Div([
-            #                 html.P('Короткоцепочечные ацилкарнитины',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
-            #             ],style={'width':'77%'}),
-            #         ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
-            #         html.Div([
-            #             html.Div([
-            #                 html.Div([],style={'width':f'{procent_validator(obmen_veshestv_list[2])}','background-color':f'{get_color(obmen_veshestv_list[2])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
-            #             ],style={'width':'23%','height':'18px','line-height':'18px'}),
-            #             html.Div([
-            #                 html.P('Среднецепочечные ацилкарнитины',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
-            #             ],style={'width':'77%'}),
-            #         ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
-            #         html.Div([
-            #             html.Div([
-            #                 html.Div([],style={'width':f'{procent_validator(obmen_veshestv_list[3])}','background-color':f'{get_color(obmen_veshestv_list[3])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
-            #             ],style={'width':'23%','height':'18px','line-height':'18px'}),
-            #             html.Div([
-            #                 html.P('Длинноцепочечные ацилкарнитины',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
-            #             ],style={'width':'77%'}),
-            #         ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
-            #         html.Div([
-            #             html.Div([
-            #                 html.Div([],style={'width':f'{procent_validator(obmen_veshestv_list[4])}','background-color':f'{get_color(obmen_veshestv_list[4])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
-            #             ],style={'width':'23%','height':'18px','line-height':'18px'}),
-            #             html.Div([
-            #                 html.P('Функция эндотелия сосудов',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
-            #             ],style={'width':'77%'}),
-            #         ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
-
-
-
-            #         html.Div([
-            #             html.P('3. Нутриентный статус – (',style={'margin':'0px','margin-bottom':'1px'}),html.B(f'{nutrieviy_status}%',style={'margin':'0px'}),html.P(')',style={'margin':'0px'}),
-            #             html.Div([
-            #                 html.Div([],style={'width':f'{procent_validator(nutrieviy_status)}','background-color':f'{get_color_under_normal_dist(nutrieviy_status)}','border-radius':'2px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center','margin-left':'5px','margin-top':'6px'}),
-            #             ],style={'width':'50px','height':'18px','line-height':'18px'}),  
-            #         ], style={'color':'black','font-family':'Calibri','font-size':'16px','margin':'0px','display':'flex', 'justify-content':'left','margin-top':'24px','margin-bottom':'1px'}),
+                    html.Div([], style={
+                        'width': "100%",
+                        'background-color': "#0874bc",
+                        'height': '2px',
+                        'line-height': 'normal',
+                        'display': 'inline-block',
+                        'vertical-align': 'center',
+                        'margin-bottom':'2px'
+                    }),
                     
-            #         html.Div([
-            #             html.Div([
-            #                 html.Div([],style={'width':f'{procent_validator(nutrieviy_status_list[0])}','background-color':f'{get_color(nutrieviy_status_list[0])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
-            #             ],style={'width':'23%','height':'18px','line-height':'18px'}),
-            #             html.Div([
-            #                 html.P('Витамины',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
-            #             ],style={'width':'77%'}),
-            #         ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
-            #         html.Div([
-            #             html.Div([
-            #                 html.Div([],style={'width':f'{procent_validator(nutrieviy_status_list[1])}','background-color':f'{get_color(nutrieviy_status_list[1])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
-            #             ],style={'width':'23%','height':'18px','line-height':'18px'}),
-            #             html.Div([
-            #                 html.P('Метаболизм холина',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
-            #             ],style={'width':'77%'}),
-            #         ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
-            #         html.Div([
-            #             html.Div([
-            #                 html.Div([],style={'width':f'{procent_validator(nutrieviy_status_list[2])}','background-color':f'{get_color(nutrieviy_status_list[2])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
-            #             ],style={'width':'23%','height':'18px','line-height':'18px'}),
-            #             html.Div([
-            #                 html.P('Потребление рыбы',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
-            #             ],style={'width':'77%'}),
-            #         ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
-            #         html.Div([
-            #             html.Div([
-            #                 html.Div([],style={'width':f'{procent_validator(nutrieviy_status_list[3])}','background-color':f'{get_color(nutrieviy_status_list[3])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
-            #             ],style={'width':'23%','height':'18px','line-height':'18px'}),
-            #             html.Div([
-            #                 html.P('Потребление растительной пищи',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
-            #             ],style={'width':'77%'}),
-            #         ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
-            #         html.Div([
-            #             html.Div([
-            #                 html.Div([],style={'width':f'{procent_validator(nutrieviy_status_list[4])}','background-color':f'{get_color(nutrieviy_status_list[4])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
-            #             ],style={'width':'23%','height':'18px','line-height':'18px'}),
-            #             html.Div([
-            #                 html.P('Потребление мяса',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
-            #             ],style={'width':'77%'}),
-            #         ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
-
-
-
-            #         html.Div([
-            #             html.P('5. Токсическое воздействие – (',style={'margin':'0px','margin-bottom':'1px'}),html.B(f'{toxicheskie_vosdeystvia}%',style={'margin':'0px'}),html.P(')',style={'margin':'0px'}),
-            #             html.Div([
-            #                 html.Div([],style={'width':f'{procent_validator(toxicheskie_vosdeystvia)}','background-color':f'{get_color_under_normal_dist(toxicheskie_vosdeystvia)}','border-radius':'2px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center','margin-left':'5px','margin-top':'6px'}),
-            #             ],style={'width':'50px','height':'18px','line-height':'18px'}),
-            #         ], style={'color':'black','font-family':'Calibri','font-size':'16px','margin':'0px','display':'flex', 'justify-content':'left','margin-top':'6px','margin-bottom':'1px'}),
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 - no_syntase_score}%',
+                                'background-color': get_color(no_syntase_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('NO-синтаза / Эндотелий', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
                     
-            #         html.Div([
-            #             html.Div([
-            #                 html.Div([],style={'width':f'{procent_validator(toxicheskie_vosdeystvia_list[0])}','background-color':f'{get_color(toxicheskie_vosdeystvia_list[0])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
-            #             ],style={'width':'23%','height':'18px','line-height':'18px'}),
-            #             html.Div([
-            #                 html.P('Аллергия',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
-            #             ],style={'width':'77%'}),
-            #         ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
-            #         html.Div([
-            #             html.Div([
-            #                 html.Div([],style={'width':f'{procent_validator(toxicheskie_vosdeystvia_list[1])}','background-color':f'{get_color(toxicheskie_vosdeystvia_list[1])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
-            #             ],style={'width':'23%','height':'18px','line-height':'18px'}),
-            #             html.Div([
-            #                 html.P('Окислительный стресс',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
-            #             ],style={'width':'77%'}),
-            #         ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
-            #         html.Div([
-            #             html.Div([
-            #                 html.Div([],style={'width':f'{procent_validator(toxicheskie_vosdeystvia_list[2])}','background-color':f'{get_color(toxicheskie_vosdeystvia_list[2])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
-            #             ],style={'width':'23%','height':'18px','line-height':'18px'}),
-            #             html.Div([
-            #                 html.P('Цикл мочевины',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
-            #             ],style={'width':'77%'}),
-            #         ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
-
-
-
-            #         html.Div([
-            #             html.P('7. Воспаление – (',style={'margin':'0px','margin-bottom':'1px'}),html.B(f'{vospalenie}%',style={'margin':'0px'}),html.P(')',style={'margin':'0px'}),
-            #             html.Div([
-            #                 html.Div([],style={'width':f'{procent_validator(vospalenie)}','background-color':f'{get_color_under_normal_dist(vospalenie)}','border-radius':'2px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center','margin-left':'5px','margin-top':'5px'}),
-            #             ],style={'width':'50px','height':'18px','line-height':'18px'}),
-            #         ], style={'color':'black','font-family':'Calibri','font-size':'16px','margin':'0px','display':'flex', 'justify-content':'left','margin-top':'6px','margin-bottom':'1px'}),
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  inflammation_score}%',
+                                'background-color': get_color(inflammation_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Воспаление / IDO путь', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
                     
-            #         html.Div([
-            #             html.Div([
-            #                 html.Div([],style={'width':f'{procent_validator(vospalenie_list[0])}','background-color':f'{get_color(vospalenie_list[0])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
-            #             ],style={'width':'23%','height':'18px','line-height':'18px'}),
-            #             html.Div([
-            #                 html.P('Маркеры воспаления',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
-            #             ],style={'width':'77%'}),
-            #         ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
-
-
-            #         html.Div([
-            #             html.P('9. Функция печени – (',style={'margin':'0px','margin-bottom':'1px'}),html.B(f'{functii_pecheni}%',style={'margin':'0px'}),html.P(')',style={'margin':'0px'}),
-            #             html.Div([
-            #                 html.Div([],style={'width':f'{procent_validator(functii_pecheni)}','background-color':f'{get_color_under_normal_dist(functii_pecheni)}','border-radius':'2px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center','margin-left':'5px','margin-top':'6px'}),
-            #             ],style={'width':'50px','height':'18px','line-height':'18px'}),  
-            #         ], style={'color':'black','font-family':'Calibri','font-size':'16px','margin':'0px','display':'flex', 'justify-content':'left','margin-top':'6px','margin-bottom':'1px'}),
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  methilation_score}%',
+                                'background-color': get_color(methilation_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Метилирование / холин', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
                     
-            #         html.Div([
-            #             html.Div([
-            #                 html.Div([],style={'width':f'{procent_validator(functii_pecheni_list[0])}','background-color':f'{get_color(functii_pecheni_list[0])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
-            #             ],style={'width':'23%','height':'18px','line-height':'18px'}),
-            #             html.Div([
-            #                 html.P('Индекс Фишера',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
-            #             ],style={'width':'77%'}),
-            #         ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
-            #         html.Div([
-            #             html.Div([
-            #                 html.Div([],style={'width':f'{procent_validator(functii_pecheni_list[1])}','background-color':f'{get_color(functii_pecheni_list[1])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
-            #             ],style={'width':'23%','height':'18px','line-height':'18px'}),
-            #             html.Div([
-            #                 html.P('Индекс Aor',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
-            #             ],style={'width':'77%'}),
-            #         ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
-            #         html.Div([
-            #             html.Div([
-            #                 html.Div([],style={'width':f'{procent_validator(functii_pecheni_list[2])}','background-color':f'{get_color(functii_pecheni_list[2])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
-            #             ],style={'width':'23%','height':'18px','line-height':'18px'}),
-            #             html.Div([
-            #                 html.P('Индекс GABR',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
-            #             ],style={'width':'77%'}),
-            #         ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
-            #         html.Div([
-            #             html.Div([
-            #                 html.Div([],style={'width':f'{procent_validator(functii_pecheni_list[3])}','background-color':f'{get_color(functii_pecheni_list[3])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
-            #             ],style={'width':'23%','height':'18px','line-height':'18px'}),
-            #             html.Div([
-            #                 html.P('Индекс GSG',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
-            #             ],style={'width':'77%'}),
-            #         ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  mitochondrial_score}%',
+                                'background-color': get_color(mitochondrial_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Митохондрии / β-окисление', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
                     
-
-            #     ], style={'width':'38%','height':'480px'}),
-            #     html.Div([
-            #         html.Div([
-            #             html.P('2. Обмен аминокислот – (',style={'margin':'0px'}),html.B(f'{obmen_aminokislot}%',style={'margin':'0px'}),html.P(')',style={'margin':'0px'}),
-            #             html.Div([
-            #                 html.Div([],style={'width':f'{procent_validator(obmen_aminokislot)}','background-color':f'{get_color_under_normal_dist(obmen_aminokislot)}','border-radius':'2px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center','margin-left':'5px','margin-top':'6px'}),
-            #             ],style={'width':'50px','height':'18px','line-height':'18px'}),  
-            #         ], style={'color':'black','font-family':'Calibri','font-size':'16px','margin':'0px','display':'flex', 'justify-content':'left','margin-top':'2px'}),
-            #         html.Div([
-            #             html.Div([
-            #                 html.Div([],style={'width':f'{procent_validator(obmen_aminokislot_list[0])}','background-color':f'{get_color(obmen_aminokislot_list[0])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
-            #             ],style={'width':'15%','height':'18px','line-height':'18px'}),
-            #             html.Div([
-            #                 html.P('Метаболизм фенилаланина',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
-            #             ],style={'width':'79%'}),
-            #         ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
-            #         html.Div([
-            #             html.Div([
-            #                 html.Div([],style={'width':f'{procent_validator(obmen_aminokislot_list[1])}','background-color':f'{get_color(obmen_aminokislot_list[1])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
-            #             ],style={'width':'15%','height':'18px','line-height':'18px'}),
-            #             html.Div([
-            #                 html.P('Метаболизм аминокислот с разветвленной боковой цепью',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
-            #             ],style={'width':'79%'}),
-            #         ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
-            #         html.Div([
-            #             html.Div([
-            #                 html.Div([],style={'width':f'{procent_validator(obmen_aminokislot_list[2])}','background-color':f'{get_color(obmen_aminokislot_list[2])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
-            #             ],style={'width':'15%','height':'18px','line-height':'18px'}),
-            #             html.Div([
-            #                 html.P('Метаболизм триптофана',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
-            #             ],style={'width':'79%'}),
-            #         ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
-            #         html.Div([
-            #             html.Div([
-            #                 html.Div([],style={'width':f'{procent_validator(obmen_aminokislot_list[3])}','background-color':f'{get_color(obmen_aminokislot_list[3])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
-            #             ],style={'width':'15%','height':'18px','line-height':'18px'}),
-            #             html.Div([
-            #                 html.P('Метионин',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
-            #             ],style={'width':'79%'}),
-            #         ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
-            #         html.Div([
-            #             html.Div([
-            #                 html.Div([],style={'width':f'{procent_validator(obmen_aminokislot_list[4])}','background-color':f'{get_color(obmen_aminokislot_list[4])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
-            #             ],style={'width':'15%','height':'18px','line-height':'18px'}),
-            #             html.Div([
-            #                 html.P('Гистидин',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
-            #             ],style={'width':'79%'}),
-            #         ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
-            #         html.Div([
-            #             html.Div([
-            #                 html.Div([],style={'width':f'{procent_validator(obmen_aminokislot_list[5])}','background-color':f'{get_color(obmen_aminokislot_list[5])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
-            #             ],style={'width':'15%','height':'18px','line-height':'18px'}),
-            #             html.Div([
-            #                 html.P('Глутаминовая кислота и аспарагиновая кислота',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
-            #             ],style={'width':'79%'}),
-            #         ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
-
-
-
-            #         html.Div([
-            #             html.P('4. Стресс и нейромедиаторы – (',style={'margin':'0px'}),html.B(f'{stress_i_neyromoderatory}%',style={'margin':'0px'}),html.P(')',style={'margin':'0px'}),
-            #             html.Div([
-            #                 html.Div([],style={'width':f'{procent_validator(stress_i_neyromoderatory)}','background-color':f'{get_color_under_normal_dist(stress_i_neyromoderatory)}','border-radius':'2px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center','margin-left':'5px','margin-top':'6px'}),
-            #             ],style={'width':'50px','height':'18px','line-height':'18px'}),   
-            #         ], style={'color':'black','font-family':'Calibri','font-size':'16px','margin':'0px','display':'flex', 'justify-content':'left','margin-top':'8px'}),
-            #         html.Div([
-            #             html.Div([
-            #                 html.Div([],style={'width':f'{procent_validator(stress_i_neyromoderatory_list[0])}','background-color':f'{get_color(stress_i_neyromoderatory_list[0])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
-            #             ],style={'width':'15%','height':'18px','line-height':'18px'}),
-            #             html.Div([
-            #                 html.P('Стероидные гормоны',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
-            #             ],style={'width':'79%'}),
-            #         ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
-            #         html.Div([
-            #             html.Div([
-            #                 html.Div([],style={'width':f'{procent_validator(stress_i_neyromoderatory_list[1])}','background-color':f'{get_color(stress_i_neyromoderatory_list[1])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
-            #             ],style={'width':'15%','height':'18px','line-height':'18px'}),
-            #             html.Div([
-            #                 html.P('Нейромедиаторы',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
-            #             ],style={'width':'79%'}),
-            #         ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
-            #         html.Div([
-            #             html.Div([
-            #                 html.Div([],style={'width':f'{procent_validator(stress_i_neyromoderatory_list[2])}','background-color':f'{get_color(stress_i_neyromoderatory_list[2])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
-            #             ],style={'width':'15%','height':'18px','line-height':'18px'}),
-            #             html.Div([
-            #                 html.P('Метаболизм фенилаланина',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
-            #             ],style={'width':'79%'}),
-            #         ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
-            #         html.Div([
-            #             html.Div([
-            #                 html.Div([],style={'width':f'{procent_validator(stress_i_neyromoderatory_list[3])}','background-color':f'{get_color(stress_i_neyromoderatory_list[3])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
-            #             ],style={'width':'15%','height':'18px','line-height':'18px'}),
-            #             html.Div([
-            #                 html.P('Синтез серотонина и мелатонина',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
-            #             ],style={'width':'79%'}),
-            #         ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
-
-
-
-            #         html.Div([
-            #             html.P('6. Маркеры микробиоты – (',style={'margin':'0px'}),html.B(f'{markery_mikrobioty}%',style={'margin':'0px'}),html.P(')',style={'margin':'0px'}),
-            #             html.Div([
-            #                 html.Div([],style={'width':f'{procent_validator(markery_mikrobioty)}','background-color':f'{get_color_under_normal_dist(markery_mikrobioty)}','border-radius':'2px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center','margin-left':'5px','margin-top':'6px'}),
-            #             ],style={'width':'50px','height':'18px','line-height':'18px'}),    
-            #         ], style={'color':'black','font-family':'Calibri','font-size':'16px','margin':'0px','display':'flex', 'justify-content':'left','margin-top':'26px'}),
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  insuline_resistance_score}%',
+                                'background-color': get_color(insuline_resistance_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Инсулинорезистентность', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                                        
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  neurovegitative_score}%',
+                                'background-color': get_color(neurovegitative_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Нейровегетативный стресс', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
                     
-            #         html.Div([
-            #             html.Div([
-            #                 html.Div([],style={'width':f'{procent_validator(markery_mikrobioty_list[0])}','background-color':f'{get_color(markery_mikrobioty_list[0])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
-            #             ],style={'width':'15%','height':'18px','line-height':'18px'}),
-            #             html.Div([
-            #                 html.P('ТМАО (триметиламин-N-оксид)',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
-            #             ],style={'width':'79%'}),
-            #         ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
-            #         html.Div([
-            #             html.Div([
-            #                 html.Div([],style={'width':f'{procent_validator(markery_mikrobioty_list[1])}','background-color':f'{get_color(markery_mikrobioty_list[1])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
-            #             ],style={'width':'15%','height':'18px','line-height':'18px'}),
-            #             html.Div([
-            #                 html.P('Индольный путь метаболизма триптофана',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
-            #             ],style={'width':'79%'}),
-            #         ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
-            #         html.Div([
-            #             html.P('8. Функция сердца – (',style={'margin':'0px'}),html.B(f'{funcii_serdca}%',style={'margin':'0px'}),html.P(')',style={'margin':'0px'}),
-            #             html.Div([
-            #                 html.Div([],style={'width':f'{procent_validator(funcii_serdca)}','background-color':f'{get_color_under_normal_dist(funcii_serdca)}','border-radius':'2px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center','margin-left':'5px','margin-top':'6px'}),
-            #             ],style={'width':'50px','height':'18px','line-height':'18px'}),    
-            #         ], style={'color':'black','font-family':'Calibri','font-size':'16px','margin':'0px','display':'flex', 'justify-content':'left','margin-top':'26px'}),
-            #         html.Div([
-            #             html.Div([
-            #                 html.Div([],style={'width':f'{procent_validator(funcii_serdca_list[0])}','background-color':f'{get_color(funcii_serdca_list[0])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
-            #             ],style={'width':'15%','height':'18px','line-height':'18px'}),
-            #             html.Div([
-            #                 html.P('Метаболизм аминокислот с разветвленной боковой цепью',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
-            #             ],style={'width':'79%'}),
-            #         ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
-            #                     html.Div([
-            #             html.Div([
-            #                 html.Div([],style={'width':f'{procent_validator(funcii_serdca_list[1])}','background-color':f'{get_color(funcii_serdca_list[1])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
-            #             ],style={'width':'15%','height':'18px','line-height':'18px'}),
-            #             html.Div([
-            #                 html.P('Окислительный стресс',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
-            #             ],style={'width':'79%'}),
-            #         ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
-            #                     html.Div([
-            #             html.Div([
-            #                 html.Div([],style={'width':f'{procent_validator(funcii_serdca_list[2])}','background-color':f'{get_color(funcii_serdca_list[2])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
-            #             ],style={'width':'15%','height':'18px','line-height':'18px'}),
-            #             html.Div([
-            #                 html.P('Функция эндотелия сосудов',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
-            #             ],style={'width':'79%'}),
-            #         ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
-            #                     html.Div([
-            #             html.Div([
-            #                 html.Div([],style={'width':f'{procent_validator(funcii_serdca_list[3])}','background-color':f'{get_color(funcii_serdca_list[3])}','border-radius':'5px','height':'10px','line-height':'normal','display':'inline-block','vertical-align':'center'}),
-            #             ],style={'width':'15%','height':'18px','line-height':'18px'}),
-            #             html.Div([
-            #                 html.P('Системные маркеры',style={'margin':'0px','font-size':'14px','font-family':'Calibri','height':'18px','margin-left':'3px'})
-            #             ],style={'width':'79%'}),
-            #         ],style={'display':'flex', 'justify-content':'left', 'width':'100%','height':'18px'}),
-            #     ], style={'width':'57%','height':'480px',})
-            # ], style={'display':'flex', 'justify-content':'space-between','height':'480px','margin-top':'5px'}),
-            # html.P('Результаты данного отчета не являются диагнозом и должны быть интерпретированы лечащим врачом на основании клинико-лабораторных данных и других диагностических исследований.',
-            #        style={'page-break-after': 'always','color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"left",'font-style':'italic','margin-top':'5px'}),
-
+                    html.Div([
+                        html.P('3. Устойчивость к внешним факторам', style={'margin': '0px', 'margin-bottom': '1px'}),
+                        html.Div([
+                            html.Div([
+                                html.Div([], style={
+                                    'width': f"{risk_scores.loc[risk_scores['Группа риска'] == 'Резистентность к внешним факторам', 'Риск-скор'].values[0] * 10}%",
+                                    'background-color': get_color_under_normal_dist(
+                                        100-(risk_scores.loc[risk_scores['Группа риска'] == 'Резистентность к внешним факторам', 'Риск-скор'].values[0] * 10)
+                                    ),
+                                    'border-radius': '2px',
+                                    'height': '13px',
+                                    'line-height': 'normal',
+                                    'display': 'inline-block',
+                                    'vertical-align': 'center',
+                                }),
+                            ], style={'display': 'flex', 'align-self': 'center','width': '70px', 'height': '13px','line-height': 'normal', 'border-radius': '2px','background-color':  'lightgrey', 'margin-left':'5px', 'margin-right':'5px'}),
+                            html.B(
+                                f"{risk_scores.loc[risk_scores['Группа риска'] == 'Резистентность к внешним факторам', 'Риск-скор'].values[0]} из 10",
+                                style={'margin': '0px'}
+                            )
+                        ], style ={'display': 'flex', 'flex-direction': 'row', 'flex-wrap': 'nowrap'})
+                    ],  style={
+                        'color': 'black',
+                        'font-family': 'Calibri',
+                        'font-size': '16px',
+                        'margin': '0px',
+                        'display': 'flex',
+                        'justify-content': 'space-between',
+                        'margin-bottom': '0px',
+                        'margin-top': '10px'
+                    }),
+                    
+                    html.Div([], style={
+                        'width': "100%",
+                        'background-color': "#0874bc",
+                        'height': '2px',
+                        'line-height': 'normal',
+                        'display': 'inline-block',
+                        'vertical-align': 'center',
+                        'margin-bottom':'2px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 - oxidative_stress_score}%',
+                                'background-color': get_color(oxidative_stress_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Оксидативный стресс', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  inflam_and_microbiotic_score}%',
+                                'background-color': get_color(inflam_and_microbiotic_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Воспаление и микробный стресс', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    # html.Div([
+                    #     html.Div([
+                    #         html.Div([], style={
+                    #             'width': f'{100 -  aromatic_toxic_score}%',
+                    #             'background-color': get_color(aromatic_toxic_score),
+                    #             'border-radius': '5px',
+                    #             'height': '10px',
+                    #             'line-height': 'normal',
+                    #             'display': 'inline-block',
+                    #             'vertical-align': 'center'
+                    #         }),
+                    #     ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                    #     html.Div([
+                    #         html.P('Ароматические токсины', style={
+                    #             'margin': '0px',
+                    #             'font-size': '14px',
+                    #             'font-family': 'Calibri',
+                    #             'height': '18px',
+                    #             'margin-left': '3px'
+                    #         })
+                    #     ], style={'width': '75%'}),
+                    # ], style={
+                    #     'display': 'flex',
+                    #     'justify-content': 'left',
+                    #     'width': '100%',
+                    #     'height': '18px'
+                    # }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  nitrogen_toxic_score}%',
+                                'background-color': get_color(nitrogen_toxic_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Азотистые токсины', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -   lipid_toxic_score}%',
+                                'background-color': get_color(lipid_toxic_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Липидные токсины и β-окисление', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                ], style={'width': '48%', 'height': 'fit-content'}),
+                
+            # колонка 222222222222222222222222222222222
+            
+            html.Div([
+                    html.Div([
+                        html.P('2. Печеночные функции', style={'margin': '0px', 'margin-bottom': '1px'}),
+                        html.Div([
+                            html.Div([
+                                html.Div([], style={
+                                    'width': f"{risk_scores.loc[risk_scores['Группа риска'] == 'Печеночные функции', 'Риск-скор'].values[0] * 10}%",
+                                    'background-color': get_color_under_normal_dist(
+                                        100-(risk_scores.loc[risk_scores['Группа риска'] == 'Печеночные функции', 'Риск-скор'].values[0] * 10)
+                                    ),
+                                    'border-radius': '2px',
+                                    'height': '13px',
+                                    'line-height': 'normal',
+                                    'display': 'inline-block',
+                                    'vertical-align': 'center',
+                                }),
+                            ], style={'display': 'flex', 'align-self': 'center','width': '70px', 'height': '13px','line-height': 'normal', 'border-radius': '2px','background-color':  'lightgrey', 'margin-left':'5px', 'margin-right':'5px'}),
+                            html.B(
+                                f"{risk_scores.loc[risk_scores['Группа риска'] == 'Печеночные функции', 'Риск-скор'].values[0]} из 10",
+                                style={'margin': '0px'}
+                            )
+                        ], style ={'display': 'flex', 'flex-direction': 'row', 'flex-wrap': 'nowrap'})
+                    ],  style={
+                        'color': 'black',
+                        'font-family': 'Calibri',
+                        'font-size': '16px',
+                        'margin': '0px',
+                        'display': 'flex',
+                        'justify-content': 'space-between',
+                        'margin-bottom': '0px',
+                        'margin-top': '5px'
+                    }),
+                    
+                    html.Div([], style={
+                        'width': "100%",
+                        'background-color': "#0874bc",
+                        'height': '2px',
+                        'line-height': 'normal',
+                        'display': 'inline-block',
+                        'vertical-align': 'center',
+                        'margin-bottom':'2px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  Methionine_exchange}%',
+                                'background-color': get_color(Methionine_exchange),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Обмен метионина и метилирование', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    # html.Div([
+                    #     html.Div([
+                    #         html.Div([], style={
+                    #             'width': f'{100 -  antoxidant_system}%',
+                    #             'background-color': get_color(antoxidant_system),
+                    #             'border-radius': '5px',
+                    #             'height': '10px',
+                    #             'line-height': 'normal',
+                    #             'display': 'inline-block',
+                    #             'vertical-align': 'center'
+                    #         }),
+                    #     ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                    #     html.Div([
+                    #         html.P('Антиоксидантная система', style={
+                    #             'margin': '0px',
+                    #             'font-size': '14px',
+                    #             'font-family': 'Calibri',
+                    #             'height': '18px',
+                    #             'margin-left': '3px'
+                    #         })
+                    #     ], style={'width': '75%'}),
+                    # ], style={
+                    #     'display': 'flex',
+                    #     'justify-content': 'left',
+                    #     'width': '100%',
+                    #     'height': '18px'
+                    # }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  protein_exchange}%',
+                                'background-color': get_color(protein_exchange),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Белковый обмен', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  aminoacid_profile}%',
+                                'background-color': get_color(aminoacid_profile),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Аминокислотный профиль', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    # html.Div([
+                    #     html.Div([
+                    #         html.Div([], style={
+                    #             'width': f'{100 -  conjugation_detoxication}%',
+                    #             'background-color': get_color(conjugation_detoxication),
+                    #             'border-radius': '5px',
+                    #             'height': '10px',
+                    #             'line-height': 'normal',
+                    #             'display': 'inline-block',
+                    #             'vertical-align': 'center'
+                    #         }),
+                    #     ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                    #     html.Div([
+                    #         html.P('Конъюгация и детоксикация', style={
+                    #             'margin': '0px',
+                    #             'font-size': '14px',
+                    #             'font-family': 'Calibri',
+                    #             'height': '18px',
+                    #             'margin-left': '3px'
+                    #         })
+                    #     ], style={'width': '75%'}),
+                    # ], style={
+                    #     'display': 'flex',
+                    #     'justify-content': 'left',
+                    #     'width': '100%',
+                    #     'height': '18px'
+                    # }),
+                           
+                    
+                    html.Div([
+                        html.P('4. Состояние кожи и волос', style={'margin': '0px', 'margin-bottom': '1px'}),
+                        html.Div([
+                            html.Div([
+                                html.Div([], style={
+                                    'width': f"{risk_scores.loc[risk_scores['Группа риска'] == 'Состояние кожи и волос', 'Риск-скор'].values[0] * 10}%",
+                                    'background-color': get_color_under_normal_dist(
+                                        100-(risk_scores.loc[risk_scores['Группа риска'] == 'Состояние кожи и волос', 'Риск-скор'].values[0] * 10)
+                                    ),
+                                    'border-radius': '2px',
+                                    'height': '13px',
+                                    'line-height': 'normal',
+                                    'display': 'inline-block',
+                                    'vertical-align': 'center',
+                                }),
+                            ], style={'display': 'flex', 'align-self': 'center','width': '70px', 'height': '13px','line-height': 'normal', 'border-radius': '2px','background-color':  'lightgrey', 'margin-left':'5px', 'margin-right':'5px'}),
+                            html.B(
+                                f"{risk_scores.loc[risk_scores['Группа риска'] == 'Состояние кожи и волос', 'Риск-скор'].values[0]} из 10",
+                                style={'margin': '0px'}
+                            )
+                        ], style ={'display': 'flex', 'flex-direction': 'row', 'flex-wrap': 'nowrap'})
+                    ],  style={
+                        'color': 'black',
+                        'font-family': 'Calibri',
+                        'font-size': '16px',
+                        'margin': '0px',
+                        'display': 'flex',
+                        'justify-content': 'space-between',
+                        'margin-bottom': '0px',
+                        'margin-top': '28px'
+                    }),
+                    
+                    html.Div([], style={
+                        'width': "100%",
+                        'background-color': "#0874bc",
+                        'height': '2px',
+                        'line-height': 'normal',
+                        'display': 'inline-block',
+                        'vertical-align': 'center',
+                        'margin-bottom':'2px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  collagen_score}%',
+                                'background-color': get_color(collagen_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Коллаген и соединительная ткань', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  regeneration_score}%',
+                                'background-color': get_color(regeneration_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Регенерация и рост', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 - dream_score}%',
+                                'background-color': get_color(dream_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Сон и гормональный фон', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 - inflam_stress_score}%',
+                                'background-color': get_color(inflam_stress_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Воспаление и стресс', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  exchange_serum_score}%',
+                                'background-color': get_color(exchange_serum_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Обмен серы и кожи', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 - neuro_inflammation_score}%',
+                                'background-color': get_color(neuro_inflammation_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Нейровоспаление', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                ], style={'width': '48%', 'height': 'fit-content'}),
+            
+            ], style={
+                'display': 'flex',
+                'justify-content': 'space-between',
+                'height': 'fit-content',
+                'margin-top': '5px'
+            }),
+            html.P('Результаты данного отчета не являются диагнозом и должны быть интерпретированы лечащим врачом на основании клинико-лабораторных данных и других диагностических исследований.',
+                   style={'page-break-after': 'always','color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"left",'font-style':'italic','margin-top':'20px'}),
+            
+            html.Div([
+                html.Div([
+                    html.B(f"Дата: {date}",style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
+                    html.Div([
+                        html.B(f'Пациент: {name}',style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
+                    ],style={'margin-top':'10px'}),
+                ], style={'width':'33.3%'}),
+                html.Div([
+                    html.B("MetaboScan-Test01",style={'margin':'0px','font-size':'18px','font-family':'Calibri','color':'#FFFFFF'}),
+                ], style={'width':'33.3%','text-align':'center'}),
+                html.Div([
+                    html.Img(src=app.get_asset_url('logo.jpg'),style={'height':'54px','float':'right'}),
+                ], style={'width':'33.3%'}),
+            ], style={'display':'flex', 'justify-content':'space-between','width':'100%','height':'54px','color':'#0874bc'}),
+            # Страница 1.2
+            # Plot risk_scores table
+            html.Div([
+                html.Div([
+                    html.Div([
+                        html.P('5. Адаптивность организма', style={'margin': '0px', 'margin-bottom': '1px'}),
+                        html.Div([
+                            html.Div([
+                                html.Div([], style={
+                                    'width': f"{risk_scores.loc[risk_scores['Группа риска'] == 'Адаптивные возможности организма', 'Риск-скор'].values[0] * 10}%",
+                                    'background-color': get_color_under_normal_dist(
+                                        100-(risk_scores.loc[risk_scores['Группа риска'] == 'Адаптивные возможности организма', 'Риск-скор'].values[0] * 10)
+                                    ),
+                                    'border-radius': '2px',
+                                    'height': '13px',
+                                    'line-height': 'normal',
+                                    'display': 'inline-block',
+                                    'vertical-align': 'center',
+                                }),
+                            ], style={'display': 'flex', 'align-self': 'center','width': '70px', 'height': '13px','line-height': 'normal', 'border-radius': '2px','background-color':  'lightgrey', 'margin-left':'5px', 'margin-right':'5px'}),
+                            html.B(
+                                f"{risk_scores.loc[risk_scores['Группа риска'] == 'Адаптивные возможности организма', 'Риск-скор'].values[0]} из 10",
+                                style={'margin': '0px'}
+                            )
+                        ], style ={'display': 'flex', 'flex-direction': 'row', 'flex-wrap': 'nowrap'})
+                    ],  style={
+                        'color': 'black',
+                        'font-family': 'Calibri',
+                        'font-size': '16px',
+                        'margin': '0px',
+                        'display': 'flex',
+                        'justify-content': 'space-between',
+                        'margin-bottom': '0px'
+                    }),
+                    
+                    html.Div([], style={
+                        'width': "100%",
+                        'background-color': "#0874bc",
+                        'height': '2px',
+                        'line-height': 'normal',
+                        'display': 'inline-block',
+                        'vertical-align': 'center',
+                        'margin-bottom':'2px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 - energy_exchange_score}%',
+                                'background-color': get_color(energy_exchange_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Энергетический обмен', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  neuroadaptation_score}%',
+                                'background-color': get_color(neuroadaptation_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Нейро-адаптация', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  stress_aminoacid_score}%',
+                                'background-color': get_color(stress_aminoacid_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Стресс-аминокислоты', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  metochondria_creatinine_score}%',
+                                'background-color': get_color(metochondria_creatinine_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Митохондрии и креатин', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  glutamate_exchange_score}%',
+                                'background-color': get_color(glutamate_exchange_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Глутамат-глутаминовая ось', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    html.Div([
+                        html.P('7. Темп биологического старения', style={'margin': '0px', 'margin-bottom': '1px'}),
+                        html.Div([
+                            html.Div([
+                                html.Div([], style={
+                                    'width': f"{risk_scores.loc[risk_scores['Группа риска'] == 'Темп биологического старения', 'Риск-скор'].values[0] * 10}%",
+                                    'background-color': get_color_under_normal_dist(
+                                        100-(risk_scores.loc[risk_scores['Группа риска'] == 'Темп биологического старения', 'Риск-скор'].values[0] * 10)
+                                    ),
+                                    'border-radius': '2px',
+                                    'height': '13px',
+                                    'line-height': 'normal',
+                                    'display': 'inline-block',
+                                    'vertical-align': 'center',
+                                }),
+                            ], style={'display': 'flex', 'align-self': 'center','width': '70px', 'height': '13px','line-height': 'normal', 'border-radius': '2px','background-color':  'lightgrey', 'margin-left':'5px', 'margin-right':'5px'}),
+                            html.B(
+                                f"{risk_scores.loc[risk_scores['Группа риска'] == 'Темп биологического старения', 'Риск-скор'].values[0]} из 10",
+                                style={'margin': '0px'}
+                            )
+                        ], style ={'display': 'flex', 'flex-direction': 'row', 'flex-wrap': 'nowrap'})
+                    ],  style={
+                        'color': 'black',
+                        'font-family': 'Calibri',
+                        'font-size': '16px',
+                        'margin': '0px',
+                        'display': 'flex',
+                        'justify-content': 'space-between',
+                        'margin-bottom': '0px',
+                        'margin-top': '10px'
+                    }),
+                    
+                    html.Div([], style={
+                        'width': "100%",
+                        'background-color': "#0874bc",
+                        'height': '2px',
+                        'line-height': 'normal',
+                        'display': 'inline-block',
+                        'vertical-align': 'center',
+                        'margin-bottom':'2px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  tryptophan_inflam_score}%',
+                                'background-color': get_color(tryptophan_inflam_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Триптофан / воспаление', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  oxidative_stress_score}%',
+                                'background-color': get_color(oxidative_stress_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Оксидативный стресс', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  mitochondrial_score}%',
+                                'background-color': get_color(mitochondrial_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Митохондрии', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  neuro_endocrine_score}%',
+                                'background-color': get_color(neuro_endocrine_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Нейроэндокринная ось', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  integrative_index_score}%',
+                                'background-color': get_color(integrative_index_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Интегративные индексы', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    
+                ], style={'width': '48%', 'height': 'fit-content'}),
+                
+            # колонка 222222222222222222222222222222222
+            
+            html.Div([
+                    html.Div([
+                        html.P('6. Здоровье микробиоты', style={'margin': '0px', 'margin-bottom': '1px'}),
+                        html.Div([
+                            html.Div([
+                                html.Div([], style={
+                                    'width': f"{risk_scores.loc[risk_scores['Группа риска'] == 'Здоровье микробиоты', 'Риск-скор'].values[0] * 10}%",
+                                    'background-color': get_color_under_normal_dist(
+                                        100-(risk_scores.loc[risk_scores['Группа риска'] == 'Здоровье микробиоты', 'Риск-скор'].values[0] * 10)
+                                    ),
+                                    'border-radius': '2px',
+                                    'height': '13px',
+                                    'line-height': 'normal',
+                                    'display': 'inline-block',
+                                    'vertical-align': 'center',
+                                }),
+                            ], style={'display': 'flex', 'align-self': 'center','width': '70px', 'height': '13px','line-height': 'normal', 'border-radius': '2px','background-color':  'lightgrey', 'margin-left':'5px', 'margin-right':'5px'}),
+                            html.B(
+                                f"{risk_scores.loc[risk_scores['Группа риска'] == 'Здоровье микробиоты', 'Риск-скор'].values[0]} из 10",
+                                style={'margin': '0px'}
+                            )
+                        ], style ={'display': 'flex', 'flex-direction': 'row', 'flex-wrap': 'nowrap'})
+                    ],  style={
+                        'color': 'black',
+                        'font-family': 'Calibri',
+                        'font-size': '16px',
+                        'margin': '0px',
+                        'display': 'flex',
+                        'justify-content': 'space-between',
+                        'margin-bottom': '0px'
+                    }),
+                    
+                    html.Div([], style={
+                        'width': "100%",
+                        'background-color': "#0874bc",
+                        'height': '2px',
+                        'line-height': 'normal',
+                        'display': 'inline-block',
+                        'vertical-align': 'center',
+                        'margin-bottom':'2px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 - tryptophan_metabolism_score}%',
+                                'background-color': get_color(tryptophan_metabolism_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Метаболизм триптофана', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  inflam_immune_score}%',
+                                'background-color': get_color(inflam_immune_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Воспаление и иммунитет', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),       
+                    
+                    html.Div([
+                        html.P('8. Воспалительные процессы', style={'margin': '0px', 'margin-bottom': '1px'}),
+                        html.Div([
+                            html.Div([
+                                html.Div([], style={
+                                    'width': f"{risk_scores.loc[risk_scores['Группа риска'] == 'Степень воспалительных процессов', 'Риск-скор'].values[0] * 10}%",
+                                    'background-color': get_color_under_normal_dist(
+                                        100-(risk_scores.loc[risk_scores['Группа риска'] == 'Степень воспалительных процессов', 'Риск-скор'].values[0] * 10)
+                                    ),
+                                    'border-radius': '2px',
+                                    'height': '13px',
+                                    'line-height': 'normal',
+                                    'display': 'inline-block',
+                                    'vertical-align': 'center',
+                                }),
+                            ], style={'display': 'flex', 'align-self': 'center','width': '70px', 'height': '13px','line-height': 'normal', 'border-radius': '2px','background-color':  'lightgrey', 'margin-left':'5px', 'margin-right':'5px'}),
+                            html.B(
+                                f"{risk_scores.loc[risk_scores['Группа риска'] == 'Степень воспалительных процессов', 'Риск-скор'].values[0]} из 10",
+                                style={'margin': '0px'}
+                            )
+                        ], style ={'display': 'flex', 'flex-direction': 'row', 'flex-wrap': 'nowrap'})
+                    ],  style={
+                        'color': 'black',
+                        'font-family': 'Calibri',
+                        'font-size': '16px',
+                        'margin': '0px',
+                        'display': 'flex',
+                        'justify-content': 'space-between',
+                        'margin-bottom': '0px',
+                        'margin-top': '64px'
+                    }),
+                    
+                    html.Div([], style={
+                        'width': "100%",
+                        'background-color': "#0874bc",
+                        'height': '2px',
+                        'line-height': 'normal',
+                        'display': 'inline-block',
+                        'vertical-align': 'center',
+                        'margin-bottom':'2px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  ido_path_tryptophan_score}%',
+                                'background-color': get_color(ido_path_tryptophan_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('IDO-путь / триптофан', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  neuromediators_score}%',
+                                'background-color': get_color(neuromediators_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Нейромедиаторы', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 - indols_phenols_score}%',
+                                'background-color': get_color(indols_phenols_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Индолы и фенолы', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 - general_stress_immune_score}%',
+                                'background-color': get_color(general_stress_immune_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Общий стресс / иммунитет', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  complex_index}%',
+                                'background-color': get_color(complex_index),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Комплексный индекс', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    
+                ], style={'width': '48%', 'height': 'fit-content'}),
+            
+            ], style={
+                'display': 'flex',
+                'justify-content': 'space-between',
+                'height': 'fit-content',
+                'margin-top': '30px'}),
+            
+            # Plot risk_scores table
+            html.Div([
+                html.Div([
+                    html.Div([
+                        html.P('9. Токсическая нагрузка', style={'margin': '0px', 'margin-bottom': '1px'}),
+                        html.Div([
+                            html.Div([
+                                html.Div([], style={
+                                    'width': f"{risk_scores.loc[risk_scores['Группа риска'] == 'Токсическая нагрузка и детоксикация', 'Риск-скор'].values[0] * 10}%",
+                                    'background-color': get_color_under_normal_dist(
+                                        100-(risk_scores.loc[risk_scores['Группа риска'] == 'Токсическая нагрузка и детоксикация', 'Риск-скор'].values[0] * 10)
+                                    ),
+                                    'border-radius': '2px',
+                                    'height': '13px',
+                                    'line-height': 'normal',
+                                    'display': 'inline-block',
+                                    'vertical-align': 'center',
+                                }),
+                            ], style={'display': 'flex', 'align-self': 'center','width': '70px', 'height': '13px','line-height': 'normal', 'border-radius': '2px','background-color':  'lightgrey', 'margin-left':'5px', 'margin-right':'5px'}),
+                            html.B(
+                                f"{risk_scores.loc[risk_scores['Группа риска'] == 'Токсическая нагрузка и детоксикация', 'Риск-скор'].values[0]} из 10",
+                                style={'margin': '0px'}
+                            )
+                        ], style ={'display': 'flex', 'flex-direction': 'row', 'flex-wrap': 'nowrap'})
+                    ],  style={
+                        'color': 'black',
+                        'font-family': 'Calibri',
+                        'font-size': '16px',
+                        'margin': '0px',
+                        'display': 'flex',
+                        'justify-content': 'space-between',
+                        'margin-bottom': '0px',
+                        'margin-top': '10px'
+                    }),
+                    
+                    html.Div([], style={
+                        'width': "100%",
+                        'background-color': "#0874bc",
+                        'height': '2px',
+                        'line-height': 'normal',
+                        'display': 'inline-block',
+                        'vertical-align': 'center',
+                        'margin-bottom':'2px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 - amiac_detox_score}%',
+                                'background-color': get_color(amiac_detox_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Аммиачная детоксикация', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 - oxidative_stress_score}%',
+                                'background-color': get_color(oxidative_stress_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Оксидативная нагрузка', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  nitrogen_toxic_score}%',
+                                'background-color': get_color(nitrogen_toxic_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Азотистые токсины', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    
+                    html.Div([
+                        html.P('11. Нутриентный статус', style={'margin': '0px', 'margin-bottom': '1px'}),
+                        html.Div([
+                            html.Div([
+                                html.Div([], style={
+                                    'width': f"{risk_scores.loc[risk_scores['Группа риска'] == 'Нутриентный статус организма', 'Риск-скор'].values[0] * 10}%",
+                                    'background-color': get_color_under_normal_dist(
+                                        100-(risk_scores.loc[risk_scores['Группа риска'] == 'Нутриентный статус организма', 'Риск-скор'].values[0] * 10)
+                                    ),
+                                    'border-radius': '2px',
+                                    'height': '13px',
+                                    'line-height': 'normal',
+                                    'display': 'inline-block',
+                                    'vertical-align': 'center',
+                                }),
+                            ], style={'display': 'flex', 'align-self': 'center','width': '70px', 'height': '13px','line-height': 'normal', 'border-radius': '2px','background-color':  'lightgrey', 'margin-left':'5px', 'margin-right':'5px'}),
+                            html.B(
+                                f"{risk_scores.loc[risk_scores['Группа риска'] == 'Нутриентный статус организма', 'Риск-скор'].values[0]} из 10",
+                                style={'margin': '0px'}
+                            )
+                        ], style ={'display': 'flex', 'flex-direction': 'row', 'flex-wrap': 'nowrap'})
+                    ],  style={
+                        'color': 'black',
+                        'font-family': 'Calibri',
+                        'font-size': '16px',
+                        'margin': '0px',
+                        'display': 'flex',
+                        'justify-content': 'space-between',
+                        'margin-bottom': '0px',
+                        'margin-top': '47px'
+                    }),
+                    
+                    html.Div([], style={
+                        'width': "100%",
+                        'background-color': "#0874bc",
+                        'height': '2px',
+                        'line-height': 'normal',
+                        'display': 'inline-block',
+                        'vertical-align': 'center',
+                        'margin-bottom':'2px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  vitamine_b2_score}%',
+                                'background-color': get_color(vitamine_b2_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Витамин B2 (рибофлавин)', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  vitamine_b5_score}%',
+                                'background-color': get_color(vitamine_b5_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Витамин B5 (пантотенат)', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  vitamine_b6_score}%',
+                                'background-color': get_color(vitamine_b6_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Витамин B6', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  vitamine_b9_b12_score}%',
+                                'background-color': get_color(vitamine_b9_b12_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Витамин B9 / B12', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  vitamine_b3_nad_score}%',
+                                'background-color': get_color(vitamine_b3_nad_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Витамин B3 / NAD+', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  serum_aminoacids_score}%',
+                                'background-color': get_color(serum_aminoacids_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Серосодержащие аминокислоты', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 - energy_exchange_score}%',
+                                'background-color': get_color(energy_exchange_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Энергетический баланс', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  neurotroph_reserv_score}%',
+                                'background-color': get_color(neurotroph_reserv_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Нейротрофный резерв', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                ], style={'width': '48%', 'height': 'fit-content'}),
+                
+            # колонка 222222222222222222222222222222222
+            
+            html.Div([
+                    html.Div([
+                        html.P('10. Митохондриальное здоровье', style={'margin': '0px', 'margin-bottom': '1px'}),
+                        html.Div([
+                            html.Div([
+                                html.Div([], style={
+                                    'width': f"{risk_scores.loc[risk_scores['Группа риска'] == 'Митохондриальное здоровье', 'Риск-скор'].values[0] * 10}%",
+                                    'background-color': get_color_under_normal_dist(
+                                        100-(risk_scores.loc[risk_scores['Группа риска'] == 'Митохондриальное здоровье', 'Риск-скор'].values[0] * 10)
+                                    ),
+                                    'border-radius': '2px',
+                                    'height': '13px',
+                                    'line-height': 'normal',
+                                    'display': 'inline-block',
+                                    'vertical-align': 'center',
+                                }),
+                            ], style={'display': 'flex', 'align-self': 'center','width': '70px', 'height': '13px','line-height': 'normal', 'border-radius': '2px','background-color':  'lightgrey', 'margin-left':'5px', 'margin-right':'5px'}),
+                            html.B(
+                                f"{risk_scores.loc[risk_scores['Группа риска'] == 'Митохондриальное здоровье', 'Риск-скор'].values[0]} из 10",
+                                style={'margin': '0px'}
+                            )
+                        ], style ={'display': 'flex', 'flex-direction': 'row', 'flex-wrap': 'nowrap'})
+                    ],  style={
+                        'color': 'black',
+                        'font-family': 'Calibri',
+                        'font-size': '16px',
+                        'margin': '0px',
+                        'display': 'flex',
+                        'justify-content': 'space-between',
+                        'margin-bottom': '0px',
+                        'margin-top': '10px'
+                    }),
+                    
+                    html.Div([], style={
+                        'width': "100%",
+                        'background-color': "#0874bc",
+                        'height': '2px',
+                        'line-height': 'normal',
+                        'display': 'inline-block',
+                        'vertical-align': 'center',
+                        'margin-bottom':'2px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 - energy_exchange_carnitine_score}%',
+                                'background-color': get_color(energy_exchange_carnitine_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Энергетический обмен', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  mitochondrial_score}%',
+                                'background-color': get_color(mitochondrial_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('β-окисление / жирные кислоты', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    # html.Div([
+                    #     html.Div([
+                    #         html.Div([], style={
+                    #             'width': f'{100 -  antoxidant_system}%',
+                    #             'background-color': get_color(antoxidant_system),
+                    #             'border-radius': '5px',
+                    #             'height': '10px',
+                    #             'line-height': 'normal',
+                    #             'display': 'inline-block',
+                    #             'vertical-align': 'center'
+                    #         }),
+                    #     ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                    #     html.Div([
+                    #         html.P('Антиоксидантная защита', style={
+                    #             'margin': '0px',
+                    #             'font-size': '14px',
+                    #             'font-family': 'Calibri',
+                    #             'height': '18px',
+                    #             'margin-left': '3px'
+                    #         })
+                    #     ], style={'width': '75%'}),
+                    # ], style={
+                    #     'display': 'flex',
+                    #     'justify-content': 'left',
+                    #     'width': '100%',
+                    #     'height': '18px'
+                    # }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -   complex_index}%',
+                                'background-color': get_color(complex_index),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Митохондриальная нейросвязь', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                           
+                    
+                    html.Div([
+                        html.P('12. ', style={'margin': '0px', 'margin-bottom': '1px'} ),
+                        html.P('Алиментарно-зависимые заболевания', style={'margin': '0px', 'margin-bottom': '1px', 'width':'200px'}),
+                        html.Div([
+                            html.Div([
+                                html.Div([], style={
+                                    'width': f"{risk_scores.loc[risk_scores['Группа риска'] == 'Риск алиментарно-зависимых заболеваний', 'Риск-скор'].values[0] * 10}%",
+                                    'background-color': get_color_under_normal_dist(
+                                        100-(risk_scores.loc[risk_scores['Группа риска'] == 'Риск алиментарно-зависимых заболеваний', 'Риск-скор'].values[0] * 10)
+                                    ),
+                                    'border-radius': '2px',
+                                    'height': '13px',
+                                    'line-height': 'normal',
+                                    'display': 'inline-block',
+                                    'vertical-align': 'center',
+                                }),
+                            ], style={'display': 'flex', 'align-self': 'center','width': '70px', 'height': '13px','line-height': 'normal', 'border-radius': '2px','background-color':  'lightgrey', 'margin-left':'5px', 'margin-right':'5px'}),
+                            html.B(
+                                f"{risk_scores.loc[risk_scores['Группа риска'] == 'Риск алиментарно-зависимых заболеваний', 'Риск-скор'].values[0]} из 10",
+                                style={'margin': '0px'}
+                            )
+                        ], style ={'display': 'flex', 'flex-direction': 'row', 'flex-wrap': 'nowrap', 'align-items': 'center'})
+                    ],  style={
+                        'color': 'black',
+                        'font-family': 'Calibri',
+                        'font-size': '16px',
+                        'margin': '0px',
+                        'display': 'flex',
+                        'justify-content': 'space-between',
+                        'margin-bottom': '0px',
+                        'margin-top': '28px'
+                    }),
+                    
+                    html.Div([], style={
+                        'width': "100%",
+                        'background-color': "#0874bc",
+                        'height': '2px',
+                        'line-height': 'normal',
+                        'display': 'inline-block',
+                        'vertical-align': 'center',
+                        'margin-bottom':'2px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  over_sugar_score}%',
+                                'background-color': get_color(over_sugar_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Избыток сахара / углеводов', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  over_lipid_score}%',
+                                'background-color': get_color(over_lipid_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Избыток жиров / липидов', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 - over_protein_score}%',
+                                'background-color': get_color(over_protein_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Избыток белка / аминокислот', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 - deficit_nutrients_score}%',
+                                'background-color': get_color(deficit_nutrients_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Дефицит нутриентов', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  supply_score}%',
+                                'background-color': get_color(supply_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Нарушение пищевого поведения', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    
+                ], style={'width': '48%', 'height': 'fit-content'}),
+            
+            ], style={
+                'display': 'flex',
+                'justify-content': 'space-between',
+                'height': 'fit-content',
+                'margin-top': '5px'}),
+            
+            # Plot risk_scores table
+            html.Div([
+                html.Div([
+                    html.Div([
+                        html.P('13. Обмен веществ', style={'margin': '0px', 'margin-bottom': '1px'}),
+                        html.Div([
+                            html.Div([
+                                html.Div([], style={
+                                    'width': f"{risk_scores.loc[risk_scores['Группа риска'] == 'Обмен веществ', 'Риск-скор'].values[0] * 10}%",
+                                    'background-color': get_color_under_normal_dist(
+                                        100-(risk_scores.loc[risk_scores['Группа риска'] == 'Обмен веществ', 'Риск-скор'].values[0] * 10)
+                                    ),
+                                    'border-radius': '2px',
+                                    'height': '13px',
+                                    'line-height': 'normal',
+                                    'display': 'inline-block',
+                                    'vertical-align': 'center',
+                                }),
+                            ], style={'display': 'flex', 'align-self': 'center','width': '70px', 'height': '13px','line-height': 'normal', 'border-radius': '2px','background-color':  'lightgrey', 'margin-left':'5px', 'margin-right':'5px'}),
+                            html.B(
+                                f"{risk_scores.loc[risk_scores['Группа риска'] == 'Обмен веществ', 'Риск-скор'].values[0]} из 10",
+                                style={'margin': '0px'}
+                            )
+                        ], style ={'display': 'flex', 'flex-direction': 'row', 'flex-wrap': 'nowrap'})
+                    ],  style={
+                        'color': 'black',
+                        'font-family': 'Calibri',
+                        'font-size': '16px',
+                        'margin': '0px',
+                        'display': 'flex',
+                        'justify-content': 'space-between',
+                        'margin-bottom': '0px',
+                        'margin-top': '10px'
+                    }),
+                    
+                    html.Div([], style={
+                        'width': "100%",
+                        'background-color': "#0874bc",
+                        'height': '2px',
+                        'line-height': 'normal',
+                        'display': 'inline-block',
+                        'vertical-align': 'center',
+                        'margin-bottom':'2px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  aa_exchange }%',
+                                'background-color': get_color( aa_exchange ),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Аминокислотный обмен', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  sug_exchange}%',
+                                'background-color': get_color(sug_exchange),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Углеводный обмен', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  lip_exchange}%',
+                                'background-color': get_color(lip_exchange),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Липидный обмен', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  insulin_exchange}%',
+                                'background-color': get_color(insulin_exchange),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Инсулинорезистентность', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  insuline_resistance_score}%',
+                                'background-color': get_color(insuline_resistance_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Инсулинорезистентность', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                                        
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  hormone_exchange}%',
+                                'background-color': get_color(hormone_exchange),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Гормональные связи', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    html.Div([
+                        html.P('15. ', style={'margin': '0px', 'margin-bottom': '1px'} ),
+                        html.P('Нейродегенеративные заболевания', style={'margin': '0px', 'margin-bottom': '1px', 'width':'200px'}),
+                        html.Div([
+                            html.Div([
+                                html.Div([], style={
+                                    'width': f"{risk_scores.loc[risk_scores['Группа риска'] == 'Риск нейродегенеративных заболеваний', 'Риск-скор'].values[0] * 10}%",
+                                    'background-color': get_color_under_normal_dist(
+                                        100-(risk_scores.loc[risk_scores['Группа риска'] == 'Риск нейродегенеративных заболеваний', 'Риск-скор'].values[0] * 10)
+                                    ),
+                                    'border-radius': '2px',
+                                    'height': '13px',
+                                    'line-height': 'normal',
+                                    'display': 'inline-block',
+                                    'vertical-align': 'center',
+                                }),
+                            ], style={'display': 'flex', 'align-self': 'center','width': '70px', 'height': '13px','line-height': 'normal', 'border-radius': '2px','background-color':  'lightgrey', 'margin-left':'5px', 'margin-right':'5px'}),
+                            html.B(
+                                f"{risk_scores.loc[risk_scores['Группа риска'] == 'Риск нейродегенеративных заболеваний', 'Риск-скор'].values[0]} из 10",
+                                style={'margin': '0px'}
+                            )
+                        ], style ={'display': 'flex', 'flex-direction': 'row', 'flex-wrap': 'nowrap', 'align-items': 'center'})
+                    ],  style={
+                        'color': 'black',
+                        'font-family': 'Calibri',
+                        'font-size': '16px',
+                        'margin': '0px',
+                        'display': 'flex',
+                        'justify-content': 'space-between',
+                        'margin-bottom': '0px',
+                        'margin-top': '10px'
+                    }),
+                    
+                    html.Div([], style={
+                        'width': "100%",
+                        'background-color': "#0874bc",
+                        'height': '2px',
+                        'line-height': 'normal',
+                        'display': 'inline-block',
+                        'vertical-align': 'center',
+                        'margin-bottom':'2px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  ido_neuroinflam_score}%',
+                                'background-color': get_color(ido_neuroinflam_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Обмен метионина и метилирование', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    # html.Div([
+                    #     html.Div([
+                    #         html.Div([], style={
+                    #             'width': f'{100 -  antoxidant_system}%',
+                    #             'background-color': get_color(antoxidant_system),
+                    #             'border-radius': '5px',
+                    #             'height': '10px',
+                    #             'line-height': 'normal',
+                    #             'display': 'inline-block',
+                    #             'vertical-align': 'center'
+                    #         }),
+                    #     ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                    #     html.Div([
+                    #         html.P('Антиоксидантная система', style={
+                    #             'margin': '0px',
+                    #             'font-size': '14px',
+                    #             'font-family': 'Calibri',
+                    #             'height': '18px',
+                    #             'margin-left': '3px'
+                    #         })
+                    #     ], style={'width': '75%'}),
+                    # ], style={
+                    #     'display': 'flex',
+                    #     'justify-content': 'left',
+                    #     'width': '100%',
+                    #     'height': '18px'
+                    # }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  disbalance_metabolites_score}%',
+                                'background-color': get_color(disbalance_metabolites_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Дисбаланс метаболитов', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  neuromediators_neuro_score}%',
+                                'background-color': get_color(neuromediators_neuro_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Нейромедиаторы', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  mitochondria_stress_score}%',
+                                'background-color': get_color(mitochondria_stress_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Митохондрии и стресс', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                ], style={'width': '48%', 'height': 'fit-content'}),
+                
+            # колонка 222222222222222222222222222222222
+            
+            html.Div([
+                html.Div([
+                        html.P('14. Онкологические заболевания', style={'margin': '0px', 'margin-bottom': '1px'}),
+                        html.Div([
+                            html.Div([
+                                html.Div([], style={
+                                    'width': f"{risk_scores.loc[risk_scores['Группа риска'] == 'Риск онкологических заболеваний', 'Риск-скор'].values[0] * 10}%",
+                                    'background-color': get_color_under_normal_dist(
+                                        100-(risk_scores.loc[risk_scores['Группа риска'] == 'Риск онкологических заболеваний', 'Риск-скор'].values[0] * 10)
+                                    ),
+                                    'border-radius': '2px',
+                                    'height': '13px',
+                                    'line-height': 'normal',
+                                    'display': 'inline-block',
+                                    'vertical-align': 'center',
+                                }),
+                            ], style={'display': 'flex', 'align-self': 'center','width': '70px', 'height': '13px','line-height': 'normal', 'border-radius': '2px','background-color':  'lightgrey', 'margin-left':'5px', 'margin-right':'5px'}),
+                            html.B(
+                                f"{risk_scores.loc[risk_scores['Группа риска'] == 'Риск онкологических заболеваний', 'Риск-скор'].values[0]} из 10",
+                                style={'margin': '0px'}
+                            )
+                        ], style ={'display': 'flex', 'flex-direction': 'row', 'flex-wrap': 'nowrap'})
+                    ], style={
+                        'color': 'black',
+                        'font-family': 'Calibri',
+                        'font-size': '16px',
+                        'margin': '0px',
+                        'display': 'flex',
+                        'justify-content': 'space-between',
+                        'margin-bottom': '0px',
+                        'margin-top': '10px'
+                    }),
+                    
+                    html.Div([], style={
+                        'width': "100%",
+                        'background-color': "#0874bc",
+                        'height': '2px',
+                        'line-height': 'normal',
+                        'display': 'inline-block',
+                        'vertical-align': 'center',
+                        'margin-bottom':'2px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 - chronic_inflamm_score}%',
+                                'background-color': get_color(chronic_inflamm_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Хроническое воспаление', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  ox_stress_score}%',
+                                'background-color': get_color(ox_stress_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Оксидативный стресс', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -   metil_epigen_score}%',
+                                'background-color': get_color( metil_epigen_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Метилирование / эпигенетика', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -    microbiota_detox_score }%',
+                                'background-color': get_color( microbiota_detox_score ),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Микробиота и детоксикация', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -     metabolic_stress_score }%',
+                                'background-color': get_color(  metabolic_stress_score ),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Метаболический стресс', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 - neuro_endocrine_controle_score }%',
+                                'background-color': get_color(neuro_endocrine_controle_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Нейроэндокринный контроль', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 - prolifiration_mitosis_score}%',
+                                'background-color': get_color(prolifiration_mitosis_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Пролиферация и митоз', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                        
+                ], style={
+                    'display': 'flex',
+                    'justify-content': 'left',
+                    'width': '100%',
+                    'height': '18px'
+                }),
+                    
+               
+                html.Div(
+                style={'maxWidth': 'auto'},
+                children=[
+                    # Header
+                    html.Div(
+                        style={
+                            'backgroundColor': '#0874bc',
+                            'color': 'white',
+                            'padding': '5px 15px',
+                            'borderTopLeftRadius': '4px',
+                            'borderTopRightRadius': '4px',
+                            'margin-top': '20px'
+                        },
+                        children=[
+                            html.H2('Общая оценка метаболизма', style={'margin': '0', 'font-family': 'Calibri', 'font-size': '16px'})
+                        ]
+                    ),
+                    
+                    # Main content
+                    html.Div(
+                        style={
+                            'border': '1px solid #ddd',
+                            'padding': '8px 8px 8px 20px',
+                            'borderBottomLeftRadius': '4px',
+                            'borderBottomRightRadius': '4px'
+                        },
+                        children=[
+                            html.Div(
+                                style={'display': 'flex', 'marginBottom': '7px'},
+                                children=[
+                                    # Left side - Rating boxes
+                                    html.Div(
+                                        style={'flex': '1'},
+                                        children=[
+                                            # Excellent
+                                            html.Div(
+                                                style={
+                                                    'backgroundColor': '#e8f5e9',
+                                                    'padding': '4px 8px',
+                                                    'marginBottom': '10px',
+                                                    'borderRadius': '4px',
+                                                    'font-family': 'Calibri', 
+                                                    'font-size': '14px'
+                                                },
+                                                children=[
+                                                    html.Span('Отлично'),
+                                                    html.Span('90 +', style={'float': 'right'})
+                                                ]
+                                            ),
+                                            
+                                            # Good
+                                            html.Div(
+                                                style={
+                                                    'backgroundColor': '#fff3e0',
+                                                    'padding': '4px 8px',
+                                                    'marginBottom': '10px',
+                                                    'borderRadius': '4px',
+                                                    'font-family': 'Calibri', 
+                                                    'font-size': '14px'
+                                                },
+                                                children=[
+                                                    html.Span('Хорошо'),
+                                                    html.Span('67 +', style={'float': 'right'})
+                                                ]
+                                            ),
+                                            
+                                            # Needs correction
+                                            html.Div(
+                                                style={
+                                                    'backgroundColor': '#ffebee',
+                                                    'padding': '4px 8px',
+                                                    'marginBottom': '10px',
+                                                    'borderRadius': '4px',
+                                                    'font-family': 'Calibri', 
+                                                    'font-size': '14px'
+                                                },
+                                                children=[
+                                                    html.Span('Требуется коррекция'),
+                                                    html.Span('50 +', style={'float': 'right'})
+                                                ]
+                                            ),
+                                            
+                                            # Serious pathologies
+                                            html.Div(
+                                                style={
+                                                    'backgroundColor': '#ffcdd2',
+                                                    'padding': '4px 8px',
+                                                    'borderRadius': '4px',
+                                                    'font-family': 'Calibri', 
+                                                    'font-size': '14px'
+                                                },
+                                                children=[
+                                                    html.Span('Серьезные нарушения'),
+                                                    html.Span('<50', style={'float': 'right'})
+                                                ]
+                                            )
+                                        ]
+                                    ),
+                                    
+                                    # Right side - Score display
+                                    html.Div(
+                                        style={
+                                            'flex': '0.8',
+                                            'display': 'flex',
+                                            'justifyContent': 'center',
+                                            'alignItems': 'center'
+                                        },
+                                        children=[
+                                            html.Div(
+                                                style={'textAlign': 'center'},
+                                                children=[
+                                                    html.Div(
+                                                        style={
+                                                            'fontSize': '32px',
+                                                            'fontWeight': 'bold',
+                                                            'marginBottom': '5px',
+                                                            'font-family': 'Calibri' 
+                                                        },
+                                                        children=[
+                                                            # Corrected sum calculation
+                                                            f"{int(round(pd.to_numeric(risk_scores['Риск-скор'], errors='coerce').sum() * 100 / 150, 0))}",
+                                                            html.Span(
+                                                                '/100%',
+                                                                style={
+                                                                    'fontSize': '16px',
+                                                                    'color': '#666',
+                                                                    'marginLeft': '5px',
+                                                                    'font-family': 'Calibri' 
+                                                                }
+                                                            )
+                                                        ]
+                                                    ),
+                                                    html.Div(
+                                                        # Dynamic status based on score
+                                                        children=[
+                                                            html.Span(
+                                                                'Отлично' if (pd.to_numeric(risk_scores['Риск-скор'], errors='coerce').sum()* 100 / 150) >= 90
+                                                                else 'Хорошо' if (pd.to_numeric(risk_scores['Риск-скор'], errors='coerce').sum()* 100 / 150) >= 67
+                                                                else 'Требуется коррекция' if (pd.to_numeric(risk_scores['Риск-скор'], errors='coerce').sum()* 100 / 150) >= 50
+                                                                else 'Серьезные нарушения'
+                                                            )
+                                                        ],
+                                                        style={
+                                                            'backgroundColor': '#e8f5e9' if (pd.to_numeric(risk_scores['Риск-скор'], errors='coerce').sum()* 100 / 150) >= 90
+                                                            else '#fff3e0' if (pd.to_numeric(risk_scores['Риск-скор'], errors='coerce').sum()* 100 / 150 ) >= 67
+                                                            else '#ffebee' if (pd.to_numeric(risk_scores['Риск-скор'], errors='coerce').sum()) >= 50
+                                                            else '#ffcdd2',
+                                                            'color':'#50c150' if (pd.to_numeric(risk_scores['Риск-скор'], errors='coerce').sum()* 100 / 150) >= 100
+                                                            else '#fe991d' if (pd.to_numeric(risk_scores['Риск-скор'], errors='coerce').sum())* 100 / 150 >= 67
+                                                            else '#f25708' if (pd.to_numeric(risk_scores['Риск-скор'], errors='coerce').sum())* 100 / 150 >= 50
+                                                            else '#f21f08',
+                                                            'padding': '5px 15px',
+                                                            'borderRadius': '15px',
+                                                            'display': 'inline-block',
+                                                            'font-family': 'Calibri',
+                                                            'font-weight': 'bold',
+                                                            'margin': '0px 10px'
+                                                        }
+                                                    )
+                                                ]
+                                            )
+                                        ]
+                                    )
+                                ]
+                            )
+                        ]
+                    )
+                ]
+            )                                            
+                    
+                ], style={'width': '48%', 'height': 'fit-content'}),
+            
+            
+            
+            ], style={
+                'display': 'flex',
+                'justify-content': 'space-between',
+                'height': 'fit-content',
+                'margin-top': '5px'}),
+            
+            html.P('Результаты данного отчета не являются диагнозом и должны быть интерпретированы лечащим врачом на основании клинико-лабораторных данных и других диагностических исследований.',
+                   style={'page-break-after': 'always','color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"left",'font-style':'italic','margin-top':'20px'}),
+            
             # 2 страница
             html.Div([],style={'height':'8mm','width':'100%'}),
                 html.Div([

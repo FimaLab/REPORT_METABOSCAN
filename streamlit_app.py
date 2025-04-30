@@ -11,6 +11,9 @@ import sys
 import logging
 import requests
 import psutil
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
 
 # Configure logging
 logging.basicConfig(
@@ -92,18 +95,112 @@ def wait_for_dash_app(timeout=45):
             time.sleep(3)
     
     return False
+def calculate_metabolite_ratios(metabolomic_data):
+    """Calculate all metabolite ratios from raw metabolomic data"""
+    data = pd.read_excel(metabolomic_data)
+    
+    # Arginine metabolism
+    data['Arg/Orn+Cit'] = data['Arginine'] / (data['Ornitine'] + data['Citrulline'])
+    data['Arg/Orn'] = data['Arginine'] / data['Ornitine']
+    data["Arg/ADMA"] = data['Arginine'] / data['ADMA']
+    data['(Arg+HomoArg)/ADMA'] = (data['Arginine'] + data['Homoarginine']) / data['ADMA']
+    
+    # Acylcarnitines
+    data['C0/(C16+C18)'] = data['C0'] / (data['C16'] + data['C18'])
+    data['(C16+C18)/C2'] = (data['C16'] + data['C18']) / data['C2']
+    data['(C6+C8+C10)/C2'] = (data['C6'] + data['C8'] + data['C10']) / data['C2']
+    data['C3/C2'] = data['C3'] / data['C2']
+    
+    # Tryptophan metabolism
+    data['Trp/Kyn'] = data['Tryptophan'] / data['Kynurenine']
+    data['Trp/(Kyn+QA)'] = data['Tryptophan'] / (data['Kynurenine'] + data['Quinolinic acid'])
+    data['Kyn/Quin'] = data['Kynurenine'] / data['Quinolinic acid']
+    data['Quin/HIAA'] = data['Quinolinic acid'] / data['HIAA']
+    
+    # Amino acids
+    data['Aspartate/Asparagine'] = data['Aspartic acid'] / data['Asparagine']
+    data['Glutamine/Glutamate'] = data['Glutamine'] / data['Glutamic acid']
+    data['Glycine/Serine'] = data['Glycine'] / data['Serine']
+    data['GSG_index'] = data['Glutamic acid'] / (data['Serine'] + data['Glycine'])
+    data['Phe/Tyr'] = data['Phenylalanine'] / data['Tyrosin']
+    data['Phe+Tyr'] = data['Phenylalanine'] + data['Tyrosin']
+    data['BCAA'] = data['Summ Leu-Ile'] + data['Valine']
+    data['BCAA/AAA'] = (data['Valine'] + data['Summ Leu-Ile']) / (data['Phenylalanine'] + data['Tyrosin'])
+    
+    # Other ratios
+    data['Betaine/choline'] = data['Betaine'] / data['Choline']
+    data['Kyn/Trp'] = data['Kynurenine'] / data['Tryptophan']
+    data['СДК'] = data['C14'] + data['C14-1'] + data['C14-2'] + data['C14-OH'] + data['C16'] + data['C16-1'] + data['C16-1-OH'] + data['C16-OH'] + data['C18'] + data['C18-1'] + data['C18-1-OH'] + data['C18-2'] + data['C18-OH']
+    data['Alanine / Valine'] = data['Alanine'] / data['Valine']
+    data['Tryptamine / IAA'] = data['Tryptamine'] / data['Indole-3-acetic acid']
+    data['С2/С0'] = data['C2'] / data['C0']
+    data['(C2+C3)/C0'] = (data['C2'] + data['C3']) / data['C0']
+    data['Kynurenic acid / Kynurenine'] = data['Kynurenic acid'] / data['Kynurenine']
+    data['Methionine + Taurine'] = data['Methionine'] + data['Taurine']
+    data['Valine / Alanine'] = data['Valine'] / data['Alanine']
+    data['Riboflavin / Pantothenic'] = data['Riboflavin'] / data['Pantothenic']
+    data['ADMA / NMMA'] = data['ADMA'] / data['NMMA']
+    data['DMG / Choline'] = data['DMG'] / data['Choline']
+    
+    # drop Group column
+    data = data.drop('Group', axis=1)
 
-def generate_pdf_report(patient_info, file1_path, file2_path, output_dir):
+    return data
+
+def calculate_risks(risk_params_data, metabolomic_data_with_ratios):
+    """Calculate risks based on risk parameters and metabolomic data with ratios"""
+    risk_params = pd.read_excel(risk_params_data)
+    
+    # Get values for each marker from metabolomic data
+    values_conc = []
+    for metabolite in risk_params['Маркер / Соотношение']:
+        values_conc.append(float(metabolomic_data_with_ratios.loc[0, metabolite]))
+    
+    risk_params['Sample'] = values_conc
+    risks = []
+    
+    # Calculate risk levels
+    for index, row in risk_params.iterrows():
+        if row['norm_1'] < row['Sample'] < row['norm_2']:
+            risks.append(0)
+        elif row['High_risk_1'] < row['Sample'] < row['norm_1'] or row['norm_2'] < row['Sample'] < row['High_risk_2']:
+            risks.append(1)
+        else:
+            risks.append(2)
+    
+    # Apply weights
+    risk_params['Risks'] = risks
+    risk_params['Corrected_risks'] = risk_params['Risks'] * risk_params['веса']
+    risk_params['Weights_for_formula'] = risk_params['веса'] * 2
+    
+    # Calculate final risk scores per group
+    Risk_groups = risk_params['Группа_риска'].unique()
+    RISK_values = []
+    
+    for risk_group in Risk_groups:
+        group_data = risk_params[risk_params['Группа_риска'] == risk_group]
+        sum_corrected = group_data['Corrected_risks'].sum()
+        sum_weights = group_data['Weights_for_formula'].sum()
+        risk_score = (sum_corrected / sum_weights) * 10
+        RISK_values.append(10 - risk_score)
+    
+    df_risks = pd.DataFrame({'Группа риска': Risk_groups, 'Риск-скор': RISK_values})
+    df_risks['Риск-скор'] = df_risks['Риск-скор'].round(0)
+    
+    return df_risks
+
+def generate_pdf_report(patient_info, risk_scores, risk_scores_path, risk_params_path, metabolomic_data_with_ratios_path, output_dir):
     """Generate PDF report with proper error handling"""
     dash_process = None
     driver = None
     
     try:
+        
         # Clean up any existing Dash instance
         kill_dash_app(8050)
-        time.sleep(2)  # Allow port to become available
+        time.sleep(2)
         
-        # Start new Dash process
+        # Start new Dash process with all needed data
         dash_command = [
             sys.executable,
             "main.py",
@@ -111,9 +208,9 @@ def generate_pdf_report(patient_info, file1_path, file2_path, output_dir):
             "--age", str(patient_info['age']),
             "--gender", patient_info['gender'],
             "--date", patient_info['date'],
-            "--file1", file1_path,
-            "--file2", file2_path,
-            "--file_type", patient_info['file_type']
+            "--risk_scores", risk_scores_path,
+            "--risk_params", risk_params_path,
+            "--metabolomic_data", metabolomic_data_with_ratios_path,
         ]
         
         dash_process = subprocess.Popen(
@@ -127,40 +224,32 @@ def generate_pdf_report(patient_info, file1_path, file2_path, output_dir):
         if not wait_for_dash_app():
             raise Exception("Dash app failed to start or load content")
         
-        # Initialize WebDriver and generate PDF
+        # Generate PDF
         driver = setup_chrome_driver()
+        driver.get("http://localhost:8050")
+        time.sleep(5)
         
-        try:
-            driver.get("http://localhost:8050")
-            time.sleep(5)  # Additional time for dynamic content
-            
-            # Generate PDF
-            pdf_path = os.path.join(output_dir, "report.pdf")
-            print_settings = {
-                "printBackground": True,
-                "paperWidth": 8.3,
-                "paperHeight": 11.7,
-                "scale": 1.0
-            }
-            
-            pdf_data = driver.execute_cdp_cmd("Page.printToPDF", print_settings)
-            with open(pdf_path, "wb") as f:
-                f.write(base64.b64decode(pdf_data['data']))
-            
-            return pdf_path
-            
-        except Exception as e:
-            st.error(f"PDF generation error: {str(e)}")
-            logging.error(f"PDF generation failed: {str(e)}")
-            return None
-            
+        pdf_path = os.path.join(output_dir, "report.pdf")
+        print_settings = {
+            "printBackground": True,
+            "paperWidth": 8.3,
+            "paperHeight": 11.7,
+            "scale": 1.0
+        }
+        
+        pdf_data = driver.execute_cdp_cmd("Page.printToPDF", print_settings)
+        with open(pdf_path, "wb") as f:
+            f.write(base64.b64decode(pdf_data['data']))
+        
+        return pdf_path
+        
     except Exception as e:
         st.error(f"Report generation failed: {str(e)}")
         logging.error(f"Report generation error: {str(e)}")
         return None
         
     finally:
-        # Cleanup resources in order
+        # Cleanup resources
         try:
             if driver:
                 driver.quit()
@@ -177,7 +266,6 @@ def generate_pdf_report(patient_info, file1_path, file2_path, output_dir):
                 except:
                     pass
         
-        # Final cleanup
         kill_dash_app(8050)
 
 def wait_for_dash_app(timeout=30):
@@ -265,6 +353,8 @@ def validate_inputs(name, file1, file2):
     
     return True
 
+
+
 def main():
     st.set_page_config(
         page_title="Отчет Metaboscan",
@@ -286,26 +376,24 @@ def main():
         
         date = st.date_input("Дата отчета", datetime.now(), format="DD.MM.YYYY")
         
-        st.header("Загрузите исходные файлы")
-        file_type = st.selectbox("Тип исходных файлов", ("Файл с прибора", "Изменненный вручную"), index=0, key="file_type")
-        file1 = st.file_uploader(
-            "Данные об АМИНОКИСЛОТАХ (Excel)",
+        st.header("Загрузите данные")
+        risk_params = st.file_uploader(
+            "Параметры риска (Excel)",
             type=["xlsx", "xls"],
-            key="file1"
+            key="risk_params"
         )
-        file2 = st.file_uploader(
-            "Данные об АЦИЛКАРНИТИНАХ (Excel)",
+        metabolomic_data = st.file_uploader(
+            "Метаболомный профиль пациента (Excel)",
             type=["xlsx", "xls"],
-            key="file2"
+            key="metabolomic_data"
         )
         
         submitted = st.form_submit_button("Сформировать отчет", type="primary")
     
-    if submitted and validate_inputs(name, file1, file2):
+    if submitted and validate_inputs(name, risk_params, metabolomic_data):
         patient_info = {
             "name": name.strip(),
             "age": age,
-            "file_type": file_type,
             "date": date.strftime("%d.%m.%Y"),
             "gender": gender,
         }
@@ -313,15 +401,34 @@ def main():
         with st.spinner("🔬 Читаем данные и генерируем отчет. Это займет не больше минуты..."):
             with tempfile.TemporaryDirectory() as temp_dir:
                 try:
-                    file1_path = os.path.join(temp_dir, "metabolites.xlsx")
-                    file2_path = os.path.join(temp_dir, "ac_metabolites.xlsx")
+                    # Save uploaded files temporarily
+                    risk_params_path = os.path.join(temp_dir, "risk_params.xlsx")
+                    with open(risk_params_path, "wb") as f:
+                        f.write(risk_params.getbuffer())
                     
-                    with open(file1_path, "wb") as f:
-                        f.write(file1.getbuffer())
-                    with open(file2_path, "wb") as f:
-                        f.write(file2.getbuffer())
+                    # Calculate ratios and risks
+                    metabolomic_data_with_ratios = calculate_metabolite_ratios(metabolomic_data)
+
+                    metabolomic_data_with_ratios_path = os.path.join(temp_dir, "metabolomic_data.xlsx")
+
+                    # Option 1: Save directly to file
+                    metabolomic_data_with_ratios.to_excel(metabolomic_data_with_ratios_path, index=False)
+                        
+                    risk_scores = calculate_risks(risk_params_path, metabolomic_data_with_ratios)
                     
-                    report_path = generate_pdf_report(patient_info, file1_path, file2_path, temp_dir)
+                    # Save risk scores as excel in temp_dir
+                    risk_scores_path = os.path.join(temp_dir, "risk_scores.xlsx")
+                    risk_scores.to_excel(risk_scores_path, index=False)
+
+                    # Generate report
+                    report_path = generate_pdf_report(
+                        patient_info,
+                        risk_scores,
+                        risk_scores_path,
+                        risk_params_path,
+                        metabolomic_data_with_ratios_path,
+                        temp_dir
+                    )
                     
                     if report_path and os.path.exists(report_path):
                         st.success("✅ Отчет успешно сформирован!")
@@ -333,12 +440,13 @@ def main():
                                 mime="application/pdf",
                             )
                         
-                        with st.expander("📄 Report Preview", expanded=True):
-                            base64_pdf = base64.b64encode(open(report_path, "rb").read()).decode('utf-8')
-                            st.markdown(
-                                f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="100%" height="800" style="border:none;"></iframe>',
-                                unsafe_allow_html=True
-                            )
+                        # with st.expander("📄 Report Preview", expanded=True):
+                        #     base64_pdf = base64.b64encode(open(report_path, "rb").read()).decode('utf-8')
+                        #     st.markdown(
+                        #         f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="100%" height="800" style="border:none;"></iframe>',
+                        #         unsafe_allow_html=True
+                                
+                        #     )
                     else:
                         st.error("Failed to generate report. Please check the console for errors.")
                         
