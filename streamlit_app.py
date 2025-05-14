@@ -268,6 +268,7 @@ def generate_pdf_report(patient_info, risk_scores, risk_scores_path, risk_params
         
         kill_dash_app(8050)
 
+
 def wait_for_dash_app(timeout=30):
     """Check if Dash app is ready"""
     start_time = time.time()
