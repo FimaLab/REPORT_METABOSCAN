@@ -441,13 +441,6 @@ def main():
                                 mime="application/pdf",
                             )
                         
-                        # with st.expander("📄 Report Preview", expanded=True):
-                        #     base64_pdf = base64.b64encode(open(report_path, "rb").read()).decode('utf-8')
-                        #     st.markdown(
-                        #         f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="100%" height="800" style="border:none;"></iframe>',
-                        #         unsafe_allow_html=True
-                                
-                        #     )
                     else:
                         st.error("Failed to generate report. Please check the console for errors.")
                         

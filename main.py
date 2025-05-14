@@ -972,7 +972,6 @@ def Neurovegitative_Group(file_path):
         # Extract df [Группа_риска] = Риск ССЗ and [Категория] = Нейровегетативный стресс keep all other columns
         risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Риск ССЗ') & (risk_params['Категория'] == 'Нейровегетативный стресс')]
 
-        
         # Calculate w_clear_score sum of [Score_Weighted] and w_max_score sum of [Max_score_weighted]
         w_clear_score = risk_params['Score_Weighted'].sum()
         w_max_score = risk_params['Max_score_weighted'].sum()
