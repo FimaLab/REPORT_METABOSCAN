@@ -147,6 +147,72 @@ def calculate_metabolite_ratios(metabolomic_data):
 
     return data
 
+def prepare_final_dataframe(risk_params_data, metabolomic_data_with_ratios):
+    # Load the data
+    risk_params = pd.read_excel(risk_params_data)
+    metabolic_data = pd.read_excel(metabolomic_data_with_ratios)
+    
+    # Get values for each marker from metabolomic data
+    values_conc = []
+    for metabolite in risk_params['Маркер / Соотношение']:
+        try:
+            value = metabolic_data.loc[0, metabolite]
+            # Handle negative and infinite values
+            if pd.isna(value) or np.isinf(value):
+                values_conc.append(np.nan)
+            elif value < 0:
+                values_conc.append(0)
+            else:
+                values_conc.append(value)
+        except KeyError:
+            values_conc.append(np.nan)  # Handle missing metabolites
+    
+    risk_params['Patient'] = values_conc
+    
+    # Drop rows with infinite or NaN values in Patient column
+    risk_params = risk_params[~risk_params['Patient'].isin([np.inf, -np.inf]) & 
+                  ~risk_params['Patient'].isna()].copy()
+    
+    # Initialize Score_Clear with 0 (normal range)
+    risk_params['Score_Clear'] = 0
+    
+    # Convert string representations of infinity to numeric
+    risk_params['norm_1'] = risk_params['norm_1'].replace('-inf', -np.inf)
+    risk_params['norm_2'] = risk_params['norm_2'].replace('+inf', np.inf)
+    
+    # Create masks for special cases
+    norm1_is_inf = risk_params['norm_1'] == -np.inf
+    norm2_is_inf = risk_params['norm_2'] == np.inf
+    
+    # Case 1: Only norm_2 is valid (norm_1 is -inf)
+    mask_case1 = norm1_is_inf & ~norm2_is_inf
+    risk_params.loc[mask_case1 & (risk_params['Patient'] >= risk_params['norm_2']) & 
+                  (risk_params['Patient'] < risk_params['High_risk_2']), 'Score_Clear'] = 1
+    risk_params.loc[mask_case1 & (risk_params['Patient'] >= risk_params['High_risk_2']), 'Score_Clear'] = 2
+    
+    # Case 2: Only norm_1 is valid (norm_2 is +inf)
+    mask_case2 = ~norm1_is_inf & norm2_is_inf
+    risk_params.loc[mask_case2 & (risk_params['Patient'] > risk_params['High_risk_1']) & 
+                  (risk_params['Patient'] <= risk_params['norm_1']), 'Score_Clear'] = 1
+    risk_params.loc[mask_case2 & (risk_params['Patient'] <= risk_params['High_risk_1']), 'Score_Clear'] = 2
+    
+    # Case 3: Both norms are valid (finite)
+    mask_case3 = ~norm1_is_inf & ~norm2_is_inf
+    risk_params.loc[mask_case3 & (
+        ((risk_params['Patient'] > risk_params['High_risk_1']) & (risk_params['Patient'] <= risk_params['norm_1'])) |
+        ((risk_params['Patient'] >= risk_params['norm_2']) & (risk_params['Patient'] < risk_params['High_risk_2']))
+    ), 'Score_Clear'] = 1
+    risk_params.loc[mask_case3 & (
+        (risk_params['Patient'] <= risk_params['High_risk_1']) |
+        (risk_params['Patient'] >= risk_params['High_risk_2'])
+    ), 'Score_Clear'] = 2
+    
+    # Calculate weighted scores
+    risk_params['Score_Weighted'] = risk_params['Score_Clear'] * risk_params['веса']
+    risk_params['Max_score_weighted'] = risk_params['веса'] * 2
+    
+    return risk_params
+
 def calculate_risks(risk_params_data, metabolomic_data_with_ratios):
     """Calculate risks based on risk parameters and metabolomic data with ratios"""
     risk_params = pd.read_excel(risk_params_data)
@@ -161,9 +227,9 @@ def calculate_risks(risk_params_data, metabolomic_data_with_ratios):
     
     # Calculate risk levels
     for index, row in risk_params.iterrows():
-        if row['norm_1'] < row['Sample'] < row['norm_2']:
+        if row['norm_1'] <= row['Sample'] <= row['norm_2']:
             risks.append(0)
-        elif row['High_risk_1'] < row['Sample'] < row['norm_1'] or row['norm_2'] < row['Sample'] < row['High_risk_2']:
+        elif row['High_risk_1'] <= row['Sample'] < row['norm_1'] or row['norm_2'] < row['Sample'] <= row['High_risk_2']:
             risks.append(1)
         else:
             risks.append(2)
@@ -189,7 +255,7 @@ def calculate_risks(risk_params_data, metabolomic_data_with_ratios):
     
     return df_risks
 
-def generate_pdf_report(patient_info, risk_scores, risk_scores_path, risk_params_path, metabolomic_data_with_ratios_path, output_dir):
+def generate_pdf_report(patient_info, risk_scores, risk_scores_path, risk_params_exp_path, metabolomic_data_with_ratios_path, output_dir):
     """Generate PDF report with proper error handling"""
     dash_process = None
     driver = None
@@ -209,7 +275,7 @@ def generate_pdf_report(patient_info, risk_scores, risk_scores_path, risk_params
             "--gender", patient_info['gender'],
             "--date", patient_info['date'],
             "--risk_scores", risk_scores_path,
-            "--risk_params", risk_params_path,
+            "--risk_params", risk_params_exp_path,
             "--metabolomic_data", metabolomic_data_with_ratios_path,
         ]
         
@@ -267,7 +333,6 @@ def generate_pdf_report(patient_info, risk_scores, risk_scores_path, risk_params
                     pass
         
         kill_dash_app(8050)
-
 
 def wait_for_dash_app(timeout=30):
     """Check if Dash app is ready"""
@@ -380,7 +445,7 @@ def main():
         st.header("Загрузите данные")
         risk_params = st.file_uploader(
             "Параметры риска (Excel)",
-            type=["xlsx", "xls"],
+            type=["xlsx", "xls", "xlsm"],
             key="risk_params"
         )
         metabolomic_data = st.file_uploader(
@@ -406,17 +471,18 @@ def main():
                     risk_params_path = os.path.join(temp_dir, "risk_params.xlsx")
                     with open(risk_params_path, "wb") as f:
                         f.write(risk_params.getbuffer())
-                    
+
                     # Calculate ratios and risks
                     metabolomic_data_with_ratios = calculate_metabolite_ratios(metabolomic_data)
-
                     metabolomic_data_with_ratios_path = os.path.join(temp_dir, "metabolomic_data.xlsx")
-
-                    # Option 1: Save directly to file
                     metabolomic_data_with_ratios.to_excel(metabolomic_data_with_ratios_path, index=False)
+                    
+                    risk_params_exp = prepare_final_dataframe(risk_params_path, metabolomic_data_with_ratios_path)
+                    risk_params_exp_path = os.path.join(temp_dir, "risk_exp_params.xlsx")
+                    risk_params_exp.to_excel(risk_params_exp_path, index=False)
                         
                     risk_scores = calculate_risks(risk_params_path, metabolomic_data_with_ratios)
-                    
+                    st.write(pd.read_excel(risk_params_exp_path))
                     # Save risk scores as excel in temp_dir
                     risk_scores_path = os.path.join(temp_dir, "risk_scores.xlsx")
                     risk_scores.to_excel(risk_scores_path, index=False)
@@ -426,7 +492,7 @@ def main():
                         patient_info,
                         risk_scores,
                         risk_scores_path,
-                        risk_params_path,
+                        risk_params_exp_path,
                         metabolomic_data_with_ratios_path,
                         temp_dir
                     )
@@ -440,6 +506,14 @@ def main():
                                 file_name=f"Report_{name.replace(' ', '_')}_{date.strftime('%Y%m%d')}.pdf",
                                 mime="application/pdf",
                             )
+                        
+                        # with st.expander("📄 Report Preview", expanded=True):
+                        #     base64_pdf = base64.b64encode(open(report_path, "rb").read()).decode('utf-8')
+                        #     st.markdown(
+                        #         f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="100%" height="800" style="border:none;"></iframe>',
+                        #         unsafe_allow_html=True
+                                
+                        #     )
                         
                     else:
                         st.error("Failed to generate report. Please check the console for errors.")
