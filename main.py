@@ -850,2713 +850,1469 @@ def calculate_pointer_position(value: float, ref_range: str):
         # Return middle position if there's any error
         return 50
     
-def NO_syntase_Group(file_path, metabolite_data):
-    # Initialize scores for each metabolite
-    scores = {
-        'ADMA': 0,
-        'TotalDMA (SDMA)': 0,
-        'Arg/ADMA': 0,
-        '(Arg+HomoArg)/ADMA': 0
-    }
-    
+def NO_syntase_Group(file_path): 
     try:
         # Load the risk parameters
         risk_params = pd.read_excel(file_path)
-        
-        # Convert metabolite_data from dict to Series for consistent access
-        metab_data = pd.Series(metabolite_data)
-        
-        # Calculate ratios if needed
-        if 'Arginine' in metab_data and 'ADMA' in metab_data:
-            metab_data['Arg/ADMA'] = metab_data['Arginine'] / metab_data['ADMA']
-        if 'Arginine' in metab_data and 'Homoarginine' in metab_data and 'ADMA' in metab_data:
-            metab_data['(Arg+HomoArg)/ADMA'] = (metab_data['Arginine'] + metab_data['Homoarginine']) / metab_data['ADMA']
-        
-        # Check each metabolite and assign scores
-        metabolites_to_check = [
-            ('ADMA', 1),
-            ('TotalDMA (SDMA)', 0.5),
-            ('Arg/ADMA', 0.5),
-            ('(Arg+HomoArg)/ADMA', 0.5)
-        ]
-        
-        for metabolite, score in metabolites_to_check:
-            if metabolite in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер / Соотношение'] == metabolite].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[metabolite]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[metabolite] = score
-                except (IndexError, KeyError):
-                    print(f"Warning: {metabolite} not found in risk parameters or missing norms")
-                    continue
-    
-    except Exception as e:
-        print(f"Error in NO_syntase_Group: {str(e)}")
-        return 50  # Return default score on error
-    
-    # Calculate the final score
-    total_score = (
-        scores['ADMA'] + 
-        scores['TotalDMA (SDMA)'] + 
-        scores['Arg/ADMA'] + 
-        scores['(Arg+HomoArg)/ADMA']
-    ) * 100 / 2.5
-    
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
+        # Extract df [Группа_риска] = Риск ССЗ and [Категория] = NO-синтаза / Эндотелий keep all other columns
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Риск ССЗ') & (risk_params['Категория'] == 'NO-синтаза / Эндотелий')]
 
-def Inflammation_Group(file_path, metabolite_data):
-    scores = {
-        'Kyn/Trp': 0,
-        'Quin/HIAA': 0,
-        'Quinolinic acid': 0
-    }
-    
+        
+        # Calculate w_clear_score sum of [Score_Weighted] and w_max_score sum of [Max_score_weighted]
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
+        
+        total = (w_clear_score / w_max_score) * 100
+        
+        if total >= 90:
+            return 90
+        else:
+            return total
+        
+    except Exception as e:
+        print(f"Error in NO_syntase_Group: {e}")
+        return 100
+
+def Inflammation_Group(file_path):
     try:
+        # Load the risk parameters
         risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
-        
-        # Calculate ratios if needed
-        if 'Kynurenine' in metab_data and 'Tryptophan' in metab_data:
-            metab_data['Kyn/Trp'] = metab_data['Kynurenine'] / metab_data['Tryptophan']
-        if 'Quinolinic acid' in metab_data and 'HIAA' in metab_data:
-            metab_data['Quin/HIAA'] = metab_data['Quinolinic acid'] / metab_data['HIAA']
-        
-        markers = [
-            ('Kyn/Trp', 0.75),
-            ('Quin/HIAA', 0.3),
-            ('Quinolinic acid', 0.45)
-        ]
-        
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
-    
-    except Exception as e:
-        print(f"Error in Inflammation_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 1.5
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
+        # Extract df [Группа_риска] = Риск ССЗ and [Категория] = Воспаление / IDO путь keep all other columns
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Риск ССЗ') & (risk_params['Категория'] == 'Воспаление / IDO путь')]
 
-def Methilation_Group(file_path, metabolite_data):
-    scores = {
-        'TMAO': 0,
-        'Betaine/choline': 0
-    }
-    
+        
+        # Calculate w_clear_score sum of [Score_Weighted] and w_max_score sum of [Max_score_weighted]
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
+        
+        total = (w_clear_score / w_max_score) * 100
+        
+        if total >= 90:
+            return 90
+        else:
+            return total
+        
+    except Exception as e:
+        print(f"Error in Inflammation_Group: {e}")
+        return 100
+
+def Methilation_Group(file_path):
     try:
+        # Load the risk parameters
         risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
-        
-        
-        markers = [
-            ('TMAO', 0.7),
-            ('Betaine/choline', 0.3)
-        ]
-        
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
-    
-    except Exception as e:
-        print(f"Error in Methilation_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 1.0
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
+        # Extract df [Группа_риска] = Риск ССЗ and [Категория] = Метилирование / холин keep all other columns
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Риск ССЗ') & (risk_params['Категория'] == 'Метилирование / холин')]
 
-def Mitochondrial_Group(file_path, metabolite_data):
-    scores = {
-        'C0/(C16+C18)': 0,
-        '(C16+C18)/C2': 0,
-        'СДК': 0
-    }
-    
+        
+        # Calculate w_clear_score sum of [Score_Weighted] and w_max_score sum of [Max_score_weighted]
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
+        
+        total = (w_clear_score / w_max_score) * 100
+        
+        if total >= 90:
+            return 90
+        else:
+            return total
+        
+    except Exception as e:
+        print(f"Error in Inflammation_Group: {e}")
+        return 100
+
+def Mitochondrial_Group(file_path):
     try:
+        # Load the risk parameters
         risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
-        
-        markers = [
-            ('C0/(C16+C18)', 0.375),
-            ('(C16+C18)/C2', 0.375),
-            ('СДК', 0.75)
-        ]
-        
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
-    
-    except Exception as e:
-        print(f"Error in Mitochondrial_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 1.5
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
+        # Extract df [Группа_риска] = Риск ССЗ and [Категория] = Митохондрии / β-окисление keep all other columns
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Риск ССЗ') & (risk_params['Категория'] == 'Митохондрии / β-окисление')]
 
-def Insulin_Resistance_Group(file_path, metabolite_data):
-    scores = {
-        'BCAA': 0,
-        'BCAA/AAA': 0,
-        'Alanine/Valine': 0
-    }
-    
+        
+        # Calculate w_clear_score sum of [Score_Weighted] and w_max_score sum of [Max_score_weighted]
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
+        
+        total = (w_clear_score / w_max_score) * 100
+        
+        if total >= 90:
+            return 90
+        else:
+            return total
+        
+    except Exception as e:
+        print(f"Error in Inflammation_Group: {e}")
+        return 100
+
+def Insulin_Resistance_Group(file_path):
     try:
+        # Load the risk parameters
         risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
-        
-        # Calculate ratios
-        if 'Valine' in metab_data and 'Leucine' in metab_data and 'Isoleucine' in metab_data:
-            metab_data['BCAA'] = metab_data['Valine'] + metab_data['Leucine'] + metab_data['Isoleucine']
-        if 'BCAA' in metab_data and 'Phenylalanine' in metab_data and 'Tyrosine' in metab_data:
-            metab_data['BCAA/AAA'] = metab_data['BCAA'] / (metab_data['Phenylalanine'] + metab_data['Tyrosine'])
-        if 'Alanine' in metab_data and 'Valine' in metab_data:
-            metab_data['Alanine/Valine'] = metab_data['Alanine'] / metab_data['Valine']
-        
-        markers = [
-            ('BCAA', 0.75),
-            ('BCAA/AAA', 0.45),
-            ('Alanine/Valine', 0.3)
-        ]
-        
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
-    
-    except Exception as e:
-        print(f"Error in Insulin_Resistance_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 1.5
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
+        # Extract df [Группа_риска] = Риск ССЗ and [Категория] = Инсулинорезистентность keep all other columns
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Риск ССЗ') & (risk_params['Категория'] == 'Инсулинорезистентность')]
 
-def Neurovegitative_Group(file_path, metabolite_data):
-    scores = {
-        'Serotonin': 0,
-        'Cortisol': 0,
-        'Melatonin': 0
-    }
-    
+        
+        # Calculate w_clear_score sum of [Score_Weighted] and w_max_score sum of [Max_score_weighted]
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
+        
+        total = (w_clear_score / w_max_score) * 100
+        
+        if total >= 90:
+            return 90
+        else:
+            return total
+        
+    except Exception as e:
+        print(f"Error in Inflammation_Group: {e}")
+        return 100
+
+def Neurovegitative_Group(file_path):
     try:
+        # Load the risk parameters
         risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
-        
-        markers = [
-            ('Serotonin', 0.6),
-            ('Cortisol', 0.8),
-            ('Melatonin', 0.6)
-        ]
-        
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    # For some markers (like cortisol), only upper limit matters
-                    if marker == 'Cortisol':
-                        if value > norm2:
-                            scores[marker] = weight
-                    # For others (like serotonin, melatonin), both limits matter
-                    else:
-                        if not (norm1 <= value <= norm2):
-                            scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
-    
-    except Exception as e:
-        print(f"Error in Neurovegitative_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 2.0
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
+        # Extract df [Группа_риска] = Риск ССЗ and [Категория] = Нейровегетативный стресс keep all other columns
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Риск ССЗ') & (risk_params['Категория'] == 'Нейровегетативный стресс')]
 
-def Methionine_Exchange_Group(file_path, metabolite_data):
-    scores = {
-        'Methionine': 0,
-        'Methionine-Sulfoxide': 0,
-        'Betaine': 0,
-        'Choline': 0,
-        'Betaine/сholine': 0
-    }
-    
+        
+        # Calculate w_clear_score sum of [Score_Weighted] and w_max_score sum of [Max_score_weighted]
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
+        
+        total = (w_clear_score / w_max_score) * 100
+        
+        if total >= 90:
+            return 90
+        else:
+            return total
+        
+    except Exception as e:
+        print(f"Error in Inflammation_Group: {e}")
+        return 100
+
+def Methionine_Exchange_Group(file_path):
     try:
+        # Load the risk parameters
         risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
+        # Extract df [Группа_риска] = Печеночные функции and [Категория] = Обмен метионина и метилирование keep all other columns
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Печеночные функции') & (risk_params['Категория'] == 'Обмен метионина и метилирование')]
+
         
-        markers = [
-            ('Methionine', 0.5),
-            ('Methionine-Sulfoxide', 0.5),
-            ('Betaine', 0.5),
-            ('Choline', 0.5),
-            ('Betaine/сholine', 1.0)
-        ]
+        # Calculate w_clear_score sum of [Score_Weighted] and w_max_score sum of [Max_score_weighted]
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
         
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
-    
+        total = (w_clear_score / w_max_score) * 100
+        
+        if total >= 90:
+            return 90
+        else:
+            return total
+        
     except Exception as e:
-        print(f"Error in Methionine_Exchange_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 3.0  # Weight of this group is 3
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
+        print(f"Error in Inflammation_Group: {e}")
+        return 100
 
-# def Antoxidant_System_Group(file_path, metabolite_data):
-#     scores = {
-#         'GSH/GSG_index': 0
-#     }
-    
-#     try:
-#         risk_params = pd.read_excel(file_path)
-#         metab_data = pd.Series(metabolite_data)
-        
-#         markers = [
-#             ('GSH/GSG_index', 2.0)
-#         ]
-        
-#         for marker, weight in markers:
-#             if marker in metab_data:
-#                 try:
-#                     row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
-#                     norm1 = row['norm_1']
-#                     norm2 = row['norm_2']
-#                     value = metab_data[marker]
-                    
-#                     if not (norm1 <= value <= norm2):
-#                         scores[marker] = weight
-#                 except (IndexError, KeyError):
-#                     continue
-    
-#     except Exception as e:
-#         print(f"Error in Antoxidant_System_Group: {str(e)}")
-#         return 50
-    
-#     total_score = sum(scores.values()) * 100 / 2.0  # Weight of this group is 2
-#     if total_score >= 90:
-#         return 85
-#     else:
-#         return total_score
-
-def Protein_Exchange_Group(file_path, metabolite_data):
-    scores = {
-        'BCAA': 0,
-    }
-    
+def Protein_Exchange_Group(file_path):
     try:
+        # Load the risk parameters
         risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
-        
-        markers = [
-            ('BCAA', 1.0),
-        ]
-        
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
-    
-    except Exception as e:
-        print(f"Error in Protein_Exchange_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 1.0  # Weight of this group is 2
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
+        # Extract df [Группа_риска] = Печеночные функции and [Категория] = Обмен белками keep all other columns
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Печеночные функции') & (risk_params['Категория'] == 'Белковый обмен')]
 
-def Aminoacid_Profile(file_path, metabolite_data):
-    scores = {
-        'Phe/Tyr': 0,
-        'BCAA/AAA': 0,
-        'Ornitine': 0,
-        'Citrulline': 0  
-    }
-    
+        
+        # Calculate w_clear_score sum of [Score_Weighted] and w_max_score sum of [Max_score_weighted]
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
+        
+        total = (w_clear_score / w_max_score) * 100
+        
+        if total >= 90:
+            return 90
+        else:
+            return total
+    except Exception as e:
+        print(f"Error in Inflammation_Group: {e}")
+        return 100
+
+def Aminoacid_Profile(file_path):
     try:
+        # Load the risk parameters
         risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
+        # Extract df [Группа_риска] = Печеночные функции and [Категория] = Аминокислотный профиль keep all other columns
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Печеночные функции') & (risk_params['Категория'] == 'Аминокислотный профиль')]
+
         
-        markers = [
-            ('Phe/Tyr', 1),
-            ('BCAA/AAA', 1),
-            ('Ornitine', 0.5),
-            ('Citrulline', 0.5)
-        ]
+        # Calculate w_clear_score sum of [Score_Weighted] and w_max_score sum of [Max_score_weighted]
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
         
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
-    
+        total = (w_clear_score / w_max_score) * 100
+        
+        if total >= 90:
+            return 90
+        else:
+            return total
     except Exception as e:
-        print(f"Error in Aminoacid_Profile: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 3.0  # Weight of this group is 1
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
+        print(f"Error in Inflammation_Group: {e}")
+        return 100
 
-# def Conjugation_Detoxication(file_path, metabolite_data):
-#     scores = {
-#         'Hippuric acid': 0,
-#         'Indoxyl sulfate / IAA': 0,
-#         'Ornithine': 0,
-#         'Citrulline': 0
-#     }
-    
-#     try:
-#         risk_params = pd.read_excel(file_path)
-#         metab_data = pd.Series(metabolite_data)
-        
-#         markers = [
-#             ('Hippuric acid', 0.5),
-#             ('Indoxyl sulfate / IAA', 0.5),
-#             ('Ornithine', 0.5),
-#             ('Citrulline', 0.5)
-#         ]
-        
-#         for marker, weight in markers:
-#             if marker in metab_data:
-#                 try:
-#                     row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
-#                     norm1 = row['norm_1']
-#                     norm2 = row['norm_2']
-#                     value = metab_data[marker]
-                    
-#                     if not (norm1 <= value <= norm2):
-#                         scores[marker] = weight
-#                 except (IndexError, KeyError):
-#                     continue
-    
-#     except Exception as e:
-#         print(f"Error in Conjugation_Detoxication: {str(e)}")
-#         return 50
-    
-#     total_score = sum(scores.values()) * 100 / 2.0  # Weight of this group is 2
-#     if total_score >= 90:
-#         return 85
-#     else:
-#         return total_score
-
-def Oxidative_Stress_Group(file_path, metabolite_data):
-    scores = {
-        'Methionine-Sulfoxide': 0,
-        'GSG_index': 0,
-        'Taurine': 0
-    }
-    
+def Oxidative_Stress_Group(file_path):
     try:
+        # Load the risk parameters
         risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
+        # Extract df [Группа_риска] = Резистентность к внешним факторам and [Категория] = Оксидативный стресс keep all other columns
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Резистентность к внешним факторам') & (risk_params['Категория'] == 'Оксидативный стресс')]
+
         
-        markers = [
-            ('Methionine-Sulfoxide', 1.75),
-            ('GSG_index', 1.75),
-            ('Taurine', 1.25)
-        ]
+        # Calculate w_clear_score sum of [Score_Weighted] and w_max_score sum of [Max_score_weighted]
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
         
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
-    
+        total = (w_clear_score / w_max_score) * 100
+        
+        if total >= 90:
+            return 90
+        else:
+            return total
     except Exception as e:
-        print(f"Error in Oxidative_Stress_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 4.75  # Total weight is already 4.75
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score  # Cap at 10
+        print(f"Error in Inflammation_Group: {e}")
+        return 100
     
 
-def Inflammation_and_Microbial_Group(file_path, metabolite_data):
-    scores = {
-        'Indole-3-propionic acid': 0,
-        'Indole-3-acetic acid': 0,
-        'Indole-3-carboxaldehyde': 0
-    }
-    
+def Inflammation_and_Microbial_Group(file_path):
     try:
+        # Load the risk parameters
         risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
-        
-        markers = [
-            ('Indole-3-propionic acid', 0.75),
-            ('Indole-3-acetic acid', 0.75),
-            ('Indole-3-carboxaldehyde', 0.50)
-        ]
-        
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
-    
-    except Exception as e:
-        print(f"Error in Inflammation_and_Microbial_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 2.0  # Total weight is 2.0
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
+        # Extract df [Группа_риска] = Резистентность к внешним факторам and [Категория] = Воспаление и микробный стресс keep all other columns
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Резистентность к внешним факторам') & (risk_params['Категория'] == 'Воспаление и микробный стресс')]
 
-# def Aromatic_Toxic_Group(file_path, metabolite_data):
-#     scores = {
-#         'Hippuric acid': 0,
-#         'Phenylacetic acid': 0
-#     }
-    
-#     try:
-#         risk_params = pd.read_excel(file_path)
-#         metab_data = pd.Series(metabolite_data)
         
-#         markers = [
-#             ('Hippuric acid', 0.50),
-#             ('Phenylacetic acid', 0.50)
-#         ]
+        # Calculate w_clear_score sum of [Score_Weighted] and w_max_score sum of [Max_score_weighted]
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
         
-#         for marker, weight in markers:
-#             if marker in metab_data:
-#                 try:
-#                     row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
-#                     norm1 = row['norm_1']
-#                     norm2 = row['norm_2']
-#                     value = metab_data[marker]
-                    
-#                     if not (norm1 <= value <= norm2):
-#                         scores[marker] = weight
-#                 except (IndexError, KeyError):
-#                     continue
-    
-#     except Exception as e:
-#         print(f"Error in Aromatic_Toxic_Group: {str(e)}")
-#         return 50
-    
-#     total_score = sum(scores.values()) * 100 / 1.0  # Total weight is 1.0
-#     return min(total_score, 10)
+        total = (w_clear_score / w_max_score) * 100
+        
+        if total >= 90:
+            return 90
+        else:
+            return total
+    except Exception as e:
+        print(f"Error in Inflammation_Group: {e}")
+        return 100
 
-def Nitrogen_Toxic_Group(file_path, metabolite_data):
-    scores = {
-        'ADMA': 0,
-        'TotalDMA (SDMA)': 0
-    }
-    
+def Nitrogen_Toxic_Group(file_path):
     try:
+        # Load the risk parameters
         risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
-        
-        markers = [
-            ('ADMA', 0.75),
-            ('TotalDMA (SDMA)', 0.50)
-        ]
-        
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
-    
-    except Exception as e:
-        print(f"Error in Nitrogen_Toxic_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 1.25  # Total weight is 1.25
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
+        # Extract df [Группа_риска] = Резистентность к внешним факторам and [Категория] = Азотистые токсины keep all other columns
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Резистентность к внешним факторам') & (risk_params['Категория'] == 'Азотистые токсины')]
 
-def Lipid_Toxic_Group(file_path, metabolite_data):
-    scores = {
-        '(C16+C18)/C2': 0,
-        'СДК': 0
-    }
-    
-    try:
-        risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
         
-        # Calculate ratios if needed
-        if 'C16' in metab_data and 'C18' in metab_data and 'C2' in metab_data:
-            metab_data['(C16+C18)/C2'] = (metab_data['C16'] + metab_data['C18']) / metab_data['C2']
+        # Calculate w_clear_score sum of [Score_Weighted] and w_max_score sum of [Max_score_weighted]
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
         
-        markers = [
-            ('(C16+C18)/C2', 0.50),
-            ('СДК', 0.50)
-        ]
+        total = (w_clear_score / w_max_score) * 100
         
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
-    
+        if total >= 90:
+            return 90
+        else:
+            return total
     except Exception as e:
-        print(f"Error in Lipid_Toxic_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 1
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
+        print(f"Error in Inflammation_Group: {e}")
+        return 100
 
-def Collagen_Group(file_path, metabolite_data):
-    scores = {
-        'Proline': 0,
-        'Hydroxyproline': 0,
-        'Glycine/Serine': 0
-    }
-    
+def Lipid_Toxic_Group(file_path):
     try:
+        # Load the risk parameters
         risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
-        
-        markers = [
-            ('Proline', 1.3),
-            ('Hydroxyproline', 1.3),
-            ('Glycine/Serine', 0.6)
-        ]
-        
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
-    
-    except Exception as e:
-        print(f"Error in Collagen_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 3.2  # Total weight is 3.2
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
+        # Extract df [Группа_риска] = Резистентность к внешним факторам and [Категория] = Липидные токсины / окс. стресс keep all other columns
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Резистентность к внешним факторам') & (risk_params['Категория'] == 'Липидные токсины / окс. стресс')]
 
-def Regeneration_Group(file_path, metabolite_data):
-    scores = {
-        'Methionine': 0,
-    }
-    
-    try:
-        risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
         
-        markers = [
-            ('Methionine', 0.6),
-        ]
+        # Calculate w_clear_score sum of [Score_Weighted] and w_max_score sum of [Max_score_weighted]
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
         
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
-    
+        total = (w_clear_score / w_max_score) * 100
+        
+        if total >= 90:
+            return 90
+        else:
+            return total
     except Exception as e:
-        print(f"Error in Regeneration_Group: {str(e)}")
-        return 50
+        print(f"Error in Inflammation_Group: {e}")
+        return 100
     
-    total_score = sum(scores.values()) * 100 / 0.6 # Total weight is 1.2
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
+def Collagen_Group(file_path):
+    try:
+        # Load the risk parameters
+        risk_params = pd.read_excel(file_path)
+        # Extract df [Группа_риска] = Состояние кожи и волос and [Категория] = Коллаген и соединительная ткань keep all other columns
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Состояние кожи и волос') & (risk_params['Категория'] == 'Коллаген и соединительная ткань')]
 
-def Dream_Group(file_path, metabolite_data):
-    scores = {
-        'Melatonin': 0
-    }
-    
-    try:
-        risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
         
-        markers = [
-            ('Melatonin', 1.6)
-        ]
+        # Calculate w_clear_score sum of [Score_Weighted] and w_max_score sum of [Max_score_weighted]
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
         
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
-    
+        total = (w_clear_score / w_max_score) * 100
+        
+        if total >= 90:
+            return 90
+        else:
+            return total
     except Exception as e:
-        print(f"Error in Dream_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 1.6  # Total weight is 1.6
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
+        print(f"Error in Inflammation_Group: {e}")
+        return 100
 
-def Inflammation_and_Stress_Group(file_path, metabolite_data):
-    scores = {
-        'Serotonin': 0,
-        'Cortisol': 0,
-        'Indole-3-acetic acid': 0,
-        'Tryptamine / IAA': 0
-    }
-    
+def Regeneration_Group(file_path):
     try:
+        # Load the risk parameters
         risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
-        
-        markers = [
-            ('Serotonin', 0.6),
-            ('Cortisol', 0.6),
-            ('Indole-3-acetic acid', 0.3),
-            ('Tryptamine / IAA', 0.3)
-        ]
-        
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
-    
-    except Exception as e:
-        print(f"Error in Inflammation_and_Stress_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 1.8 # Total weight is 1.8
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Состояние кожи и волос') & (risk_params['Категория'] == 'Регенерация и рост')]
 
-def Exchange_Serum_Group(file_path, metabolite_data):
-    scores = {
-        'Taurine': 0
-    }
-    
-    try:
-        risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
         
-        markers = [
-            ('Taurine', 1.3)
-        ]
+        # Calculate w_clear_score sum of [Score_Weighted] and w_max_score sum of [Max_score_weighted]
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
         
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
-    
+        total = (w_clear_score / w_max_score) * 100
+        
+        if total >= 90:
+            return 90
+        else:
+            return total
     except Exception as e:
-        print(f"Error in Exchange_Serum_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 1.3  # Total weight is 1.3
-    
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
+        print(f"Error in Inflammation_Group: {e}")
+        return 100
 
-def Neuroinflammation_Group(file_path, metabolite_data):
-    scores = {
-        'Kynurenine': 0,
-        'Kyn/Trp': 0
-    }
-    
+def Dream_Group(file_path):
     try:
+        # Load the risk parameters
         risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
-        
-        # Calculate ratios if needed
-        if 'Kynurenine' in metab_data and 'Tryptophan' in metab_data:
-            metab_data['Kyn/Trp'] = metab_data['Kynurenine'] / metab_data['Tryptophan']
-        
-        markers = [
-            ('Kynurenine', 0.3),
-            ('Kyn/Trp', 0.6)
-        ]
-        
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
-    
-    except Exception as e:
-        print(f"Error in Neuroinflammation_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 0.9  # Total weight is 0.9
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
-    
-def Energy_Exchange_Group(file_path, metabolite_data):
-    scores = {
-        'C0': 0,
-        'C2': 0,
-        'C2/C0': 0,
-        '(C2+C3)/C0': 0
-    }
-    
-    try:
-        risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
-        
-        markers = [
-            ('C0', 1.2),
-            ('C2', 0.75),
-            ('C2/C0', 0.5),
-            ('(C2+C3)/C0', 0.5)
-        ]
-        
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
-    
-    except Exception as e:
-        print(f"Error in Energy_Exchange_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 2.95  # Total weight is 2.95
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
-    
-def Energy_Exchange_Carnitine_Group(file_path, metabolite_data):
-    scores = {
-        'C0': 0,
-        'C2': 0,
-        'C2/C0': 0,
-        '(C2+C3)/C0': 0,
-        'C0/(C16+C18)': 0
-    }
-    
-    try:
-        risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
-        
-        markers = [
-            ('C0', 1),
-            ('C2', 1),
-            ('C2/C0', 0.75),
-            ('(C2+C3)/C0', 0.625),
-            ('C0/(C16+C18)', 0.625)
-        ]
-        
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
-    
-    except Exception as e:
-        print(f"Error in Energy_Exchange_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 4  # Total weight is 2.95
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Состояние кожи и волос') & (risk_params['Категория'] == 'Сон и гормональный фон')]
 
-def Neuroadaptation_Group(file_path, metabolite_data):
-    scores = {
-        'Cortisol': 0,
-        'Serotonin': 0,
-        'Melatonin': 0
-    }
-    
-    try:
-        risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
         
-        markers = [
-            ('Cortisol', 1.2),
-            ('Serotonin', 0.8),
-            ('Melatonin', 0.75)
-        ]
+        # Calculate w_clear_score sum of [Score_Weighted] and w_max_score sum of [Max_score_weighted]
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
         
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
-    
+        total = (w_clear_score / w_max_score) * 100
+        
+        if total >= 90:
+            return 90
+        else:
+            return total
     except Exception as e:
-        print(f"Error in Neuroadaptation_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 2.75  # Total weight is 2.75
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
+        print(f"Error in Inflammation_Group: {e}")
+        return 100
 
-def Stress_Aminoacid_Group(file_path, metabolite_data):
-    scores = {
-        'Tyrosin': 0,
-        'Histidine': 0,
-        'Arginine': 0,
-        '(Arg+HomoArg)/ADMA': 0
-    }
-    
+def Inflammation_and_Stress_Group(file_path):
     try:
+        # Load the risk parameters
         risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
-        
-        markers = [
-            ('Tyrosin', 0.5),
-            ('Histidine', 0.5),
-            ('Arginine', 0.5),
-            ('(Arg+HomoArg)/ADMA', 0.75)
-        ]
-        
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
-    
-    except Exception as e:
-        print(f"Error in Stress_Aminoacid_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 2.25  # Total weight is 2.25
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Состояние кожи и волос') & (risk_params['Категория'] == 'Воспаление / стресс')]
 
-def Metochondria_Creatinine_Group(file_path, metabolite_data):
-    scores = {
-        'Creatinine': 0
-    }
-    
-    try:
-        risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
         
-        markers = [
-            ('Creatinine', 0.5)
-        ]
+        # Calculate w_clear_score sum of [Score_Weighted] and w_max_score sum of [Max_score_weighted]
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
         
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
-    
+        total = (w_clear_score / w_max_score) * 100
+        
+        if total >= 90:
+            return 90
+        else:
+            return total
     except Exception as e:
-        print(f"Error in Metochondria_Creatinine_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 0.5  # Total weight is 0.5
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
+        print(f"Error in Inflammation_Group: {e}")
+        return 100
 
-def Glutamate_Exchange_Group(file_path, metabolite_data):
-    scores = {
-        'Glutamine/Glutamate': 0,
-        'GSG_index': 0
-    }
-    
+def Exchange_Serum_Group(file_path):
     try:
+        # Load the risk parameters
         risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
-        
-        markers = [
-            ('Glutamine/Glutamate', 0.75),
-            ('GSG_index', 0.75)
-        ]
-        
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
-    
-    except Exception as e:
-        print(f"Error in Glutamate_Exchange_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 1.5  # Total weight is 1.55
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Состояние кожи и волос') & (risk_params['Категория'] == 'Обмен серы и кожи')]
 
-def Tryptophan_Metabolism_Group(file_path, metabolite_data):
-    scores = {
-        'Indole-3-acetic acid': 0,
-        'Indole-3-propionic acid': 0,
-        'Indole-3-lactic acid': 0,
-        'Tryptamine': 0,
-        'Tryptophan': 0,
-        'Indole-3-carboxaldehyde': 0
-    }
-    
-    try:
-        risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
         
-        markers = [
-            ('Indole-3-acetic acid', 1.5),
-            ('Indole-3-propionic acid', 1.5),
-            ('Indole-3-lactic acid', 1.0),
-            ('Tryptamine', 0.5),
-            ('Tryptophan', 0.5),
-            ('Indole-3-carboxaldehyde', 0.75)
-        ]
+        # Calculate w_clear_score sum of [Score_Weighted] and w_max_score sum of [Max_score_weighted]
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
         
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
-    
+        total = (w_clear_score / w_max_score) * 100
+        
+        if total >= 90:
+            return 90
+        else:
+            return total
     except Exception as e:
-        print(f"Error in Tryptophan_Metabolism_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 5.75  # Total weight is 5.0
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
+        print(f"Error in Inflammation_Group: {e}")
+        return 100
 
-# def Microbial_Stress_Group(file_path, metabolite_data):
-#     scores = {
-#         'Hippuric acid': 0,
-#         'Phenylacetic acid': 0,
-#         'p-Cresol sulfate': 0,
-#         'Indole-3-carboxaldehyde': 0
-#     }
-    
-#     try:
-#         risk_params = pd.read_excel(file_path)
-#         metab_data = pd.Series(metabolite_data)
-        
-#         markers = [
-#             ('Hippuric acid', 1.0),
-#             ('Phenylacetic acid', 0.5),
-#             ('p-Cresol sulfate', 1.5),
-#             ('Indole-3-carboxaldehyde', 0.75)
-#         ]
-        
-#         for marker, weight in markers:
-#             if marker in metab_data:
-#                 try:
-#                     row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
-#                     norm1 = row['norm_1']
-#                     norm2 = row['norm_2']
-#                     value = metab_data[marker]
-                    
-#                     if not (norm1 <= value <= norm2):
-#                         scores[marker] = weight
-#                 except (IndexError, KeyError):
-#                     continue
-    
-#     except Exception as e:
-#         print(f"Error in Microbial_Stress_Group: {str(e)}")
-#         return 50
-    
-#     total_score = sum(scores.values()) * 100 / 3.75  # Total weight is 3.75
-#         if total_score >= 90:
-    #     return 85
-    # else:
-    #     return total_score
+def Neuroinflammation_Group(file_path):
+    try:
+        # Load the risk parameters
+        risk_params = pd.read_excel(file_path)
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Состояние кожи и волос') & (risk_params['Категория'] == 'Нейровоспаление')]
 
-def Inflammation_and_Immune_Group(file_path, metabolite_data):
-    scores = {
-        'Kyn/Trp': 0,
-        'Quin/HIAA': 0
-    }
-    
-    try:
-        risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
         
-        markers = [
-            ('Kyn/Trp', 0.75),
-            ('Quin/HIAA', 0.5)
-        ]
+        # Calculate w_clear_score sum of [Score_Weighted] and w_max_score sum of [Max_score_weighted]
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
         
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
+        total = (w_clear_score / w_max_score) * 100
+        
+        if total >= 90:
+            return 90
+        else:
+            return total
     
     except Exception as e:
-        print(f"Error in Inflammation_and_Immune_Group: {str(e)}")
-        return 50
+        print(f"Error in Inflammation_Group: {e}")
+        return 100
     
-    total_score = sum(scores.values()) * 100 / 1.25  # Total weight is 1.25
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
-    
-def Tryptophan_Inflammation_Group(file_path, metabolite_data):
-    scores = {
-        'Kyn/Trp': 0,
-        'Trp/(Kyn+QA)': 0,
-        'Quin/HIAA': 0
-    }
-    
+def Energy_Exchange_Group(file_path):
+    """Энергетический обмен - Адаптивные возможности организма"""
     try:
         risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
-        
-        markers = [
-            ('Kyn/Trp', 1.3),
-            ('Trp/(Kyn+QA)', 1.3),
-            ('Quin/HIAA', 0.6)
-        ]
-        
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
-    
-    except Exception as e:
-        print(f"Error in Tryptophan_Inflammation_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 3.2  # Total weight is 3.2
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Адаптивные возможности организма') & 
+                                    (risk_params['Категория'] == 'Энергетический обмен')]
 
-def Neuroendocrine_Group(file_path, metabolite_data):
-    scores = {
-        'Melatonin': 0,
-        'Serotonin': 0,
-        'Cortisol': 0
-    }
-    
-    try:
-        risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
         
-        markers = [
-            ('Melatonin', 0.8),
-            ('Serotonin', 0.45),
-            ('Cortisol', 0.55)
-        ]
+        total = (w_clear_score / w_max_score) * 100
         
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
+        if total >= 90:
+            return 90
+        else:
+            return total
     
     except Exception as e:
-        print(f"Error in Neuroendocrine_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 1.8  # Total weight is 1.8
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
+        print(f"Error in Energy_Exchange_Group: {e}")
+        return 100
 
-def Integrative_Index_Group(file_path, metabolite_data):
-    scores = {
-        'ADMA': 0,
-        'TMAO': 0
-    }
-    
+def Neuroadaptation_Group(file_path):
+    """Нейро-адаптация - Адаптивные возможности организма"""
     try:
         risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
-        
-        markers = [
-            ('ADMA', 0.65),
-            ('TMAO', 0.45)
-        ]
-        
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
-    
-    except Exception as e:
-        print(f"Error in Integrative_Index_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 1.1  # Total weight is 1.1
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Адаптивные возможности организма') & 
+                                    (risk_params['Категория'] == 'Нейро-адаптация')]
 
-def Ido_Path_Tryptophan_Group(file_path, metabolite_data):
-    scores = {
-        'Kyn/Trp': 0,
-        'Trp/(Kyn+QA)': 0,
-        'Quin/HIAA': 0
-    }
-    
-    try:
-        risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
         
-        markers = [
-            ('Kyn/Trp', 1.88),
-            ('Trp/(Kyn+QA)', 1.50),
-            ('Quin/HIAA', 0.75)
-        ]
+        total = (w_clear_score / w_max_score) * 100
         
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
+        if total >= 90:
+            return 90
+        else:
+            return total
     
     except Exception as e:
-        print(f"Error in Ido_Path_Tryptophan_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 4.13  # Total weight is 4.13
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
+        print(f"Error in Neuroadaptation_Group: {e}")
+        return 100
 
-def Neuromediators_Group(file_path, metabolite_data):
-    scores = {
-        'Serotonin': 0,
-        'HIAA': 0
-    }
-    
+def Stress_Aminoacid_Group(file_path):
+    """Стресс-аминокислоты - Адаптивные возможности организма"""
     try:
         risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
-        
-        markers = [
-            ('Serotonin', 0.88),
-            ('HIAA', 0.38)
-        ]
-        
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
-    
-    except Exception as e:
-        print(f"Error in Neuromediators_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 1.26  # Total weight is 1.26
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
-    
-def Neuromediators_Neuro_Group(file_path, metabolite_data):
-    scores = {
-        'Serotonin': 0,
-        'Melatonin': 0
-    }
-    
-    try:
-        risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
-        
-        markers = [
-            ('Serotonin', 0.625),
-            ('Melatonin', 0.625)
-        ]
-        
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
-    
-    except Exception as e:
-        print(f"Error in Neuromediators_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 1.25  # Total weight is 1.26
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Адаптивные возможности организма') & 
+                                    (risk_params['Категория'] == 'Стресс-аминокислоты')]
 
-def Indols_and_Phenols_Group(file_path, metabolite_data):
-    scores = {
-        'Indole-3-acetic acid': 0
-    }
-    
-    try:
-        risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
         
-        markers = [
-            ('Indole-3-acetic acid', 1.00),
-        ]
+        total = (w_clear_score / w_max_score) * 100
         
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
+        if total >= 90:
+            return 90
+        else:
+            return total
     
     except Exception as e:
-        print(f"Error in Indols_and_Phenols_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 1  # Total weight is 1.75
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
+        print(f"Error in Stress_Aminoacid_Group: {e}")
+        return 100
 
-def General_Stress_Immune_Group(file_path, metabolite_data):
-    scores = {
-        'Cortisol': 0,
-        'ADMA': 0
-    }
-    
+def Mitochondria_Creatinine_Group(file_path):
+    """Митохондрии и креатин - Адаптивные возможности организма"""
     try:
         risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
-        
-        markers = [
-            ('Cortisol', 0.63),
-            ('ADMA', 0.75)
-        ]
-        
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
-    
-    except Exception as e:
-        print(f"Error in General_Stress_Immune_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 1.38  # Total weight is 1.38
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Адаптивные возможности организма') & 
+                                    (risk_params['Категория'] == 'Митохондрии и креатин')]
 
-def Complex_Index_Group(file_path, metabolite_data):
-    scores = {
-        'Quinolinic acid': 0
-    }
-    
-    try:
-        risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
         
-        markers = [
-            ('Quinolinic acid', 1.50)
-        ]
+        total = (w_clear_score / w_max_score) * 100
         
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
+        if total >= 90:
+            return 90
+        else:
+            return total
     
     except Exception as e:
-        print(f"Error in Complex_Index_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 1.50  # Total weight is 1.50
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
-    
-def Amiac_Detox_Group(file_path, metabolite_data):
-    scores = {
-        'Ornitine': 0,
-        'Citrulline': 0,
-        'Arginine': 0
-    }
-    try:
-        risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
-        
-        markers = [
-            ('Ornitine', 0.78),
-            ('Citrulline', 0.56),
-            ('Arginine', 0.56)
-        ]
-        
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
-    
-    except Exception as e:
-        print(f"Error in Amiac_Detox_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 1.88 
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
-    
-def Vitamine_B2_Group(file_path, metabolite_data):
-    scores = {
-        'Riboflavin': 0,
-        'Glutamine/Glutamate': 0
-    }
-    
-    try:
-        risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
-        
-        markers = [
-            ('Riboflavin', 1.76),
-            ('Glutamine/Glutamate', 0.59)
-        ]
-        
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
-    
-    except Exception as e:
-        print(f"Error in Vitamine_B2_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 2.35  # Total weight is 2.35
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
+        print(f"Error in Mitochondria_Creatinine_Group: {e}")
+        return 100
 
-def Vitamine_B5_Group(file_path, metabolite_data):
-    scores = {
-        'Pantothenic acid': 0
-    }
-    
+def Glutamate_Exchange_Group(file_path):
+    """Глутамат-глутаминовая ось - Адаптивные возможности организма"""
     try:
         risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
-        
-        markers = [
-            ('Pantothenic acid', 1.18)
-        ]
-        
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
-    
-    except Exception as e:
-        print(f"Error in Vitamine_B5_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 1.18  # Total weight is 1.18
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Адаптивные возможности организма') & 
+                                    (risk_params['Категория'] == 'Глутамат-глутаминовая ось')]
 
-def Vitamine_B6_Group(file_path, metabolite_data):
-    scores = {
-        'Kynurenine': 0,
-        'Kynurenic acid / Kynurenine': 0
-    }
-    
-    try:
-        risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
         
-        markers = [
-            ('Kynurenine', 0.59),
-            ('Kynurenic acid / Kynurenine', 0.59)
-        ]
+        total = (w_clear_score / w_max_score) * 100
         
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
+        if total >= 90:
+            return 90
+        else:
+            return total
     
     except Exception as e:
-        print(f"Error in Vitamine_B6_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 1.18  # Total weight is 1.18
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
+        print(f"Error in Glutamate_Exchange_Group: {e}")
+        return 100
 
-def Vitamine_B9_B12_Group(file_path, metabolite_data):
-    scores = {
-        'Methionine': 0,
-        'Methionine-Sulfoxide': 0,
-        'Betaine/сholine': 0
-    }
-    
-    try:
-        risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
-        
-        markers = [
-            ('Methionine', 0.59),
-            ('Methionine-Sulfoxide', 0.59),
-            ('Betaine/сholine', 1.18)
-        ]
-        
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
-    
-    except Exception as e:
-        print(f"Error in Vitamine_B9_B12_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 2.36  # Total weight is 2.36
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
 
-def Vitamine_B3_NAD_Group(file_path, metabolite_data):
-    scores = {
-        'Quinolinic acid': 0,
-        'Trp/(Kyn+QA)': 0
-    }
-    
+# 6. Здоровье микробиоты (8/10)
+def Tryptophan_Metabolism_Group(file_path):
+    """Метаболизм триптофана - Здоровье микробиоты"""
     try:
         risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
-        
-        # Calculate ratio if needed
-        if 'Tryptophan' in metab_data and 'Kynurenine' in metab_data and 'Quinolinic acid' in metab_data:
-            metab_data['Trp/(Kyn+QA)'] = metab_data['Tryptophan'] / (metab_data['Kynurenine'] + metab_data['Quinolinic acid'])
-        
-        markers = [
-            ('Quinolinic acid', 0.35),
-            ('Trp/(Kyn+QA)', 0.35)
-        ]
-        
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
-    
-    except Exception as e:
-        print(f"Error in Vitamine_B3_NAD_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 0.70  # Total weight is 0.70
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Здоровье микробиоты') & 
+                                    (risk_params['Категория'] == 'Метаболизм триптофана')]
 
-def Serum_Aminoacids_Group(file_path, metabolite_data):
-    scores = {
-        'Methionine + Taurine': 0
-    }
-    
-    try:
-        risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
         
-        markers = [
-            ('Methionine + Taurine', 1.18)
-        ]
+        total = (w_clear_score / w_max_score) * 100
         
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
+        if total >= 90:
+            return 90
+        else:
+            return total
     
     except Exception as e:
-        print(f"Error in Serum_Aminoacids_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 1.18  # Total weight is 1.18
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
+        print(f"Error in Tryptophan_Metabolism_Group: {e}")
+        return 100
 
-def Neurotroph_Reserv_Group(file_path, metabolite_data):
-    scores = {
-        'Tyrosin': 0,
-        'Tryptophan': 0
-    }
-    
+def Inflammation_and_Immune_Group(file_path):
+    """Воспаление и иммунитет - Здоровье микробиоты"""
     try:
         risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
-        
-        markers = [
-            ('Tyrosin', 0.24),
-            ('Tryptophan', 0.24)
-        ]
-        
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
-    
-    except Exception as e:
-        print(f"Error in Neurotroph_Reserv_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 0.48  # Total weight is 0.48
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
-    
-def Over_Sugar_Group(file_path, metabolite_data):
-    scores = {
-        'Alanine': 0,
-        'Glutamine/Glutamate': 0,
-    }
-    
-    try:
-        risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
-        
-        markers = [
-            ('Alanine', 1.11),
-            ('Glutamine/Glutamate', 0.89),
-        ]
-        
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
-    
-    except Exception as e:
-        print(f"Error in Over_Sugar_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 2  # Total weight is 2.78
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Здоровье микробиоты') & 
+                                    (risk_params['Категория'] == 'Воспаление и иммунитет')]
 
-def Over_Lipid_Group(file_path, metabolite_data):
-    scores = {
-        'СДК': 0,
-        '(C16+C18)/C2': 0
-    }
-    
-    try:
-        risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
         
-        markers = [
-            ('СДК', 1.11),
-            ('(C16+C18)/C2', 0.89)
-        ]
+        total = (w_clear_score / w_max_score) * 100
         
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
+        if total >= 90:
+            return 90
+        else:
+            return total
     
     except Exception as e:
-        print(f"Error in Over_Lipid_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 2.00  # Total weight is 2.00
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
+        print(f"Error in Inflammation_and_Immune_Group: {e}")
+        return 100
 
-def Over_Protein_Group(file_path, metabolite_data):
-    scores = {
-        'BCAA': 0
-    }
-    
-    try:
-        risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
-        
-        markers = [
-            ('BCAA', 0.89)
-        ]
-        
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
-    
-    except Exception as e:
-        print(f"Error in Over_Protein_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 0.89  # Total weight is 1.45
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
 
-def Deficit_Nutrients_Group(file_path, metabolite_data):
-    scores = {
-        'Methionine': 0,
-        'Tryptophan': 0,
-        'Riboflavin/Pantothenic': 0
-    }
-    
+# 7. Темп биологического старения (7/10)
+def Tryptophan_Inflammation_Group(file_path):
+    """Триптофан / воспаление - Темп биологического старения"""
     try:
         risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
-        
-        # Calculate ratio if needed
-        if 'Riboflavin' in metab_data and 'Pantothenic acid' in metab_data:
-            metab_data['Riboflavin/Pantothenic'] = metab_data['Riboflavin'] / metab_data['Pantothenic acid']
-        
-        markers = [
-            ('Methionine', 0.67),
-            ('Tryptophan', 0.67),
-            ('Riboflavin/Pantothenic', 0.56)
-        ]
-        
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
-    
-    except Exception as e:
-        print(f"Error in Deficit_Nutrients_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 1.90  # Total weight is 1.90
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Темп биологического старения') & 
+                                    (risk_params['Категория'] == 'Триптофан / воспаление')]
 
-def Supply_Group(file_path, metabolite_data):
-    scores = {
-        'Serotonin': 0,
-        'Cortisol': 0,
-        'Betaine/choline': 0
-    }
-    
-    try:
-        risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
         
-        markers = [
-            ('Serotonin', 0.56),
-            ('Cortisol', 0.56),
-            ('Betaine/choline', 0.78)
-        ]
+        total = (w_clear_score / w_max_score) * 100
         
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
+        if total >= 90:
+            return 90
+        else:
+            return total
     
     except Exception as e:
-        print(f"Error in Supply_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 1.90  # Total weight is 1.90
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
-    
-def AA_Exchange_Group(file_path, metabolite_data):
-    scores = {
-        'BCAA': 0,
-        'BCAA/AAA': 0,
-        'Phe/Tyr': 0,
-        'Glycine/Serine': 0,
-        'Glutamine/Glutamate': 0
-    }
-    
-    try:
-        risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
-        
-        markers = [
-            ('BCAA', 1.25),
-            ('BCAA/AAA', 1.0),
-            ('Phe/Tyr', 0.75),
-            ('Glycine/Serine', 0.625),
-            ('Glutamine/Glutamate', 0.625)
-        ]
-        
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
-    
-    except Exception as e:
-        print(f"Error in AA_Exchange_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 4.25  # Total weight is 4.25
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
+        print(f"Error in Tryptophan_Inflammation_Group: {e}")
+        return 100
 
-def Sug_Exchange_Group(file_path, metabolite_data):
-    scores = {
-        'Alanine': 0,
-        'Valine / Alanine': 0
-    }
-    
+def Oxidative_Stress_Age_Group(file_path):
+    """Оксидативный стресс - Темп биологического старения"""
     try:
         risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
-        
-        markers = [
-            ('Alanine', 1.0),
-            ('Valine / Alanine', 0.5)
-        ]
-        
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
-    
-    except Exception as e:
-        print(f"Error in Sug_Exchange_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 1.5  # Total weight is 1.5
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Темп биологического старения') & 
+                                    (risk_params['Категория'] == 'Оксидативный стресс')]
 
-def Lip_Exchange_Group(file_path, metabolite_data):
-    scores = {
-        '(C16+C18)/C2': 0,
-        'СДК': 0
-    }
-    
-    try:
-        risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
         
-        markers = [
-            ('(C16+C18)/C2', 1.0),
-            ('СДК', 0.75)
-        ]
+        total = (w_clear_score / w_max_score) * 100
         
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
+        if total >= 90:
+            return 90
+        else:
+            return total
     
     except Exception as e:
-        print(f"Error in Lip_Exchange_Group: {str(e)}")
-        return 50
+        print(f"Error in Tryptophan_Inflammation_Group: {e}")
+        return 100
     
-    total_score = sum(scores.values()) * 100 / 1.75  # Total weight is 1.75
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
+def Metochondria_Age_Group(file_path):
+    """митохондриальные показатели - Темп биологического старения"""
+    try:
+        risk_params = pd.read_excel(file_path)
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Темп биологического старения') & 
+                                    (risk_params['Категория'] == 'Митохондриальные показатели')]
 
-def Insulin_Exchange_Group(file_path, metabolite_data):
-    scores = {
-        'Tyrosin': 0,
-        'Trp/Kyn': 0
-    }
-    
-    try:
-        risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
         
-        markers = [
-            ('Tyrosin', 0.75),
-            ('Trp/Kyn', 0.5)
-        ]
+        total = (w_clear_score / w_max_score) * 100
         
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
+        if total >= 90:
+            return 90
+        else:
+            return total
     
     except Exception as e:
-        print(f"Error in Insulin_Exchange_Group: {str(e)}")
-        return 50
+        print(f"Error in Tryptophan_Inflammation_Group: {e}")
+        return 100
     
-    total_score = sum(scores.values()) * 100 / 1.25  # Total weight is 1.25
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
+    
+def Oxidative_Stress_Group(file_path):
+    """Оксидативный стресс - Темп биологического старения"""
+    try:
+        risk_params = pd.read_excel(file_path)
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Темп биологического старения') & 
+                                    (risk_params['Категория'] == 'Оксидативный стресс')]
 
-def Hormone_Exchange_Group(file_path, metabolite_data):
-    scores = {
-        'Cortisol': 0,
-        'Serotonin': 0
-    }
-    
-    try:
-        risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
         
-        markers = [
-            ('Cortisol', 0.625),
-            ('Serotonin', 0.625)
-        ]
+        total = (w_clear_score / w_max_score) * 100
         
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер / Соотношение'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
+        if total >= 90:
+            return 90
+        else:
+            return total
     
     except Exception as e:
-        print(f"Error in Hormone_Exchange_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 1.25  # Total weight is 1.25
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
-    
-def Chronic_Inflammation_Group(file_path, metabolite_data):
-    scores = {
-        'Kyn/Trp': 0,
-        'Quinolinic acid': 0,
-        'Quin/HIAA': 0
-    }
-    
-    try:
-        risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
-        
-        markers = [
-            ('Kyn/Trp', 1.05),
-            ('Quinolinic acid', 1.05),
-            ('Quin/HIAA', 0.74)
-        ]
-        
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
-    
-    except Exception as e:
-        print(f"Error in Chronic_Inflammation_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 2.84  # Total weight is 2.84
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
+        print(f"Error in Oxidative_Stress_Group: {e}")
+        return 100
 
-def Ox_Stress_Group(file_path, metabolite_data):
-    scores = {
-        'Methionine-Sulfoxide': 0,
-        'ADMA / NMMA': 0
-    }
-    
+def Mitochondria_Group(file_path):
+    """Митохондрии - Темп биологического старения"""
     try:
         risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
-        
-        markers = [
-            ('Methionine-Sulfoxide', 0.74),
-            ('ADMA / NMMA', 0.84)
-        ]
-        
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
-    
-    except Exception as e:
-        print(f"Error in Ox_Stress_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 1.58  # Total weight is 1.58
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Темп биологического старения') & 
+                                    (risk_params['Категория'] == 'Митохондрии')]
 
-def Metil_Epigen_Group(file_path, metabolite_data):
-    scores = {
-        'Betaine/сholine': 0,
-        'DMG / Choline': 0
-    }
-    
-    try:
-        risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
         
-        markers = [
-            ('Betaine/сholine', 0.74),
-            ('DMG / Choline', 0.74)
-        ]
+        total = (w_clear_score / w_max_score) * 100
         
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
+        if total >= 90:
+            return 90
+        else:
+            return total
     
     except Exception as e:
-        print(f"Error in Metil_Epigen_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 1.48  # Total weight is 1.48
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
+        print(f"Error in Mitochondria_Group: {e}")
+        return 100
 
-def Microbiota_Detox_Group(file_path, metabolite_data):
-    scores = {
-        'Indole-3-carboxaldehyde': 0,
-        'Indole-3-propionic acid': 0,
-        'Indole-3-acetic acid': 0
-    }
-    
+def Neuroendocrine_Group(file_path):
+    """Нейроэндокринная ось - Темп биологического старения"""
     try:
         risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
-        
-        markers = [
-            ('Indole-3-carboxaldehyde', 0.53),
-            ('Indole-3-propionic acid', 0.53),
-            ('Indole-3-acetic acid', 0.53)
-        ]
-        
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
-    
-    except Exception as e:
-        print(f"Error in Microbiota_Detox_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 1.59  # Total weight is 1.59
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Темп биологического старения') & 
+                                    (risk_params['Категория'] == 'Нейроэндокринная ось')]
 
-def Metabolic_Stress_Group(file_path, metabolite_data):
-    scores = {
-        'Glutamine/Glutamate': 0
-    }
-    
-    try:
-        risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
         
-        markers = [
-            ('Glutamine/Glutamate', 0.74)
-        ]
+        total = (w_clear_score / w_max_score) * 100
         
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
+        if total >= 90:
+            return 90
+        else:
+            return total
     
     except Exception as e:
-        print(f"Error in Metabolic_Stress_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 0.74  # Total weight is 0.74
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
+        print(f"Error in Neuroendocrine_Group: {e}")
+        return 100
 
-def Neuroendocrine_Controle_Group(file_path, metabolite_data):
-    scores = {
-        'Serotonin': 0
-    }
-    
+def Integrative_Index_Group(file_path):
+    """Интегративные индексы - Темп биологического старения"""
     try:
         risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
-        
-        markers = [
-            ('Serotonin', 0.53)
-        ]
-        
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
-    
-    except Exception as e:
-        print(f"Error in Neuroendocrine_Controle_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 0.53  # Total weight is 0.53
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Темп биологического старения') & 
+                                    (risk_params['Категория'] == 'Интегративные индексы')]
 
-def Prolifiration_Mitosis_Group(file_path, metabolite_data):
-    scores = {
-        'Tryptamine': 0,
-        'Melatonin': 0
-    }
-    
-    try:
-        risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
         
-        markers = [
-            ('Tryptamine', 0.53),
-            ('Melatonin', 0.74)
-        ]
+        total = (w_clear_score / w_max_score) * 100
         
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
+        if total >= 90:
+            return 90
+        else:
+            return total
     
     except Exception as e:
-        print(f"Error in Prolifiration_Mitosis_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 1.27  # Total weight is 1.27
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
-    
-def Ido_Neuroinflam_Group(file_path, metabolite_data):
-    scores = {
-        'Kyn/Trp': 0,
-        'Quin/HIAA': 0,
-        'Quinolinic acid': 0,
-        'Kynurenic acid': 0,
-    }
-    
+        print(f"Error in Integrative_Index_Group: {e}")
+        return 100
+
+
+# 8. Степень воспалительных процессов (8/10)
+def Ido_Path_Tryptophan_Group(file_path):
+    """IDO-путь / триптофан - Степень воспалительных процессов"""
     try:
         risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Степень воспалительных процессов') & 
+                                    (risk_params['Категория'] == 'IDO-путь / триптофан')]
+
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
         
-        markers = [
-            ('Kyn/Trp', 1.25),
-            ('Quin/HIAA', 1),
-            ('Quinolinic acid', 1.25),
-            ('Kynurenic acid', 0.75)
-        ]
+        total = (w_clear_score / w_max_score) * 100
         
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
+        if total >= 90:
+            return 90
+        else:
+            return total
     
     except Exception as e:
-        print(f"Error in Ido_Neuroinflam_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 4.5  # Total weight is 4.5
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
-    
-def Disbalance_Metabolites_Group(file_path, metabolite_data):
-    scores = {
-        'Kynurenine': 0,
-        'Xanthurenic acid': 0,
-        'Trp/(Kyn+QA)': 0,
-        'Kyn/Quin': 0,
-    }
-    
+        print(f"Error in Ido_Path_Tryptophan_Group: {e}")
+        return 100
+
+def Neuromediators_Group(file_path):
+    """Нейромедиаторы - Степень воспалительных процессов"""
     try:
         risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Степень воспалительных процессов') & 
+                                    (risk_params['Категория'] == 'Нейромедиаторы')]
+
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
         
-        markers = [
-            ('Kynurenine', 0.75),
-            ('Xanthurenic acid', 0.625),
-            ('Trp/(Kyn+QA)', 0.625),
-            ('Kyn/Quin', 0.625)
-        ]
+        total = (w_clear_score / w_max_score) * 100
         
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
+        if total >= 90:
+            return 90
+        else:
+            return total
     
     except Exception as e:
-        print(f"Error in Disbalance_Metabolites_Group: {str(e)}")
-        return 50
-    
-    total_score = sum(scores.values()) * 100 / 2.625  # Total weight is 2.625
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
-    
-def Mitochondria_Stress_Group(file_path, metabolite_data):
-    scores = {
-        'Cortisol': 0,
-        'Methionine-Sulfoxide':0
-    }
-    
+        print(f"Error in Neuromediators_Group: {e}")
+        return 100
+
+def Indols_and_Phenols_Group(file_path):
+    """Индолы и фенолы - Степень воспалительных процессов"""
     try:
         risk_params = pd.read_excel(file_path)
-        metab_data = pd.Series(metabolite_data)
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Степень воспалительных процессов') & 
+                                    (risk_params['Категория'] == 'Индолы и фенолы')]
+
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
         
-        markers = [
-            ('Cortisol', 0.625),
-            ('Methionine-Sulfoxide', 0.625)
-        ]
+        total = (w_clear_score / w_max_score) * 100
         
-        for marker, weight in markers:
-            if marker in metab_data:
-                try:
-                    row = risk_params[risk_params['Маркер'] == marker].iloc[0]
-                    norm1 = row['norm_1']
-                    norm2 = row['norm_2']
-                    value = metab_data[marker]
-                    
-                    if not (norm1 <= value <= norm2):
-                        scores[marker] = weight
-                except (IndexError, KeyError):
-                    continue
+        if total >= 90:
+            return 90
+        else:
+            return total
     
     except Exception as e:
-        print(f"Error in Mitochondria_Stress_Group: {str(e)}")
-        return 50
+        print(f"Error in Indols_and_Phenols_Group: {e}")
+        return 100
+
+def General_Stress_Immune_Group(file_path):
+    """Общий стресс / иммунитет - Степень воспалительных процессов"""
+    try:
+        risk_params = pd.read_excel(file_path)
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Степень воспалительных процессов') & 
+                                    (risk_params['Категория'] == 'Общий стресс / иммунитет')]
+
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
+        
+        total = (w_clear_score / w_max_score) * 100
+        
+        if total >= 90:
+            return 90
+        else:
+            return total
     
-    total_score = sum(scores.values()) * 100 / 1.25  # Total weight is 1.875
-    if total_score >= 90:
-        return 85
-    else:
-        return total_score
+    except Exception as e:
+        print(f"Error in General_Stress_Immune_Group: {e}")
+        return 100
+
+def Complex_Index_Group(file_path):
+    """Комплексный индекс - Степень воспалительных процессов"""
+    try:
+        risk_params = pd.read_excel(file_path)
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Степень воспалительных процессов') & 
+                                    (risk_params['Категория'] == 'Комплексный индекс')]
+
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
+        
+        total = (w_clear_score / w_max_score) * 100
+        
+        if total >= 90:
+            return 90
+        else:
+            return total
+    
+    except Exception as e:
+        print(f"Error in Complex_Index_Group: {e}")
+        return 100
+
+
+# 9. Токсическая нагрузка (7/10)
+def Amiac_Detox_Group(file_path):
+    """Аммиачная детоксикация - Токсическая нагрузка"""
+    try:
+        risk_params = pd.read_excel(file_path)
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Токсическая нагрузка и детоксикация') & 
+                                    (risk_params['Категория'] == 'Аммиачная детоксикация')]
+
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
+        
+        total = (w_clear_score / w_max_score) * 100
+        
+        if total >= 90:
+            return 90
+        else:
+            return total
+    
+    except Exception as e:
+        print(f"Error in Amiac_Detox_Group: {e}")
+        return 100
+    
+# 11. Нутриентный статус (7/10)
+def Vitamine_B2_Group(file_path):
+    """Витамин B2 (рибофлавин) - Нутриентный статус"""
+    try:
+        risk_params = pd.read_excel(file_path)
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Нутриентный статус организма') & 
+                                    (risk_params['Категория'] == 'Витамин B2 (рибофлавин)')]
+
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
+        
+        total = (w_clear_score / w_max_score) * 100
+        
+        if total >= 90:
+            return 90
+        else:
+            return total
+    
+    except Exception as e:
+        print(f"Error in Vitamine_B2_Group: {e}")
+        return 100
+
+def Vitamine_B5_Group(file_path):
+    """Витамин B5 (пантотенат) - Нутриентный статус"""
+    try:
+        risk_params = pd.read_excel(file_path)
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Нутриентный статус организма') & 
+                                    (risk_params['Категория'] == 'Витамин B5 (пантотенат)')]
+
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
+        
+        total = (w_clear_score / w_max_score) * 100
+        
+        if total >= 90:
+            return 90
+        else:
+            return total
+    
+    except Exception as e:
+        print(f"Error in Vitamine_B5_Group: {e}")
+        return 100
+
+def Vitamine_B6_Group(file_path):
+    """Витамин B6 - Нутриентный статус"""
+    try:
+        risk_params = pd.read_excel(file_path)
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Нутриентный статус организма') & 
+                                    (risk_params['Категория'] == 'Витамин B6')]
+
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
+        
+        total = (w_clear_score / w_max_score) * 100
+        
+        if total >= 90:
+            return 90
+        else:
+            return total
+    
+    except Exception as e:
+        print(f"Error in Vitamine_B6_Group: {e}")
+        return 100
+
+def Vitamine_B9_B12_Group(file_path):
+    """Витамин B9 / B12 - Нутриентный статус"""
+    try:
+        risk_params = pd.read_excel(file_path)
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Нутриентный статус организма') & 
+                                    (risk_params['Категория'] == 'Витамин B9 / B12')]
+
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
+        
+        total = (w_clear_score / w_max_score) * 100
+        
+        if total >= 90:
+            return 90
+        else:
+            return total
+    
+    except Exception as e:
+        print(f"Error in Vitamine_B9_B12_Group: {e}")
+        return 100
+
+def Vitamine_B3_NAD_Group(file_path):
+    """Витамин B3 / NAD+ - Нутриентный статус"""
+    try:
+        risk_params = pd.read_excel(file_path)
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Нутриентный статус организма') & 
+                                    (risk_params['Категория'] == 'Витамин B3 / NAD+')]
+
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
+        
+        total = (w_clear_score / w_max_score) * 100
+        
+        if total >= 90:
+            return 90
+        else:
+            return total
+    
+    except Exception as e:
+        print(f"Error in Vitamine_B3_NAD_Group: {e}")
+        return 100
+    
+# ddddddddddddddddddd
+def Serum_Aminoacids_Group(file_path):
+    try:
+        risk_params = pd.read_excel(file_path)
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Нутриентный статус организма') & 
+                                    (risk_params['Категория'] == 'Серосодержащие АК')]
+
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
+        
+        total = (w_clear_score / w_max_score) * 100
+        
+        if total >= 90:
+            return 90
+        else:
+            return total
+    
+    except Exception as e:
+        print(f"Error in Vitamine_B3_NAD_Group: {e}")
+        return 100
+
+def Neurotroph_Reserv_Group(file_path):
+    try:
+        risk_params = pd.read_excel(file_path)
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Нутриентный статус организма') & 
+                                    (risk_params['Категория'] == 'Нейротрофный резерв')]
+
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
+        
+        total = (w_clear_score / w_max_score) * 100
+        
+        if total >= 90:
+            return 90
+        else:
+            return total
+    
+    except Exception as e:
+        print(f"Error in Vitamine_B3_NAD_Group: {e}")
+        return 100
+    
+def Over_Sugar_Group(file_path):
+    try:
+        risk_params = pd.read_excel(file_path)
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Риск алиментарно-зависимых заболеваний') & 
+                                    (risk_params['Категория'] == 'Избыток сахара / углеводов')]
+
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
+        
+        total = (w_clear_score / w_max_score) * 100
+        
+        if total >= 90:
+            return 90
+        else:
+            return total
+    
+    except Exception as e:
+        print(f"Error in Vitamine_B3_NAD_Group: {e}")
+        return 100
+
+def Over_Lipid_Group(file_path):
+    try:
+        risk_params = pd.read_excel(file_path)
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Риск алиментарно-зависимых заболеваний') & 
+                                    (risk_params['Категория'] == ' Избыток жиров / липидов')]
+
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
+        
+        total = (w_clear_score / w_max_score) * 100
+        
+        if total >= 90:
+            return 90
+        else:
+            return total
+    
+    except Exception as e:
+        print(f"Error in Vitamine_B3_NAD_Group: {e}")
+        return 100
+
+def Over_Protein_Group(file_path):
+    try:
+        risk_params = pd.read_excel(file_path)
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Риск алиментарно-зависимых заболеваний') & 
+                                    (risk_params['Категория'] == 'Избыток белка / аминокислот')]
+
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
+        
+        total = (w_clear_score / w_max_score) * 100
+        
+        if total >= 90:
+            return 90
+        else:
+            return total
+    
+    except Exception as e:
+        print(f"Error in Vitamine_B3_NAD_Group: {e}")
+        return 100
+
+def Deficit_Nutrients_Group(file_path):
+    try:
+        risk_params = pd.read_excel(file_path)
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Риск алиментарно-зависимых заболеваний') & 
+                                    (risk_params['Категория'] == 'Дефицит нутриентов')]
+
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
+        
+        total = (w_clear_score / w_max_score) * 100
+        
+        if total >= 90:
+            return 90
+        else:
+            return total
+    
+    except Exception as e:
+        print(f"Error in Vitamine_B3_NAD_Group: {e}")
+        return 100
+
+def Supply_Group(file_path):
+    try:
+        risk_params = pd.read_excel(file_path)
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Риск алиментарно-зависимых заболеваний') & 
+                                    (risk_params['Категория'] == 'Нарушение пищевого поведения')]
+
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
+        
+        total = (w_clear_score / w_max_score) * 100
+        
+        if total >= 90:
+            return 90
+        else:
+            return total
+    
+    except Exception as e:
+        print(f"Error in Vitamine_B3_NAD_Group: {e}")
+        return 100
+    
+def AA_Exchange_Group(file_path):
+    try:
+        risk_params = pd.read_excel(file_path)
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Обмен веществ') & 
+                                    (risk_params['Категория'] == 'Аминокислотный обмен')]
+
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
+        
+        total = (w_clear_score / w_max_score) * 100
+        
+        if total >= 90:
+            return 90
+        else:
+            return total
+    
+    except Exception as e:
+        print(f"Error in Vitamine_B3_NAD_Group: {e}")
+        return 100
+
+def Sug_Exchange_Group(file_path):
+    try:
+        risk_params = pd.read_excel(file_path)
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Обмен веществ') & 
+                                    (risk_params['Категория'] == 'Углеводный обмен')]
+
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
+        
+        total = (w_clear_score / w_max_score) * 100
+        
+        if total >= 90:
+            return 90
+        else:
+            return total
+    
+    except Exception as e:
+        print(f"Error in Vitamine_B3_NAD_Group: {e}")
+        return 100
+
+def Lip_Exchange_Group(file_path):
+    try:
+        risk_params = pd.read_excel(file_path)
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Обмен веществ') & 
+                                    (risk_params['Категория'] == 'Липидный обмен / β-окисление')]
+
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
+        
+        total = (w_clear_score / w_max_score) * 100
+        
+        if total >= 90:
+            return 90
+        else:
+            return total
+    
+    except Exception as e:
+        print(f"Error in Vitamine_B3_NAD_Group: {e}")
+        return 100
+
+def Insulin_Exchange_Group(file_path):
+    try:
+        risk_params = pd.read_excel(file_path)
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Обмен веществ') & 
+                                    (risk_params['Категория'] == 'Инсулинорезистентность')]
+
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
+        
+        total = (w_clear_score / w_max_score) * 100
+        
+        if total >= 90:
+            return 90
+        else:
+            return total
+    
+    except Exception as e:
+        print(f"Error in Vitamine_B3_NAD_Group: {e}")
+        return 100
+
+def Hormone_Exchange_Group(file_path):
+    try:
+        risk_params = pd.read_excel(file_path)
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Обмен веществ') & 
+                                    (risk_params['Категория'] == 'Гормональные связи')]
+
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
+        
+        total = (w_clear_score / w_max_score) * 100
+        
+        if total >= 90:
+            return 90
+        else:
+            return total
+    
+    except Exception as e:
+        print(f"Error in Vitamine_B3_NAD_Group: {e}")
+        return 100
+    
+def Chronic_Inflammation_Group(file_path):
+    try:
+        risk_params = pd.read_excel(file_path)
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Риск онкологических заболеваний') & 
+                                    (risk_params['Категория'] == 'Хроническое воспаление')]
+
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
+        
+        total = (w_clear_score / w_max_score) * 100
+        
+        if total >= 90:
+            return 90
+        else:
+            return total
+    
+    except Exception as e:
+        print(f"Error in Vitamine_B3_NAD_Group: {e}")
+        return 100
+
+def Ox_Stress_Group(file_path):
+    try:
+        risk_params = pd.read_excel(file_path)
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Риск онкологических заболеваний') & 
+                                    (risk_params['Категория'] == 'Оксидативный стресс')]
+
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
+        
+        total = (w_clear_score / w_max_score) * 100
+        
+        if total >= 90:
+            return 90
+        else:
+            return total
+    
+    except Exception as e:
+        print(f"Error in Vitamine_B3_NAD_Group: {e}")
+        return 100
+
+def Metil_Epigen_Group(file_path):
+    try:
+        risk_params = pd.read_excel(file_path)
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Риск онкологических заболеваний') & 
+                                    (risk_params['Категория'] == 'Метилирование / эпигенетика')]
+
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
+        
+        total = (w_clear_score / w_max_score) * 100
+        
+        if total >= 90:
+            return 90
+        else:
+            return total
+    
+    except Exception as e:
+        print(f"Error in Vitamine_B3_NAD_Group: {e}")
+        return 100
+
+def Microbiota_Detox_Group(file_path):
+    try:
+        risk_params = pd.read_excel(file_path)
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Риск онкологических заболеваний') & 
+                                    (risk_params['Категория'] == 'Микробиота и детоксикация')]
+
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
+        
+        total = (w_clear_score / w_max_score) * 100
+        
+        if total >= 90:
+            return 90
+        else:
+            return total
+    
+    except Exception as e:
+        print(f"Error in Vitamine_B3_NAD_Group: {e}")
+        return 100
+
+def Metabolic_Stress_Group(file_path):
+    try:
+        risk_params = pd.read_excel(file_path)
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Риск онкологических заболеваний') & 
+                                    (risk_params['Категория'] == 'Метаболический стресс')]
+
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
+        
+        total = (w_clear_score / w_max_score) * 100
+        
+        if total >= 90:
+            return 90
+        else:
+            return total
+    
+    except Exception as e:
+        print(f"Error in Vitamine_B3_NAD_Group: {e}")
+        return 100
+
+
+def Neuroendocrine_Controle_Group(file_path):
+    try:
+        risk_params = pd.read_excel(file_path)
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Риск онкологических заболеваний') & 
+                                    (risk_params['Категория'] == 'Нейроэндокринный контроль')]
+
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
+        
+        total = (w_clear_score / w_max_score) * 100
+        
+        if total >= 90:
+            return 90
+        else:
+            return total
+
+    except Exception as e:
+        print(f"Error in Vitamine_B3_NAD_Group: {e}")
+        return 100
+
+def Prolifiration_Mitosis_Group(file_path):
+    try:
+        risk_params = pd.read_excel(file_path)
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Риск онкологических заболеваний') & 
+                                    (risk_params['Категория'] == 'Пролиферация и митоз')]
+
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
+        
+        total = (w_clear_score / w_max_score) * 100
+        
+        if total >= 90:
+            return 90
+        else:
+            return total
+
+    except Exception as e:
+        print(f"Error in Vitamine_B3_NAD_Group: {e}")
+        return 100
+    
+def Ido_Neuroinflam_Group(file_path):
+    try:
+        risk_params = pd.read_excel(file_path)
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Риск нейродегенеративных заболеваний') & 
+                                    (risk_params['Категория'] == 'IDO путь / нейровоспаление')]
+
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
+        
+        total = (w_clear_score / w_max_score) * 100
+        
+        if total >= 90:
+            return 90
+        else:
+            return total
+
+    except Exception as e:
+        print(f"Error in Vitamine_B3_NAD_Group: {e}")
+        return 100
+    
+def Disbalance_Metabolites_Group(file_path):
+    try:
+        risk_params = pd.read_excel(file_path)
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Риск нейродегенеративных заболеваний') & 
+                                    (risk_params['Категория'] == 'Дисбаланс метаболитов')]
+
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
+        
+        total = (w_clear_score / w_max_score) * 100
+        
+        if total >= 90:
+            return 90
+        else:
+            return total
+
+    except Exception as e:
+        print(f"Error in Vitamine_B3_NAD_Group: {e}")
+        return 100
+    
+def Neuromediators_Neuro_Group(file_path):
+    """Нейромедиаторы - Риск нейродегенеративных заболеваний"""
+    try:
+        risk_params = pd.read_excel(file_path)
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Риск нейродегенеративных заболеваний') & 
+                                    (risk_params['Категория'] == 'Нейромедиаторы')]
+
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
+        
+        total = (w_clear_score / w_max_score) * 100
+        
+        if total >= 90:
+            return 90
+        else:
+            return total
+    
+    except Exception as e:
+        print(f"Error in Mitochondrial_Neuro_Group: {e}")
+        return 100
+    
+def Mitochondria_Stress_Group(file_path):
+    try:
+        risk_params = pd.read_excel(file_path)
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Риск нейродегенеративных заболеваний') & 
+                                    (risk_params['Категория'] == 'Митохондрии и стресс')]
+
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
+        
+        total = (w_clear_score / w_max_score) * 100
+        
+        if total >= 90:
+            return 90
+        else:
+            return total
+    
+    except Exception as e:
+        print(f"Error in Mitochondrial_Neuro_Group: {e}")
+        return 100
+    
+# 10. Митохондриальное здоровье (9/10)
+def Energy_Exchange_Carnitine_Group(file_path):
+    """Энергетический обмен - Митохондриальное здоровье"""
+    try:
+        risk_params = pd.read_excel(file_path)
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Митохондриальное здоровье') & 
+                                    (risk_params['Категория'] == 'Энергетический обмен (карнитиновый цикл)')]
+
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
+        
+        total = (w_clear_score / w_max_score) * 100
+        
+        if total >= 90:
+            return 90
+        else:
+            return total
+    
+    except Exception as e:
+        print(f"Error in Energy_Exchange_Carnitine_Group: {e}")
+        return 100
+    
+def Antioxidation_Group(file_path):
+    """Антиоксидантная защита - Митохондриальное здоровье"""
+    try:
+        risk_params = pd.read_excel(file_path)
+        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Митохондриальное здоровье') & 
+                                    (risk_params['Категория'] == 'Антиоксидантная защита')]
+
+        w_clear_score = risk_params['Score_Weighted'].sum()
+        w_max_score = risk_params['Max_score_weighted'].sum()
+        
+        total = (w_clear_score / w_max_score) * 100
+        
+        if total >= 90:
+            return 90
+        else:
+            return total
+    
+    except Exception as e:
+        print(f"Error in Energy_Exchange_Carnitine_Group: {e}")
+        return 100
+    
 
 app = Dash(__name__)
 
@@ -3621,108 +2377,109 @@ def main():
         ref_15, value_15 = get_value_15(metabolite_data)
         
         # РИСК ССЗ
-        no_syntase_score = NO_syntase_Group(risk_params_path, metabolite_data)
-        inflammation_score = Inflammation_Group(risk_params_path, metabolite_data)
-        methilation_score = Methilation_Group(risk_params_path, metabolite_data)
-        mitochondrial_score = Mitochondrial_Group(risk_params_path, metabolite_data)
-        insuline_resistance_score = Insulin_Resistance_Group(risk_params_path, metabolite_data)
-        neurovegitative_score = Neurovegitative_Group(risk_params_path, metabolite_data)
+        no_syntase_score = NO_syntase_Group(risk_params_path)
+        inflammation_score = Inflammation_Group(risk_params_path)
+        methilation_score = Methilation_Group(risk_params_path)
+        mitochondrial_score = Mitochondrial_Group(risk_params_path)
+        insuline_resistance_score = Insulin_Resistance_Group(risk_params_path)
+        neurovegitative_score = Neurovegitative_Group(risk_params_path)
         
         # Печеночные функции
-        Methionine_exchange = Methionine_Exchange_Group(risk_params_path, metabolite_data)
+        Methionine_exchange = Methionine_Exchange_Group(risk_params_path)
         # antoxidant_system = Antoxidant_System_Group(risk_params_path, metabolite_data)
-        protein_exchange = Protein_Exchange_Group(risk_params_path, metabolite_data)
-        aminoacid_profile = Aminoacid_Profile(risk_params_path, metabolite_data)
+        protein_exchange = Protein_Exchange_Group(risk_params_path)
+        aminoacid_profile = Aminoacid_Profile(risk_params_path)
         # conjugation_detoxication = Conjugation_Detoxication(risk_params_path, metabolite_data)
         
         # Влияние факторов среды
-        oxidative_stress_score = Oxidative_Stress_Group(risk_params_path, metabolite_data)
-        inflam_and_microbiotic_score = Inflammation_and_Microbial_Group(risk_params_path, metabolite_data)
+        oxidative_stress_score = Oxidative_Stress_Group(risk_params_path)
+        inflam_and_microbiotic_score = Inflammation_and_Microbial_Group(risk_params_path)
         # aromatic_toxic_score = Aromatic_Toxic_Group(risk_params_path, metabolite_data)
-        nitrogen_toxic_score = Nitrogen_Toxic_Group(risk_params_path, metabolite_data)
-        lipid_toxic_score = Lipid_Toxic_Group(risk_params_path, metabolite_data)
+        nitrogen_toxic_score = Nitrogen_Toxic_Group(risk_params_path)
+        lipid_toxic_score = Lipid_Toxic_Group(risk_params_path)
         
         
         #состояние кожи и волос
-        collagen_score = Collagen_Group(risk_params_path, metabolite_data)
-        regeneration_score = Regeneration_Group(risk_params_path, metabolite_data)
-        dream_score = Dream_Group(risk_params_path, metabolite_data)
-        inflam_stress_score = Inflammation_and_Stress_Group(risk_params_path, metabolite_data)
-        exchange_serum_score = Exchange_Serum_Group(risk_params_path, metabolite_data)
-        neuro_inflammation_score = Neuroinflammation_Group(risk_params_path, metabolite_data)
+        collagen_score = Collagen_Group(risk_params_path)
+        regeneration_score = Regeneration_Group(risk_params_path)
+        dream_score = Dream_Group(risk_params_path)
+        inflam_stress_score = Inflammation_and_Stress_Group(risk_params_path)
+        exchange_serum_score = Exchange_Serum_Group(risk_params_path)
+        neuro_inflammation_score = Neuroinflammation_Group(risk_params_path)
         
         # Адаптивные возможности организма
-        energy_exchange_score = Energy_Exchange_Group(risk_params_path, metabolite_data)
-        neuroadaptation_score = Neuroadaptation_Group(risk_params_path, metabolite_data)
-        stress_aminoacid_score = Stress_Aminoacid_Group(risk_params_path, metabolite_data)
-        metochondria_creatinine_score = Metochondria_Creatinine_Group(risk_params_path, metabolite_data)
-        glutamate_exchange_score = Glutamate_Exchange_Group(risk_params_path, metabolite_data)
+        energy_exchange_score = Energy_Exchange_Group(risk_params_path)
+        neuroadaptation_score = Neuroadaptation_Group(risk_params_path)
+        stress_aminoacid_score = Stress_Aminoacid_Group(risk_params_path)
+        metochondria_creatinine_score = Mitochondria_Creatinine_Group(risk_params_path)
+        glutamate_exchange_score = Glutamate_Exchange_Group(risk_params_path)
         
         # Здоровье микробиоты
-        tryptophan_metabolism_score = Tryptophan_Metabolism_Group(risk_params_path, metabolite_data)
+        tryptophan_metabolism_score = Tryptophan_Metabolism_Group(risk_params_path)
         # microbial_stress_score = Microbial_Stress_Group(risk_params_path, metabolite_data)
-        inflam_immune_score = Inflammation_and_Immune_Group(risk_params_path, metabolite_data)
+        inflam_immune_score = Inflammation_and_Immune_Group(risk_params_path)
         
         # Темп биологического старения
-        tryptophan_inflam_score = Tryptophan_Inflammation_Group(risk_params_path, metabolite_data)
-        # оксидативный стресс уже существует
-        # метахондрии уже есть
-        neuro_endocrine_score = Neuroendocrine_Group(risk_params_path, metabolite_data)
-        integrative_index_score = Integrative_Index_Group(risk_params_path, metabolite_data)
+        tryptophan_inflam_score = Tryptophan_Inflammation_Group(risk_params_path)
+        oxidative_stress_age_score = Oxidative_Stress_Age_Group(risk_params_path)
+        mitochondria_age_score = Metochondria_Age_Group(risk_params_path)
+        neuro_endocrine_score = Neuroendocrine_Group(risk_params_path)
+        integrative_index_score = Integrative_Index_Group(risk_params_path)
         
         # Степень воспалительных процессов
-        ido_path_tryptophan_score = Ido_Path_Tryptophan_Group(risk_params_path, metabolite_data)
-        neuromediators_score = Neuromediators_Group(risk_params_path, metabolite_data)
-        indols_phenols_score = Indols_and_Phenols_Group(risk_params_path, metabolite_data)
-        general_stress_immune_score = General_Stress_Immune_Group(risk_params_path, metabolite_data)
-        complex_index = Complex_Index_Group(risk_params_path, metabolite_data)
+        ido_path_tryptophan_score = Ido_Path_Tryptophan_Group(risk_params_path)
+        neuromediators_score = Neuromediators_Group(risk_params_path)
+        indols_phenols_score = Indols_and_Phenols_Group(risk_params_path)
+        general_stress_immune_score = General_Stress_Immune_Group(risk_params_path)
+        complex_index = Complex_Index_Group(risk_params_path)
         
         # Токсическая нагрузка и детоксикация
-        amiac_detox_score =  Amiac_Detox_Group(risk_params_path, metabolite_data)
+        amiac_detox_score =  Amiac_Detox_Group(risk_params_path)
         # оксидативная нагрузка уже есть
         # азотистая нагрузка тоже есть
         
         # Митохондриальное здоровье
-        energy_exchange_carnitine_score = Energy_Exchange_Carnitine_Group(risk_params_path, metabolite_data)
+        energy_exchange_carnitine_score = Energy_Exchange_Carnitine_Group(risk_params_path)
+        antoxidant_system = Antioxidation_Group(risk_params_path)
         
         # Нутриентный статус организма
-        vitamine_b2_score = Vitamine_B2_Group(risk_params_path, metabolite_data)
-        vitamine_b5_score = Vitamine_B5_Group(risk_params_path, metabolite_data)
-        vitamine_b6_score = Vitamine_B6_Group(risk_params_path, metabolite_data)
-        vitamine_b9_b12_score = Vitamine_B9_B12_Group(risk_params_path, metabolite_data)
-        vitamine_b3_nad_score = Vitamine_B3_NAD_Group(risk_params_path, metabolite_data)
-        serum_aminoacids_score = Serum_Aminoacids_Group(risk_params_path, metabolite_data)
+        vitamine_b2_score = Vitamine_B2_Group(risk_params_path)
+        vitamine_b5_score = Vitamine_B5_Group(risk_params_path)
+        vitamine_b6_score = Vitamine_B6_Group(risk_params_path)
+        vitamine_b9_b12_score = Vitamine_B9_B12_Group(risk_params_path)
+        vitamine_b3_nad_score = Vitamine_B3_NAD_Group(risk_params_path)
+        serum_aminoacids_score = Serum_Aminoacids_Group(risk_params_path)
         # energy exchange
-        neurotroph_reserv_score = Neurotroph_Reserv_Group(risk_params_path, metabolite_data)
+        neurotroph_reserv_score = Neurotroph_Reserv_Group(risk_params_path)
         
         # # Риск алиментарно-зависимых заболеваний
-        over_sugar_score = Over_Sugar_Group(risk_params_path, metabolite_data)
-        over_lipid_score = Over_Lipid_Group(risk_params_path, metabolite_data)
-        over_protein_score = Over_Protein_Group(risk_params_path, metabolite_data)
-        deficit_nutrients_score = Deficit_Nutrients_Group(risk_params_path, metabolite_data)
-        supply_score = Supply_Group(risk_params_path, metabolite_data)
+        over_sugar_score = Over_Sugar_Group(risk_params_path)
+        over_lipid_score = Over_Lipid_Group(risk_params_path)
+        over_protein_score = Over_Protein_Group(risk_params_path)
+        deficit_nutrients_score = Deficit_Nutrients_Group(risk_params_path)
+        supply_score = Supply_Group(risk_params_path)
         
         # Обмен веществ
-        aa_exchange = AA_Exchange_Group(risk_params_path, metabolite_data)
-        sug_exchange = Sug_Exchange_Group(risk_params_path, metabolite_data)
-        lip_exchange = Lip_Exchange_Group(risk_params_path, metabolite_data)
-        insulin_exchange = Insulin_Exchange_Group(risk_params_path, metabolite_data)
-        hormone_exchange = Hormone_Exchange_Group(risk_params_path, metabolite_data)
+        aa_exchange = AA_Exchange_Group(risk_params_path)
+        sug_exchange = Sug_Exchange_Group(risk_params_path)
+        lip_exchange = Lip_Exchange_Group(risk_params_path)
+        insulin_exchange = Insulin_Exchange_Group(risk_params_path)
+        hormone_exchange = Hormone_Exchange_Group(risk_params_path)
         
         # Риск онкологических заболеваний
-        chronic_inflamm_score = Chronic_Inflammation_Group(risk_params_path, metabolite_data)
-        ox_stress_score = Ox_Stress_Group(risk_params_path, metabolite_data)
-        metil_epigen_score = Metil_Epigen_Group(risk_params_path, metabolite_data)
-        microbiota_detox_score = Microbiota_Detox_Group(risk_params_path, metabolite_data)
-        metabolic_stress_score = Metabolic_Stress_Group(risk_params_path, metabolite_data)
-        neuro_endocrine_controle_score = Neuroendocrine_Controle_Group(risk_params_path, metabolite_data)
-        prolifiration_mitosis_score = Prolifiration_Mitosis_Group(risk_params_path, metabolite_data)
+        chronic_inflamm_score = Chronic_Inflammation_Group(risk_params_path )
+        ox_stress_score = Ox_Stress_Group(risk_params_path )
+        metil_epigen_score = Metil_Epigen_Group(risk_params_path )
+        microbiota_detox_score = Microbiota_Detox_Group(risk_params_path )
+        metabolic_stress_score = Metabolic_Stress_Group(risk_params_path )
+        neuro_endocrine_controle_score = Neuroendocrine_Controle_Group(risk_params_path )
+        prolifiration_mitosis_score = Prolifiration_Mitosis_Group(risk_params_path )
         
         # риска нейродегенеративных заболеваний
-        ido_neuroinflam_score = Ido_Neuroinflam_Group(risk_params_path, metabolite_data)
-        disbalance_metabolites_score = Disbalance_Metabolites_Group(risk_params_path, metabolite_data)
-        neuromediators_neuro_score = Neuromediators_Neuro_Group(risk_params_path, metabolite_data)
-        mitochondria_stress_score = Mitochondria_Stress_Group(risk_params_path, metabolite_data)
+        ido_neuroinflam_score = Ido_Neuroinflam_Group(risk_params_path )
+        disbalance_metabolites_score = Disbalance_Metabolites_Group(risk_params_path )
+        neuromediators_neuro_score = Neuromediators_Neuro_Group(risk_params_path )
+        mitochondria_stress_score = Mitochondria_Stress_Group(risk_params_path )
         
         def create_layout():
             """Your complete existing layout using all the variables"""
@@ -4911,8 +3668,8 @@ def main():
                     html.Div([
                         html.Div([
                             html.Div([], style={
-                                'width': f'{100 -  oxidative_stress_score}%',
-                                'background-color': get_color(oxidative_stress_score),
+                                'width': f'{100 -  oxidative_stress_age_score}%',
+                                'background-color': get_color(oxidative_stress_age_score),
                                 'border-radius': '5px',
                                 'height': '10px',
                                 'line-height': 'normal',
@@ -4939,8 +3696,8 @@ def main():
                     html.Div([
                         html.Div([
                             html.Div([], style={
-                                'width': f'{100 -  mitochondrial_score}%',
-                                'background-color': get_color(mitochondrial_score),
+                                'width': f'{100 -  mitochondria_age_score}%',
+                                'background-color': get_color(mitochondria_age_score),
                                 'border-radius': '5px',
                                 'height': '10px',
                                 'line-height': 'normal',
@@ -5813,33 +4570,33 @@ def main():
                         'height': '18px'
                     }),
                     
-                    # html.Div([
-                    #     html.Div([
-                    #         html.Div([], style={
-                    #             'width': f'{100 -  antoxidant_system}%',
-                    #             'background-color': get_color(antoxidant_system),
-                    #             'border-radius': '5px',
-                    #             'height': '10px',
-                    #             'line-height': 'normal',
-                    #             'display': 'inline-block',
-                    #             'vertical-align': 'center'
-                    #         }),
-                    #     ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
-                    #     html.Div([
-                    #         html.P('Антиоксидантная защита', style={
-                    #             'margin': '0px',
-                    #             'font-size': '14px',
-                    #             'font-family': 'Calibri',
-                    #             'height': '18px',
-                    #             'margin-left': '3px'
-                    #         })
-                    #     ], style={'width': '75%'}),
-                    # ], style={
-                    #     'display': 'flex',
-                    #     'justify-content': 'left',
-                    #     'width': '100%',
-                    #     'height': '18px'
-                    # }),
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  antoxidant_system}%',
+                                'background-color': get_color(antoxidant_system),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Антиоксидантная защита', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
                     
                     html.Div([
                         html.Div([
