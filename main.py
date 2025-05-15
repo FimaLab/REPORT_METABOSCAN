@@ -825,9 +825,9 @@ def calculate_pointer_position(value: float, ref_range: str):
         value = float(value)
         
         # Parse reference range
-        if ' - ' in ref_range:
+        if '-' in ref_range:
             # Format "23 - 50"
-            ref_min, ref_max = map(float, ref_range.split(' - '))
+            ref_min, ref_max = map(float, ref_range.split('-'))
         elif ref_range.startswith('<'):
             # Format "<45" means 0-45
             ref_min = 0.0
@@ -839,7 +839,7 @@ def calculate_pointer_position(value: float, ref_range: str):
         
         # Calculate position (0-100)
         if value < ref_min:
-            return 50
+            return 0
         elif value > ref_max:
             return 100
         else:
@@ -854,15 +854,11 @@ def NO_syntase_Group(file_path):
     try:
         # Load the risk parameters
         risk_params = pd.read_excel(file_path)
-        # Extract df [Группа_риска] = Риск ССЗ and [Категория] = NO-синтаза / Эндотелий keep all other columns
+        # Extract df [Группа_риска] = Риск ССЗ and [Категория] = NO-синтаза / Эндотелий keep all other columns first row and value from ['Subgroup_score']
         risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Риск ССЗ') & (risk_params['Категория'] == 'NO-синтаза / Эндотелий')]
-
         
-        # Calculate w_clear_score sum of [Score_Weighted] and w_max_score sum of [Max_score_weighted]
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        # Extract value from first row from ['Subgroup_score']
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -882,10 +878,7 @@ def Inflammation_Group(file_path):
 
         
         # Calculate w_clear_score sum of [Score_Weighted] and w_max_score sum of [Max_score_weighted]
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -905,10 +898,7 @@ def Methilation_Group(file_path):
 
         
         # Calculate w_clear_score sum of [Score_Weighted] and w_max_score sum of [Max_score_weighted]
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -928,10 +918,7 @@ def Mitochondrial_Group(file_path):
 
         
         # Calculate w_clear_score sum of [Score_Weighted] and w_max_score sum of [Max_score_weighted]
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -951,10 +938,7 @@ def Insulin_Resistance_Group(file_path):
 
         
         # Calculate w_clear_score sum of [Score_Weighted] and w_max_score sum of [Max_score_weighted]
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -973,10 +957,7 @@ def Neurovegitative_Group(file_path):
         risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Риск ССЗ') & (risk_params['Категория'] == 'Нейровегетативный стресс')]
 
         # Calculate w_clear_score sum of [Score_Weighted] and w_max_score sum of [Max_score_weighted]
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -996,10 +977,7 @@ def Methionine_Exchange_Group(file_path):
 
         
         # Calculate w_clear_score sum of [Score_Weighted] and w_max_score sum of [Max_score_weighted]
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -1019,10 +997,7 @@ def Protein_Exchange_Group(file_path):
 
         
         # Calculate w_clear_score sum of [Score_Weighted] and w_max_score sum of [Max_score_weighted]
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -1041,10 +1016,7 @@ def Aminoacid_Profile(file_path):
 
         
         # Calculate w_clear_score sum of [Score_Weighted] and w_max_score sum of [Max_score_weighted]
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -1063,10 +1035,7 @@ def Oxidative_Stress_Group(file_path):
 
         
         # Calculate w_clear_score sum of [Score_Weighted] and w_max_score sum of [Max_score_weighted]
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -1086,10 +1055,7 @@ def Inflammation_and_Microbial_Group(file_path):
 
         
         # Calculate w_clear_score sum of [Score_Weighted] and w_max_score sum of [Max_score_weighted]
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -1108,10 +1074,7 @@ def Nitrogen_Toxic_Group(file_path):
 
         
         # Calculate w_clear_score sum of [Score_Weighted] and w_max_score sum of [Max_score_weighted]
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -1130,10 +1093,7 @@ def Lipid_Toxic_Group(file_path):
 
         
         # Calculate w_clear_score sum of [Score_Weighted] and w_max_score sum of [Max_score_weighted]
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -1152,10 +1112,7 @@ def Collagen_Group(file_path):
 
         
         # Calculate w_clear_score sum of [Score_Weighted] and w_max_score sum of [Max_score_weighted]
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -1173,10 +1130,7 @@ def Regeneration_Group(file_path):
 
         
         # Calculate w_clear_score sum of [Score_Weighted] and w_max_score sum of [Max_score_weighted]
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -1194,10 +1148,7 @@ def Dream_Group(file_path):
 
         
         # Calculate w_clear_score sum of [Score_Weighted] and w_max_score sum of [Max_score_weighted]
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -1215,31 +1166,7 @@ def Inflammation_and_Stress_Group(file_path):
 
         
         # Calculate w_clear_score sum of [Score_Weighted] and w_max_score sum of [Max_score_weighted]
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
-        
-        if total >= 90:
-            return 90
-        else:
-            return total
-    except Exception as e:
-        print(f"Error in Inflammation_Group: {e}")
-        return 100
-
-def Exchange_Serum_Group(file_path):
-    try:
-        # Load the risk parameters
-        risk_params = pd.read_excel(file_path)
-        risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Состояние кожи и волос') & (risk_params['Категория'] == 'Обмен серы и кожи')]
-
-        
-        # Calculate w_clear_score sum of [Score_Weighted] and w_max_score sum of [Max_score_weighted]
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -1257,10 +1184,7 @@ def Neuroinflammation_Group(file_path):
 
         
         # Calculate w_clear_score sum of [Score_Weighted] and w_max_score sum of [Max_score_weighted]
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -1278,10 +1202,7 @@ def Energy_Exchange_Group(file_path):
         risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Адаптивные возможности организма') & 
                                     (risk_params['Категория'] == 'Энергетический обмен')]
 
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -1299,10 +1220,7 @@ def Neuroadaptation_Group(file_path):
         risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Адаптивные возможности организма') & 
                                     (risk_params['Категория'] == 'Нейро-адаптация')]
 
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -1320,10 +1238,7 @@ def Stress_Aminoacid_Group(file_path):
         risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Адаптивные возможности организма') & 
                                     (risk_params['Категория'] == 'Стресс-аминокислоты')]
 
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -1341,10 +1256,7 @@ def Mitochondria_Creatinine_Group(file_path):
         risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Адаптивные возможности организма') & 
                                     (risk_params['Категория'] == 'Митохондрии и креатин')]
 
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -1362,10 +1274,7 @@ def Glutamate_Exchange_Group(file_path):
         risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Адаптивные возможности организма') & 
                                     (risk_params['Категория'] == 'Глутамат-глутаминовая ось')]
 
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -1385,10 +1294,7 @@ def Tryptophan_Metabolism_Group(file_path):
         risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Здоровье микробиоты') & 
                                     (risk_params['Категория'] == 'Метаболизм триптофана')]
 
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -1406,10 +1312,7 @@ def Inflammation_and_Immune_Group(file_path):
         risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Здоровье микробиоты') & 
                                     (risk_params['Категория'] == 'Воспаление и иммунитет')]
 
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -1429,10 +1332,7 @@ def Tryptophan_Inflammation_Group(file_path):
         risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Темп биологического старения') & 
                                     (risk_params['Категория'] == 'Триптофан / воспаление')]
 
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -1450,10 +1350,7 @@ def Oxidative_Stress_Age_Group(file_path):
         risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Темп биологического старения') & 
                                     (risk_params['Категория'] == 'Оксидативный стресс')]
 
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -1471,10 +1368,7 @@ def Metochondria_Age_Group(file_path):
         risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Темп биологического старения') & 
                                     (risk_params['Категория'] == 'Митохондриальные показатели')]
 
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -1493,10 +1387,7 @@ def Oxidative_Stress_Group(file_path):
         risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Темп биологического старения') & 
                                     (risk_params['Категория'] == 'Оксидативный стресс')]
 
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -1514,10 +1405,7 @@ def Mitochondria_Group(file_path):
         risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Темп биологического старения') & 
                                     (risk_params['Категория'] == 'Митохондрии')]
 
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -1535,10 +1423,7 @@ def Neuroendocrine_Group(file_path):
         risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Темп биологического старения') & 
                                     (risk_params['Категория'] == 'Нейроэндокринная ось')]
 
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -1556,10 +1441,7 @@ def Integrative_Index_Group(file_path):
         risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Темп биологического старения') & 
                                     (risk_params['Категория'] == 'Интегративные индексы')]
 
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -1579,10 +1461,7 @@ def Ido_Path_Tryptophan_Group(file_path):
         risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Степень воспалительных процессов') & 
                                     (risk_params['Категория'] == 'IDO-путь / триптофан')]
 
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -1600,10 +1479,7 @@ def Neuromediators_Group(file_path):
         risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Степень воспалительных процессов') & 
                                     (risk_params['Категория'] == 'Нейромедиаторы')]
 
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -1621,10 +1497,7 @@ def Indols_and_Phenols_Group(file_path):
         risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Степень воспалительных процессов') & 
                                     (risk_params['Категория'] == 'Индолы и фенолы')]
 
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -1642,10 +1515,7 @@ def General_Stress_Immune_Group(file_path):
         risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Степень воспалительных процессов') & 
                                     (risk_params['Категория'] == 'Общий стресс / иммунитет')]
 
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -1663,10 +1533,7 @@ def Complex_Index_Group(file_path):
         risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Степень воспалительных процессов') & 
                                     (risk_params['Категория'] == 'Комплексный индекс')]
 
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -1686,10 +1553,7 @@ def Amiac_Detox_Group(file_path):
         risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Токсическая нагрузка и детоксикация') & 
                                     (risk_params['Категория'] == 'Аммиачная детоксикация')]
 
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -1708,10 +1572,7 @@ def Vitamine_B2_Group(file_path):
         risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Нутриентный статус организма') & 
                                     (risk_params['Категория'] == 'Витамин B2 (рибофлавин)')]
 
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -1729,10 +1590,7 @@ def Vitamine_B5_Group(file_path):
         risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Нутриентный статус организма') & 
                                     (risk_params['Категория'] == 'Витамин B5 (пантотенат)')]
 
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -1750,10 +1608,7 @@ def Vitamine_B6_Group(file_path):
         risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Нутриентный статус организма') & 
                                     (risk_params['Категория'] == 'Витамин B6')]
 
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -1771,10 +1626,7 @@ def Vitamine_B9_B12_Group(file_path):
         risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Нутриентный статус организма') & 
                                     (risk_params['Категория'] == 'Витамин B9 / B12')]
 
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -1792,10 +1644,7 @@ def Vitamine_B3_NAD_Group(file_path):
         risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Нутриентный статус организма') & 
                                     (risk_params['Категория'] == 'Витамин B3 / NAD+')]
 
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -1813,10 +1662,7 @@ def Serum_Aminoacids_Group(file_path):
         risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Нутриентный статус организма') & 
                                     (risk_params['Категория'] == 'Серосодержащие АК')]
 
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -1833,10 +1679,7 @@ def Neurotroph_Reserv_Group(file_path):
         risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Нутриентный статус организма') & 
                                     (risk_params['Категория'] == 'Нейротрофный резерв')]
 
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -1853,10 +1696,7 @@ def Over_Sugar_Group(file_path):
         risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Риск алиментарно-зависимых заболеваний') & 
                                     (risk_params['Категория'] == 'Избыток сахара / углеводов')]
 
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -1873,10 +1713,7 @@ def Over_Lipid_Group(file_path):
         risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Риск алиментарно-зависимых заболеваний') & 
                                     (risk_params['Категория'] == ' Избыток жиров / липидов')]
 
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -1893,10 +1730,7 @@ def Over_Protein_Group(file_path):
         risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Риск алиментарно-зависимых заболеваний') & 
                                     (risk_params['Категория'] == 'Избыток белка / аминокислот')]
 
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -1913,10 +1747,7 @@ def Deficit_Nutrients_Group(file_path):
         risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Риск алиментарно-зависимых заболеваний') & 
                                     (risk_params['Категория'] == 'Дефицит нутриентов')]
 
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -1933,10 +1764,7 @@ def Supply_Group(file_path):
         risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Риск алиментарно-зависимых заболеваний') & 
                                     (risk_params['Категория'] == 'Нарушение пищевого поведения')]
 
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -1953,10 +1781,7 @@ def AA_Exchange_Group(file_path):
         risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Обмен веществ') & 
                                     (risk_params['Категория'] == 'Аминокислотный обмен')]
 
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -1973,10 +1798,7 @@ def Sug_Exchange_Group(file_path):
         risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Обмен веществ') & 
                                     (risk_params['Категория'] == 'Углеводный обмен')]
 
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -1993,10 +1815,7 @@ def Lip_Exchange_Group(file_path):
         risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Обмен веществ') & 
                                     (risk_params['Категория'] == 'Липидный обмен / β-окисление')]
 
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -2013,10 +1832,7 @@ def Insulin_Exchange_Group(file_path):
         risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Обмен веществ') & 
                                     (risk_params['Категория'] == 'Инсулинорезистентность')]
 
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -2033,10 +1849,7 @@ def Hormone_Exchange_Group(file_path):
         risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Обмен веществ') & 
                                     (risk_params['Категория'] == 'Гормональные связи')]
 
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -2053,10 +1866,7 @@ def Chronic_Inflammation_Group(file_path):
         risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Риск онкологических заболеваний') & 
                                     (risk_params['Категория'] == 'Хроническое воспаление')]
 
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -2073,10 +1883,7 @@ def Ox_Stress_Group(file_path):
         risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Риск онкологических заболеваний') & 
                                     (risk_params['Категория'] == 'Оксидативный стресс')]
 
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -2093,10 +1900,7 @@ def Metil_Epigen_Group(file_path):
         risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Риск онкологических заболеваний') & 
                                     (risk_params['Категория'] == 'Метилирование / эпигенетика')]
 
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -2113,10 +1917,7 @@ def Microbiota_Detox_Group(file_path):
         risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Риск онкологических заболеваний') & 
                                     (risk_params['Категория'] == 'Микробиота и детоксикация')]
 
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -2133,10 +1934,7 @@ def Metabolic_Stress_Group(file_path):
         risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Риск онкологических заболеваний') & 
                                     (risk_params['Категория'] == 'Метаболический стресс')]
 
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -2154,10 +1952,7 @@ def Neuroendocrine_Controle_Group(file_path):
         risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Риск онкологических заболеваний') & 
                                     (risk_params['Категория'] == 'Нейроэндокринный контроль')]
 
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -2174,10 +1969,7 @@ def Prolifiration_Mitosis_Group(file_path):
         risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Риск онкологических заболеваний') & 
                                     (risk_params['Категория'] == 'Пролиферация и митоз')]
 
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -2194,10 +1986,7 @@ def Ido_Neuroinflam_Group(file_path):
         risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Риск нейродегенеративных заболеваний') & 
                                     (risk_params['Категория'] == 'IDO путь / нейровоспаление')]
 
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -2214,10 +2003,7 @@ def Disbalance_Metabolites_Group(file_path):
         risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Риск нейродегенеративных заболеваний') & 
                                     (risk_params['Категория'] == 'Дисбаланс метаболитов')]
 
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -2235,10 +2021,7 @@ def Neuromediators_Neuro_Group(file_path):
         risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Риск нейродегенеративных заболеваний') & 
                                     (risk_params['Категория'] == 'Нейромедиаторы')]
 
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -2255,10 +2038,7 @@ def Mitochondria_Stress_Group(file_path):
         risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Риск нейродегенеративных заболеваний') & 
                                     (risk_params['Категория'] == 'Митохондрии и стресс')]
 
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -2277,10 +2057,7 @@ def Energy_Exchange_Carnitine_Group(file_path):
         risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Митохондриальное здоровье') & 
                                     (risk_params['Категория'] == 'Энергетический обмен (карнитиновый цикл)')]
 
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -2298,10 +2075,7 @@ def Antioxidation_Group(file_path):
         risk_params = risk_params.loc[(risk_params['Группа_риска'] == 'Митохондриальное здоровье') & 
                                     (risk_params['Категория'] == 'Антиоксидантная защита')]
 
-        w_clear_score = risk_params['Score_Weighted'].sum()
-        w_max_score = risk_params['Max_score_weighted'].sum()
-        
-        total = (w_clear_score / w_max_score) * 100
+        total = risk_params.iloc[0]['Subgroup_score']
         
         if total >= 90:
             return 90
@@ -2403,7 +2177,6 @@ def main():
         regeneration_score = Regeneration_Group(risk_params_path)
         dream_score = Dream_Group(risk_params_path)
         inflam_stress_score = Inflammation_and_Stress_Group(risk_params_path)
-        exchange_serum_score = Exchange_Serum_Group(risk_params_path)
         neuro_inflammation_score = Neuroinflammation_Group(risk_params_path)
         
         # Адаптивные возможности организма
@@ -2484,7 +2257,11 @@ def main():
             """Your complete existing layout using all the variables"""
             return html.Div([
             # 1 страница
+            
             html.Div([
+                html.Div([
+                    html.Img(src=app.get_asset_url('logo_inst_tox.png'), style={'width':'100%','object-fit':'containt'})
+                ],style={'width':'20%','height':'auto', 'margin':'0px', 'display':'flex', 'justify-content':'left', 'align-items':'center'}),
                 html.Div([
                     html.Div([
                         html.Div([
@@ -3328,33 +3105,7 @@ def main():
                         'height': '18px'
                     }),
                     
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  exchange_serum_score}%',
-                                'background-color': get_color(exchange_serum_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
-                        html.Div([
-                            html.P('Обмен серы и кожи', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
+                    
                     
                     html.Div([
                         html.Div([
