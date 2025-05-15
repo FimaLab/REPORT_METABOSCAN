@@ -45,6 +45,37 @@ def safe_parse_metabolite_data(file_path):
     except Exception as e:
         print(f"Error processing file {file_path}: {str(e)}")
         return {}
+    
+def smart_round(value, decimals=3):
+    """
+    Округляет число с сохранением первой ненулевой цифры после запятой,
+    если округление приводит к нулю.
+    
+    :param value: исходное значение (число или строка)
+    :param decimals: количество знаков после запятой для округления
+    :return: округлённое значение с учётом значащих цифр
+    """
+    try:
+        num = float(value)
+    except (ValueError, TypeError):
+        return 0.0
+    
+    if num == 0:
+        return 0.0
+    
+    rounded = round(num, decimals)
+    
+    # Если округлённое значение не ноль, возвращаем его
+    if rounded != 0:
+        return rounded
+    
+    # Если округлили до нуля, находим первую ненулевую цифру после запятой
+    abs_num = abs(num)
+    precision = decimals
+    while round(abs_num, precision) == 0:
+        precision += 1
+    
+    return round(num, precision)
 
 def get_value_1(metabolite_data):
     """
@@ -55,15 +86,15 @@ def get_value_1(metabolite_data):
     
     try:
         # Get Phenylalanine and round to 1 decimal
-        phenylalanine = round(float(metabolite_data.get('Phenylalanine', 0)), 1)
+        phenylalanine = smart_round(float(metabolite_data.get('Phenylalanine', 0)), 1)
         value_1.append(phenylalanine)
         
-        # Get Tyrosin (handle different spellings) and round to 1 decimal
-        tyrosin = round(float(metabolite_data.get('Tyrosin', 0)), 1)
+        # Get Tyrosin (handle different spellings) and smart_round to 1 decimal
+        tyrosin = smart_round(float(metabolite_data.get('Tyrosin', 0)), 1)
         value_1.append(tyrosin)
         
-        # Calculate indexAAAs and round to 1 decimal
-        indexAAAs = round(phenylalanine + tyrosin, 1)
+        # Calculate indexAAAs and smart_round to 1 decimal
+        indexAAAs = smart_round(phenylalanine + tyrosin, 1)
         value_1.append(indexAAAs)
         
         return ref_1, value_1
@@ -81,25 +112,25 @@ def get_value_2(metabolite_data):
     value_2 = []
     
     try:
-        Summ_Leu_Ile = round(float(metabolite_data.get('Summ Leu-Ile', 0)), 1)
+        Summ_Leu_Ile = smart_round(float(metabolite_data.get('Summ Leu-Ile', 0)), 1)
         value_2.append(Summ_Leu_Ile)
         
-        valine= round(float(metabolite_data.get('Valine', 0)), 1)
+        valine= smart_round(float(metabolite_data.get('Valine', 0)), 1)
         value_2.append(valine)
         
-        index_BCAA = round(Summ_Leu_Ile + valine, 1)
+        index_BCAA = smart_round(Summ_Leu_Ile + valine, 1)
         value_2.append(index_BCAA)
         
-        # Get Phenylalanine and round to 1 decimal
-        phenylalanine = round(float(metabolite_data.get('Phenylalanine', 0)), 1)
-        # Get Tyrosin (handle different spellings) and round to 1 decimal
-        tyrosin = round(float(metabolite_data.get('Tyrosin', 1) or metabolite_data.get('Tyrosine', 1)), 1)
+        # Get Phenylalanine and smart_round to 1 decimal
+        phenylalanine = smart_round(float(metabolite_data.get('Phenylalanine', 0)), 1)
+        # Get Tyrosin (handle different spellings) and smart_round to 1 decimal
+        tyrosin = smart_round(float(metabolite_data.get('Tyrosin', 1) or metabolite_data.get('Tyrosine', 1)), 1)
 
-        # Calculate indexAAAs and round to 1 decimal
-        indexAAAs = round(phenylalanine + tyrosin, 1)
+        # Calculate indexAAAs and smart_round to 1 decimal
+        indexAAAs = smart_round(phenylalanine + tyrosin, 1)
         
         # Index fisher is ratio
-        index_fisher = round(index_BCAA / indexAAAs  , 2)
+        index_fisher = smart_round(index_BCAA / indexAAAs  , 2)
         value_2.append(index_fisher)
         
         
@@ -118,29 +149,29 @@ def get_value_3(metabolite_data):
     
     try:
         # Histidine
-        histidine = round(float(metabolite_data.get('Histidine', 0)), 1)
+        histidine = smart_round(float(metabolite_data.get('Histidine', 0)), 1)
         value_3.append(histidine)
-        metilhistidine = round(float(metabolite_data.get('Methylhistidine', 0)), 2)
+        metilhistidine = smart_round(float(metabolite_data.get('Methylhistidine', 0)), 2)
         value_3.append(metilhistidine)
-        treonine = round(float(metabolite_data.get('Threonine', 0)), 1)
+        treonine = smart_round(float(metabolite_data.get('Threonine', 0)), 1)
         value_3.append(treonine)
-        carnosine = round(float(metabolite_data.get('Carnosine', 0)), 2)
+        carnosine = smart_round(float(metabolite_data.get('Carnosine', 0)), 2)
         value_3.append(carnosine)
-        glycine = round(float(metabolite_data.get('Glycine', 0)), 1)
+        glycine = smart_round(float(metabolite_data.get('Glycine', 0)), 1)
         value_3.append(glycine)
-        dymetilglycine = round(float(metabolite_data.get('DMG', 0)), 2)
+        dymetilglycine = smart_round(float(metabolite_data.get('DMG', 0)), 2)
         value_3.append(dymetilglycine)
-        serine = round(float(metabolite_data.get('Serine', 0)), 1)
+        serine = smart_round(float(metabolite_data.get('Serine', 0)), 1)
         value_3.append(serine)
-        Lysine= round(float(metabolite_data.get('Lysine', 0)), 1)
+        Lysine= smart_round(float(metabolite_data.get('Lysine', 0)), 1)
         value_3.append(Lysine)
-        glutaminic_acid = round(float(metabolite_data.get('Glutamic acid', 0)), 1)
+        glutaminic_acid = smart_round(float(metabolite_data.get('Glutamic acid', 0)), 1)
         value_3.append(glutaminic_acid)
-        glutamine = round(float(metabolite_data.get('Glutamine', 0)), 1)
+        glutamine = smart_round(float(metabolite_data.get('Glutamine', 0)), 1)
         value_3.append(glutamine)
-        indexGLN_GLU = round(glutamine / glutaminic_acid, 2)
+        indexGLN_GLU = smart_round(glutamine / glutaminic_acid, 2)
         value_3.append(indexGLN_GLU)
-        indexGlu_SerAndGly = round(glutaminic_acid / (serine + glycine), 2)
+        indexGlu_SerAndGly = smart_round(glutaminic_acid / (serine + glycine), 2)
         value_3.append(indexGlu_SerAndGly)
         
         return ref_3, value_3
@@ -159,19 +190,19 @@ def get_value_4(metabolite_data):
     
     try:
         # metionine
-        methionine = round(float(metabolite_data.get('Methionine', 0)), 1)
+        methionine = smart_round(float(metabolite_data.get('Methionine', 0)), 1)
         value_4.append(methionine)
-        Methionine_Sulfoxide = round(float(metabolite_data.get('Methionine-Sulfoxide', 2)), 1)
+        Methionine_Sulfoxide = smart_round(float(metabolite_data.get('Methionine-Sulfoxide', 2)), 1)
         value_4.append(Methionine_Sulfoxide)
-        Taurine = round(float(metabolite_data.get('Taurine', 0)), 1)
+        Taurine = smart_round(float(metabolite_data.get('Taurine', 0)), 1)
         value_4.append(Taurine)
-        Betaine = round(float(metabolite_data.get('Betaine', 0)), 1)
+        Betaine = smart_round(float(metabolite_data.get('Betaine', 0)), 1)
         value_4.append(Betaine)
-        Choline = round(float(metabolite_data.get('Choline', 0)), 2)
+        Choline = smart_round(float(metabolite_data.get('Choline', 0)), 2)
         value_4.append(Choline)
-        TMAO = round(float(metabolite_data.get('TMAO', 0)), 2)
+        TMAO = smart_round(float(metabolite_data.get('TMAO', 0)), 2)
         value_4.append(TMAO)
-        indexBet_Chl= round(Betaine / Choline, 2)
+        indexBet_Chl= smart_round(Betaine / Choline, 2)
         value_4.append(indexBet_Chl)
         return ref_4, value_4
         
@@ -189,21 +220,21 @@ def get_value_5(metabolite_data):
     
     try:
         #Tryptophan
-        tryptophan = round(float(metabolite_data.get('Tryptophan', 0)), 1)
+        tryptophan = smart_round(float(metabolite_data.get('Tryptophan', 0)), 1)
         value_5.append(tryptophan)
-        kynurenine = round(float(metabolite_data.get('Kynurenine', 0)), 2)
+        kynurenine = smart_round(float(metabolite_data.get('Kynurenine', 0)), 2)
         value_5.append(kynurenine)
-        indexKyn_Try = round(round(float(metabolite_data.get('Kynurenine', 0)), 3)/ round(float(metabolite_data.get('Tryptophan', 0)), 3), 3)
+        indexKyn_Try = smart_round(smart_round(float(metabolite_data.get('Kynurenine', 0)), 3)/ smart_round(float(metabolite_data.get('Tryptophan', 0)), 3), 3)
         value_5.append(indexKyn_Try)
-        antranillic_acid = round(float(metabolite_data.get('Antranillic acid', 0)), 4)
+        antranillic_acid = smart_round(float(metabolite_data.get('Antranillic acid', 0)), 2)
         value_5.append(antranillic_acid)
-        quinolinic_acid = round(float(metabolite_data.get('Quinolinic acid', 0)), 2)
+        quinolinic_acid = smart_round(float(metabolite_data.get('Quinolinic acid', 0)), 2)
         value_5.append(quinolinic_acid)
-        Xanthurenic_acid = round(float(metabolite_data.get('Xanthurenic acid', 0)), 3)
+        Xanthurenic_acid = smart_round(float(metabolite_data.get('Xanthurenic acid', 0)), 2)
         value_5.append(Xanthurenic_acid)
-        Kynurenic_acid = round(float(metabolite_data.get('Kynurenic acid', 0)), 3)
+        Kynurenic_acid = smart_round(float(metabolite_data.get('Kynurenic acid', 0)), 2)
         value_5.append(Kynurenic_acid)
-        indexKyn_Qnl= round(Kynurenic_acid / quinolinic_acid, 2)
+        indexKyn_Qnl= smart_round(Kynurenic_acid / quinolinic_acid, 2)
         value_5.append(indexKyn_Qnl)
         return ref_5, value_5
         
@@ -221,14 +252,14 @@ def get_value_6(metabolite_data):
     
     try:
         # Serotonine
-        serotonine = round(float(metabolite_data.get('Serotonin', 0)), 2)
+        serotonine = smart_round(float(metabolite_data.get('Serotonin', 0)), 2)
         value_6.append(serotonine)
-        hiaa = round(float(metabolite_data.get('HIAA', 0)), 2)
+        hiaa = smart_round(float(metabolite_data.get('HIAA', 0)), 2)
         value_6.append(hiaa)
-        Quinolinic_acid = round(float(metabolite_data.get('Quinolinic acid', 0)), 2)
-        indexQnl_hiaa = round(hiaa / Quinolinic_acid, 1)
+        Quinolinic_acid = smart_round(float(metabolite_data.get('Quinolinic acid', 0)), 2)
+        indexQnl_hiaa = smart_round(hiaa / Quinolinic_acid, 1)
         value_6.append(indexQnl_hiaa)
-        hydroxy_tryptophan = round(float(metabolite_data.get('5-hydroxytryptophan', 0)), 2)
+        hydroxy_tryptophan = smart_round(float(metabolite_data.get('5-hydroxytryptophan', 0)), 2)
         value_6.append(hydroxy_tryptophan)
         return ref_6, value_6
         
@@ -246,17 +277,17 @@ def get_value_7(metabolite_data):
     
     try:
         # 3-indolacetic
-        indole_acetic_acid = round(float(metabolite_data.get('Indole-3-acetic acid', 0)), 2)
+        indole_acetic_acid = smart_round(float(metabolite_data.get('Indole-3-acetic acid', 0)), 2)
         value_7.append(indole_acetic_acid)
-        indole_lactic_acid = round(float(metabolite_data.get('Indole-3-lactic acid', 0)), 3)
+        indole_lactic_acid = smart_round(float(metabolite_data.get('Indole-3-lactic acid', 0)), 3)
         value_7.append(indole_lactic_acid)
-        indole_carboxaldehyde = round(float(metabolite_data.get('Indole-3-carboxaldehyde', 0)), 2)
+        indole_carboxaldehyde = smart_round(float(metabolite_data.get('Indole-3-carboxaldehyde', 0)), 2)
         value_7.append(indole_carboxaldehyde)
-        indole_propionic_acid = round(float(metabolite_data.get('Indole-3-propionic acid', 0)), 2)
+        indole_propionic_acid = smart_round(float(metabolite_data.get('Indole-3-propionic acid', 0)), 2)
         value_7.append(indole_propionic_acid)
-        indole_3_butyric = round(float(metabolite_data.get('Indole-3-butyric acid', 0)), 3)
+        indole_3_butyric = smart_round(float(metabolite_data.get('Indole-3-butyric acid', 0)), 3)
         value_7.append(indole_3_butyric)
-        tryptamine = round(float(metabolite_data.get('Tryptamine', 0)), 3)
+        tryptamine = smart_round(float(metabolite_data.get('Tryptamine', 0)), 2)
         value_7.append(tryptamine)
         return ref_7, value_7
         
@@ -274,35 +305,35 @@ def get_value_8(metabolite_data):
     
     try:
         # Proline
-        proline = round(float(metabolite_data.get('Proline', 0)), 1)
+        proline = smart_round(float(metabolite_data.get('Proline', 0)), 1)
         value_8.append(proline)
-        hydroxyproline = round(float(metabolite_data.get('Hydroxyproline', 0)), 2)
+        hydroxyproline = smart_round(float(metabolite_data.get('Hydroxyproline', 0)), 2)
         value_8.append(hydroxyproline)
-        adma = round(float(metabolite_data.get('ADMA', 0)), 2)
+        adma = smart_round(float(metabolite_data.get('ADMA', 0)), 2)
         value_8.append(adma)
-        sdma = round(float(metabolite_data.get('TotalDMA (SDMA)', 0)), 2)
+        sdma = smart_round(float(metabolite_data.get('TotalDMA (SDMA)', 0)), 2)
         value_8.append(sdma)
-        homoarginine = round(float(metabolite_data.get('Homoarginine', 0)), 2)
+        homoarginine = smart_round(float(metabolite_data.get('Homoarginine', 0)), 2)
         value_8.append(homoarginine)
-        arginine = round(float(metabolite_data.get('Arginine', 0)), 1)
+        arginine = smart_round(float(metabolite_data.get('Arginine', 0)), 1)
         value_8.append(arginine)
-        Citrulline = round(float(metabolite_data.get('Citrulline', 0)), 1)
+        Citrulline = smart_round(float(metabolite_data.get('Citrulline', 0)), 1)
         value_8.append(Citrulline)
-        Orintine = round(float(metabolite_data.get('Ornitine', 0)), 1)
+        Orintine = smart_round(float(metabolite_data.get('Ornitine', 0)), 1)
         value_8.append(Orintine)
-        asparagine = round(float(metabolite_data.get('Asparagine', 0)), 1)
+        asparagine = smart_round(float(metabolite_data.get('Asparagine', 0)), 1)
         value_8.append(asparagine)
-        asparagine_acid = round(float(metabolite_data.get('Aspartic acid', 0)), 1)
+        asparagine_acid = smart_round(float(metabolite_data.get('Aspartic acid', 0)), 1)
         value_8.append(asparagine_acid)
-        index_gabr = round(arginine / (Orintine + Citrulline), 2)
+        index_gabr = smart_round(arginine / (Orintine + Citrulline), 2)
         value_8.append(index_gabr)
-        index_AOR = round(arginine / Orintine, 1)
+        index_AOR = smart_round(arginine / Orintine, 1)
         value_8.append(index_AOR)
-        index_asn_asp = round(asparagine / asparagine_acid, 2)
+        index_asn_asp = smart_round(asparagine / asparagine_acid, 2)
         value_8.append(index_asn_asp)
-        creatine = round(float(metabolite_data.get('Creatinine', 0)), 1)
+        creatine = smart_round(float(metabolite_data.get('Creatinine', 0)), 1)
         value_8.append(creatine)
-        nmma = round(float(metabolite_data.get('NMMA', 0)), 2)
+        nmma = smart_round(float(metabolite_data.get('NMMA', 0)), 2)
         value_8.append(nmma)
         return ref_8, value_8
         
@@ -320,12 +351,12 @@ def get_value_9(metabolite_data):
     
     try:
         # Alanine
-        alanine = round(float(metabolite_data.get('Alanine', 0)), 1)
+        alanine = smart_round(float(metabolite_data.get('Alanine', 0)), 1)
         value_9.append(alanine)
         # c0
-        c0 = round(float(metabolite_data.get('C0', 0)), 1)
+        c0 = smart_round(float(metabolite_data.get('C0', 0)), 1)
         value_9.append(c0)
-        c2 = round(float(metabolite_data.get('C2', 0)), 2)
+        c2 = smart_round(float(metabolite_data.get('C2', 0)), 2)
         value_9.append(c2)
         return ref_9, value_9
         
@@ -343,17 +374,17 @@ def get_value_10(metabolite_data):
     
     try:
         # c3
-        c3 = round(float(metabolite_data.get('C3', 0)), 2)
+        c3 = smart_round(float(metabolite_data.get('C3', 0)), 2)
         value_10.append(c3)
-        c4 = round(float(metabolite_data.get('C4', 0)), 2)
+        c4 = smart_round(float(metabolite_data.get('C4', 0)), 2)
         value_10.append(c4)
-        c5 = round(float(metabolite_data.get('C5', 0)), 2)
+        c5 = smart_round(float(metabolite_data.get('C5', 0)), 2)
         value_10.append(c5)
-        c5_1 = round(float(metabolite_data.get('C5-1', 0)), 2)
+        c5_1 = smart_round(float(metabolite_data.get('C5-1', 0)), 2)
         value_10.append(c5_1)
-        c5_DC = round(float(metabolite_data.get('C5-DC', 0)), 1)
+        c5_DC = smart_round(float(metabolite_data.get('C5-DC', 0)), 3)
         value_10.append(c5_DC)
-        c5_OH = round(float(metabolite_data.get('C5-OH', 0)), 2)
+        c5_OH = smart_round(float(metabolite_data.get('C5-OH', 0)), 2)
         value_10.append(c5_OH)
         return ref_10, value_10
         
@@ -371,23 +402,23 @@ def get_value_11(metabolite_data):
     
     try:
         # c6
-        c6 = round(float(metabolite_data.get('C6', 0)), 2)
+        c6 = smart_round(float(metabolite_data.get('C6', 0)), 2)
         value_11.append(c6)
-        c6_DC = round(float(metabolite_data.get('C6-DC', 0)), 3)
+        c6_DC = smart_round(float(metabolite_data.get('C6-DC', 0)), 3)
         value_11.append(c6_DC)
-        c8 = round(float(metabolite_data.get('C8', 0)), 3)
+        c8 = smart_round(float(metabolite_data.get('C8', 0)), 2)
         value_11.append(c8)
-        c8_1 = round(float(metabolite_data.get('C8-1', 0)), 3)
+        c8_1 = smart_round(float(metabolite_data.get('C8-1', 0)), 2)
         value_11.append(c8_1)
-        c10 = round(float(metabolite_data.get('C10', 0)), 3)
+        c10 = smart_round(float(metabolite_data.get('C10', 0)), 2)
         value_11.append(c10)
-        c10_1 = round(float(metabolite_data.get('C10-1', 0)), 3)
+        c10_1 = smart_round(float(metabolite_data.get('C10-1', 0)), 2)
         value_11.append(c10_1)
-        c10_2 = round(float(metabolite_data.get('C10-2', 0)), 3)
+        c10_2 = smart_round(float(metabolite_data.get('C10-2', 0)), 2)
         value_11.append(c10_2)
-        c12 = round(float(metabolite_data.get('C12', 0)), 3)
+        c12 = smart_round(float(metabolite_data.get('C12', 0)), 2)
         value_11.append(c12)
-        c12_1 = round(float(metabolite_data.get('C12-1', 0)), 3)
+        c12_1 = smart_round(float(metabolite_data.get('C12-1', 0)), 2)
         value_11.append(c12_1)
         return ref_11, value_11
         
@@ -405,31 +436,31 @@ def get_value_12(metabolite_data):
     
     try:
         # c14
-        c14 = round(float(metabolite_data.get('C14', 0)), 3)
+        c14 = smart_round(float(metabolite_data.get('C14', 0)), 2)
         value_12.append(c14)
-        c14_1 = round(float(metabolite_data.get('C14-1', 0)), 3)
+        c14_1 = smart_round(float(metabolite_data.get('C14-1', 0)), 2)
         value_12.append(c14_1)
-        c14_2 = round(float(metabolite_data.get('C14-2', 0)), 3)
+        c14_2 = smart_round(float(metabolite_data.get('C14-2', 0)), 2)
         value_12.append(c14_2)
-        c14_OH = round(float(metabolite_data.get('C14-OH', 0)), 3)
+        c14_OH = smart_round(float(metabolite_data.get('C14-OH', 0)), 2)
         value_12.append(c14_OH)
-        c16 = round(float(metabolite_data.get('C16', 0)), 3)
+        c16 = smart_round(float(metabolite_data.get('C16', 0)), 2)
         value_12.append(c16)
-        c16_1 = round(float(metabolite_data.get('C16-1', 0)), 3)
+        c16_1 = smart_round(float(metabolite_data.get('C16-1', 0)), 2)
         value_12.append(c16_1)
-        C16_1_OH = round(float(metabolite_data.get('C16-1-OH', 0)), 4)
+        C16_1_OH = smart_round(float(metabolite_data.get('C16-1-OH', 0)), 2)
         value_12.append(C16_1_OH)
-        c16_OH = round(float(metabolite_data.get('C16-OH', 0)), 3)
+        c16_OH = smart_round(float(metabolite_data.get('C16-OH', 0)), 2)
         value_12.append(c16_OH)
-        c18 = round(float(metabolite_data.get('C18', 0)), 3)
+        c18 = smart_round(float(metabolite_data.get('C18', 0)), 2)
         value_12.append(c18)
-        c18_1 = round(float(metabolite_data.get('C18-1', 0)), 3)
+        c18_1 = smart_round(float(metabolite_data.get('C18-1', 0)), 2)
         value_12.append(c18_1)
-        c18_1_OH = round(float(metabolite_data.get('C18-1-OH', 0)), 4)
+        c18_1_OH = smart_round(float(metabolite_data.get('C18-1-OH', 0)), 3)
         value_12.append(c18_1_OH)
-        c18_2 = round(float(metabolite_data.get('C18-2', 0)), 3)
+        c18_2 = smart_round(float(metabolite_data.get('C18-2', 0)), 2)
         value_12.append(c18_2)
-        c18_OH = round(float(metabolite_data.get('C18-OH', 0)), 4)
+        c18_OH = smart_round(float(metabolite_data.get('C18-OH', 0)), 3)
         value_12.append(c18_OH)
         return ref_12, value_12
         
@@ -448,11 +479,11 @@ def get_value_13(metabolite_data):
     
     try:
         # Pantotenic acid
-        pantotenic_acid = round(float(metabolite_data.get('Pantothenic', 0)), 2)
+        pantotenic_acid = smart_round(float(metabolite_data.get('Pantothenic', 0)), 2)
         value_13.append(pantotenic_acid)
-        riboflavin = round(float(metabolite_data.get('Riboflavin', 0)), 2)
+        riboflavin = smart_round(float(metabolite_data.get('Riboflavin', 0)), 2)
         value_13.append(riboflavin)
-        melatonine = round(float(metabolite_data.get('Melatonin', 0)), 3)
+        melatonine = smart_round(float(metabolite_data.get('Melatonin', 0)), 2)
         value_13.append(melatonine)
         return ref_13, value_13
         
@@ -470,11 +501,11 @@ def get_value_14(metabolite_data):
     
     try:
         # Uridine
-        uridine = round(float(metabolite_data.get('Uridine', 0)), 2)
+        uridine = smart_round(float(metabolite_data.get('Uridine', 0)), 2)
         value_14.append(uridine)
-        adenosine = round(float(metabolite_data.get('Adenosin', 0)), 2)
+        adenosine = smart_round(float(metabolite_data.get('Adenosin', 0)), 2)
         value_14.append(adenosine)
-        Citidine = round(float(metabolite_data.get('Cytidine', 0)), 2)
+        Citidine = smart_round(float(metabolite_data.get('Cytidine', 0)), 2)
         value_14.append(Citidine)
         return ref_14, value_14
         
@@ -493,10 +524,10 @@ def get_value_15(metabolite_data):
     
     try:
         # Cortisol
-        cortisol = round(float(metabolite_data.get('Cortisol', 0)), 2)
+        cortisol = smart_round(float(metabolite_data.get('Cortisol', 0)), 2)
         value_15.append(cortisol)
         # Histamine
-        histamine = round(float(metabolite_data.get('Histamine', 0)), 3)
+        histamine = smart_round(float(metabolite_data.get('Histamine', 0)), 2)
         value_15.append(histamine)
         return ref_15, value_15
         
@@ -524,17 +555,17 @@ def need_of_plus_minus(value: float, ref: str):
     if ' - ' in ref:
         lower, upper = map(float, ref.split(' - '))
         if value > upper:
-            return '+'
+            return ''
         elif value < lower:
-            return '-'
+            return ''
         else:
             return ''
     elif ref.startswith('< '):
         upper = float(ref.split('< ')[1])
         if value > upper:
-            return '+'
+            return ''
         elif value < 0:  # Assuming <45 means 0-45 as per your note
-            return '-'
+            return ''
         else:
             return ''
     else:
@@ -5424,7 +5455,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Фенилаланин (Phe)',style={'height':'20px'}),html.P('Незаменимая глюко-, кетогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_1[0],ref_1[0])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_1[0]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_1[0],ref_1[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_1[0],ref_1[0])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_1[0],ref_1[0])}'),html.B(f'{value_1[0]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_1[0],ref_1[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_1[0],ref_1[0])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -5452,7 +5483,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Тирозин (Tyr)',style={'height':'20px'}),html.P('Заменимая глюко-, кетогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_1[1],ref_1[1])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_1[1]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_1[1],ref_1[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_1[1],ref_1[1])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_1[1],ref_1[1])}'),html.B(f'{value_1[1]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_1[1],ref_1[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_1[1],ref_1[1])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -5480,7 +5511,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Индекс ААAs [Phe + Tyr]',style={'height':'20px'}),html.P('Запас ароматических аминокислот ',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_1[2],ref_1[2])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_1[2]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_1[2],ref_1[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_1[2],ref_1[2])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_1[2],ref_1[2])}'),html.B(f'{value_1[2]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_1[2],ref_1[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_1[2],ref_1[2])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -5520,11 +5551,10 @@ def main():
                                 html.Div([
                                     html.Div([
                                         html.Div([
-                                            html.B(f'{need_of_plus_minus(value_2[0],ref_2[0])}', 
-                                                style={'width': '30%', 'text-align': 'left'}),
+                                            html.B(f'{need_of_plus_minus(value_2[0],ref_2[0])}'),
                                             html.B(f'{value_2[0]}', 
                                                 style={'text-align': 'right', 'width': '50%'})
-                                        ], style={'width': '100%', 'display': 'flex', 'justify-content': 'space-between', 
+                                        ], style={'width': '100%', 'display': 'flex', 'justify-content': 'center', 
                                                 'margin-top': f'{need_of_margin(value_2[0],ref_2[0])}'})
                                     ], style={'height': '20px', 'line-height': 'normal', 'display': 'inline-block', 
                                             'vertical-align': 'center', 'width': '100%'})
@@ -5566,7 +5596,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Валин (Val)',style={'height':'20px'}),html.P('Незаменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_2[1],ref_2[1])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_2[1]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_2[1],ref_2[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_2[1],ref_2[1])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_2[1],ref_2[1])}'),html.B(f'{value_2[1]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_2[1],ref_2[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_2[1],ref_2[1])}','line-height':'53px'}),
                                 # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -5594,7 +5624,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Индекс ВСААs [Leu + Ile + Val]',style={'height':'20px'}),html.P('Запас аминокислот с разветвленной боковой цепью',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_2[2],ref_2[2])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_2[2]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_2[2],ref_2[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_2[2],ref_2[2])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_2[2],ref_2[2])}'),html.B(f'{value_2[2]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_2[2],ref_2[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_2[2],ref_2[2])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -5622,7 +5652,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Индекс Фишера FR [BCAAs / AAAs]',style={'height':'20px'}),html.P('Отношение запаса аминокислот с разветвленной цепью к запасу ароматических аминокислот',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_2[3],ref_2[3])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_2[3]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_2[3],ref_2[3])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_2[3],ref_2[3])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_2[3],ref_2[3])}'),html.B(f'{value_2[3]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_2[3],ref_2[3])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_2[3],ref_2[3])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -5660,7 +5690,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Гистидин (His)',style={'height':'20px'}),html.P('Незаменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_3[0],ref_3[0])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_3[0]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_3[0],ref_3[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_3[0],ref_3[0])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_3[0],ref_3[0])}'),html.B(f'{value_3[0]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_3[0],ref_3[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_3[0],ref_3[0])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -5688,7 +5718,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Метилгистидин (MH)',style={'height':'20px'}),html.P('Метаболит карнозина',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_3[1],ref_3[1])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_3[1]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_3[1],ref_3[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_3[1],ref_3[1])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_3[1],ref_3[1])}'),html.B(f'{value_3[1]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_3[1],ref_3[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_3[1],ref_3[1])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -5716,7 +5746,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Треонин (Thr)',style={'height':'20px'}),html.P('Незаменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_3[2],ref_3[2])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_3[2]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_3[2],ref_3[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_3[2],ref_3[2])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_3[2],ref_3[2])}'),html.B(f'{value_3[2]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_3[2],ref_3[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_3[2],ref_3[2])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -5744,7 +5774,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Карнозин (Car)',style={'height':'20px'}),html.P('Дипептид, состоящий из аланина и гистидина',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_3[3],ref_3[3])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_3[3]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_3[3],ref_3[3])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_3[3],ref_3[3])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_3[3],ref_3[3])}'),html.B(f'{value_3[3]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_3[3],ref_3[3])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_3[3],ref_3[3])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -5772,7 +5802,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Глицин (Gly)',style={'height':'20px'}),html.P('Заменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_3[4],ref_3[4])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_3[4]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_3[4],ref_3[4])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_3[4],ref_3[4])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_3[4],ref_3[4])}'),html.B(f'{value_3[4]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_3[4],ref_3[4])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_3[4],ref_3[4])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -5800,7 +5830,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Диметилглицин (DMG)',style={'height':'20px'}),html.P('Промежуточный продукт синтеза глицина',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_3[5],ref_3[5])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_3[5]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_3[5],ref_3[5])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_3[5],ref_3[5])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_3[5],ref_3[5])}'),html.B(f'{value_3[5]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_3[5],ref_3[5])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_3[5],ref_3[5])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -5828,7 +5858,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Серин (Ser)',style={'height':'20px'}),html.P('Заменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_3[6],ref_3[6])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_3[6]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_3[6],ref_3[6])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_3[6],ref_3[6])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_3[6],ref_3[6])}'),html.B(f'{value_3[6]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_3[6],ref_3[6])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_3[6],ref_3[6])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -5856,7 +5886,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Лизин (Lys)',style={'height':'20px'}),html.P('Незаменимая кетогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_3[7],ref_3[7])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_3[7]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_3[7],ref_3[7])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_3[7],ref_3[7])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_3[7],ref_3[7])}'),html.B(f'{value_3[7]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_3[7],ref_3[7])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_3[7],ref_3[7])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -5884,7 +5914,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Глутаминовая кислота (Glu)',style={'height':'20px'}),html.P('Заменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_3[8],ref_3[8])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_3[8]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_3[8],ref_3[8])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_3[8],ref_3[8])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_3[8],ref_3[8])}'),html.B(f'{value_3[8]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_3[8],ref_3[8])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_3[8],ref_3[8])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -5957,7 +5987,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Глутамин (Gln)',style={'height':'20px'}),html.P('Заменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_3[9],ref_3[9])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_3[9]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_3[9],ref_3[9])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_3[9],ref_3[9])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_3[9],ref_3[9])}'),html.B(f'{value_3[9]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_3[9],ref_3[9])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_3[9],ref_3[9])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -5985,7 +6015,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Индекс [Gln / Glu]',style={'height':'20px'}),html.P('Активность глутаминсинтетазы',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_3[10],ref_3[10])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_3[10]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_3[10],ref_3[10])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_3[10],ref_3[10])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_3[10],ref_3[10])}'),html.B(f'{value_3[10]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_3[10],ref_3[10])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_3[10],ref_3[10])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -6013,7 +6043,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Индекс GSG [Glu / (Ser + Gly)]',style={'height':'20px'}),html.P('Запас аминокислот для синтеза глутатиона',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_3[11],ref_3[11])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_3[11]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_3[11],ref_3[11])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_3[11],ref_3[11])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_3[11],ref_3[11])}'),html.B(f'{value_3[11]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_3[11],ref_3[11])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_3[11],ref_3[11])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -6041,7 +6071,7 @@ def main():
                     #     html.Div([
                     #         html.Div([
                     #             html.Div([html.B('Индекс [Gly / Ser]',style={'height':'20px'}),html.P('Активность глутаминсинтетазы',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                    #             html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_3[12],ref_3[12])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_3[10]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_3[10],ref_3[10])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_3[10],ref_3[10])}','line-height':'53px'}),
+                    #             html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_3[12],ref_3[12])}'),html.B(f'{value_3[10]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_3[10],ref_3[10])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_3[10],ref_3[10])}','line-height':'53px'}),
                     #                                     # Progress bar with pointer
                     #             html.Div([
                     #                 # Progress bar
@@ -6079,7 +6109,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Метионин (Met)',style={'height':'20px'}),html.P('Незаменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_4[0],ref_4[0])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_4[0]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_4[0],ref_4[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_4[0],ref_4[0])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_4[0],ref_4[0])}'),html.B(f'{value_4[0]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_4[0],ref_4[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_4[0],ref_4[0])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -6107,7 +6137,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Метионин сульфоксид (MetSO4)',style={'height':'20px'}),html.P('Продукт окисления метионина',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_4[1],ref_4[1])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_4[1]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_4[1],ref_4[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_4[1],ref_4[1])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_4[1],ref_4[1])}'),html.B(f'{value_4[1]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_4[1],ref_4[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_4[1],ref_4[1])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -6135,7 +6165,7 @@ def main():
                     #     html.Div([
                     #         html.Div([
                     #             html.Div([html.B('Цистатионин (Cys)',style={'height':'20px'}),html.P('Серосодержащая аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                    #             html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_4[2],ref_4[2])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_4[2]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_4[2],ref_4[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_4[2],ref_4[2])}','line-height':'53px'}),
+                    #             html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_4[2],ref_4[2])}'),html.B(f'{value_4[2]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_4[2],ref_4[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_4[2],ref_4[2])}','line-height':'53px'}),
                     #                                     # Progress bar with pointer
                                 # html.Div([
                                 #     # Progress bar
@@ -6163,7 +6193,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Таурин (Tau)',style={'height':'20px'}),html.P('Заменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_4[2],ref_4[2])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_4[2]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_4[2],ref_4[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_4[2],ref_4[2])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_4[2],ref_4[2])}'),html.B(f'{value_4[2]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_4[2],ref_4[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_4[2],ref_4[2])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -6191,7 +6221,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Бетаин (Bet)',style={'height':'20px'}),html.P('Продукт метаболизма холина',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_4[3],ref_4[3])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_4[3]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_4[3],ref_4[3])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_4[3],ref_4[3])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_4[3],ref_4[3])}'),html.B(f'{value_4[3]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_4[3],ref_4[3])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_4[3],ref_4[3])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -6219,7 +6249,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Холин (Chl)',style={'height':'20px'}),html.P('Компонент мембран клеток, источник ацетилхолина',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_4[4],ref_4[4])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_4[4]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_4[4],ref_4[4])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_4[4],ref_4[4])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_4[4],ref_4[4])}'),html.B(f'{value_4[4]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_4[4],ref_4[4])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_4[4],ref_4[4])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -6247,7 +6277,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Триметиламин-N-оксид (TMAO)',style={'height':'20px'}),html.P('Продукт метаболизма холина, бетаина и др. бактериями ЖКТ',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_4[5],ref_4[5])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_4[5]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_4[5],ref_4[5])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_4[5],ref_4[5])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_4[5],ref_4[5])}'),html.B(f'{value_4[5]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_4[5],ref_4[5])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_4[5],ref_4[5])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -6275,7 +6305,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Индекс Bet / Chl',style={'height':'20px'}),html.P('Соотношение бетаина к холину',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_4[6],ref_4[6])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_4[6]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_4[6],ref_4[6])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_4[6],ref_4[6])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_4[6],ref_4[6])}'),html.B(f'{value_4[6]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_4[6],ref_4[6])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_4[6],ref_4[6])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -6315,7 +6345,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Триптофан (Trp)',style={'height':'20px'}),html.P('Незаменимая глюко-, кетогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_5[0],ref_5[0])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_5[0]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_5[0],ref_5[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_5[0],ref_5[0])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_5[0],ref_5[0])}'),html.B(f'{value_5[0]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_5[0],ref_5[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_5[0],ref_5[0])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -6343,7 +6373,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Кинуренин (Kyn)',style={'height':'20px'}),html.P('Продукт метаболизма триптофана по кинурениновому пути',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_5[1],ref_5[1])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_5[1]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_5[1],ref_5[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_5[1],ref_5[1])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_5[1],ref_5[1])}'),html.B(f'{value_5[1]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_5[1],ref_5[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_5[1],ref_5[1])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -6371,7 +6401,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Индекс Kyn / Trp',style={'height':'20px'}),html.P('Показывает активность ферментов, метаболизирующих триптофан до кинуренина',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_5[2],ref_5[2])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_5[2]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_5[2],ref_5[5])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_5[2],ref_5[2])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_5[2],ref_5[2])}'),html.B(f'{value_5[2]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_5[2],ref_5[5])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_5[2],ref_5[2])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -6399,7 +6429,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Антраниловая кислота (Ant)',style={'height':'20px'}),html.P('Продукт метаболизма кинуренина',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_5[3],ref_5[3])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_5[3]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_5[3],ref_5[3])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_5[3],ref_5[3])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_5[3],ref_5[3])}'),html.B(f'{value_5[3]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_5[3],ref_5[3])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_5[3],ref_5[3])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -6427,7 +6457,7 @@ def main():
                     #     html.Div([
                     #         html.Div([
                     #             html.Div([html.B('3-Гидроксиантраниловая кислота',style={'height':'20px'}),html.P('Продукт метаболизма антраниловой кислоты',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                    #             html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_5[4],ref_5[4])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_5[4]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_5[4],ref_5[4])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_5[4],ref_5[4])}','line-height':'53px'}),
+                    #             html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_5[4],ref_5[4])}'),html.B(f'{value_5[4]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_5[4],ref_5[4])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_5[4],ref_5[4])}','line-height':'53px'}),
                     #                                     # Progress bar with pointer
                                 # html.Div([
                                 #     # Progress bar
@@ -6455,7 +6485,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Хинолиновая кислота (Qnl)',style={'height':'20px'}),html.P('Продукт метаболизма 3-гидроксиантраниловой кислоты',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_5[4],ref_5[4])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_5[4]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_5[4],ref_5[4])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_5[4],ref_5[4])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_5[4],ref_5[4])}'),html.B(f'{value_5[4]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_5[4],ref_5[4])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_5[4],ref_5[4])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -6483,7 +6513,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Ксантуреновая кислота (Xnt)',style={'height':'20px'}),html.P('Продукт метаболизма кинуренина',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_5[5],ref_5[5])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_5[5]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_5[5],ref_5[5])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_5[5],ref_5[5])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_5[5],ref_5[5])}'),html.B(f'{value_5[5]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_5[5],ref_5[5])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_5[5],ref_5[5])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -6549,7 +6579,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Кинуреновая кислота (Kyna)',style={'height':'20px'}),html.P('Продукт метаболизма кинуренина',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_5[6],ref_5[6])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_5[6]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_5[6],ref_5[6])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_5[6],ref_5[6])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_5[6],ref_5[6])}'),html.B(f'{value_5[6]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_5[6],ref_5[6])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_5[6],ref_5[6])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -6577,7 +6607,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Индекс Kyna / Qnl',style={'height':'20px'}),html.P('Соотношение кинуренина к хинолиновой кислоте',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_5[7],ref_5[7])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_5[7]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_5[7],ref_5[7])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_5[7],ref_5[7])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_5[7],ref_5[7])}'),html.B(f'{value_5[7]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_5[7],ref_5[7])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_5[7],ref_5[7])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -6615,7 +6645,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Серотонин',style={'height':'20px'}),html.P('Нейромедиатор',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_6[0],ref_6[0])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_6[0]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_6[0],ref_6[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_6[0],ref_6[0])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_6[0],ref_6[0])}'),html.B(f'{value_6[0]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_6[0],ref_6[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_6[0],ref_6[0])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -6643,7 +6673,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('5-Гидроксииндолуксусная кислота (5-HIAA)',style={'height':'20px'}),html.P('Метаболит серотонина',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_6[1],ref_6[1])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_6[1]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_6[1],ref_6[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_6[1],ref_6[1])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_6[1],ref_6[1])}'),html.B(f'{value_6[1]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_6[1],ref_6[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_6[1],ref_6[1])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -6671,7 +6701,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Индекс 5-HIAA / Qnl',style={'height':'20px'}),html.P('Соотношение 5-гидроксииндолуксусной кислоты к хинолиновой кислоте',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_6[2],ref_6[2])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_6[2]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_6[2],ref_6[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_6[2],ref_6[2])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_6[2],ref_6[2])}'),html.B(f'{value_6[2]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_6[2],ref_6[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_6[2],ref_6[2])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -6699,7 +6729,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('5-Гидрокситриптофан (5-HTP)',style={'height':'20px'}),html.P('Прекурсор серотонина',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_6[3],ref_6[3])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_6[3]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_6[3],ref_6[3])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_6[3],ref_6[3])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_6[3],ref_6[3])}'),html.B(f'{value_6[3]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_6[3],ref_6[3])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_6[3],ref_6[3])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -6737,7 +6767,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('3-Индолуксусная кислота (I3A)',style={'height':'20px'}),html.P('Продукт катаболизма триптофана кишечной микробиотой',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_7[0],ref_7[0])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_7[0]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_7[0],ref_7[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_7[0],ref_7[0])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_7[0],ref_7[0])}'),html.B(f'{value_7[0]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_7[0],ref_7[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_7[0],ref_7[0])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -6765,7 +6795,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('3-Индолмолочная кислота (I3L)',style={'height':'20px'}),html.P('Продукт катаболизма триптофана кишечной микробиотой',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_7[1],ref_7[1])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_7[1]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_7[1],ref_7[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_7[1],ref_7[1])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_7[1],ref_7[1])}'),html.B(f'{value_7[1]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_7[1],ref_7[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_7[1],ref_7[1])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -6793,7 +6823,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('3-Индолкарбоксальдегид (I3Al)',style={'height':'20px'}),html.P('Продукт катаболизма триптофана кишечной микробиотой',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_7[2],ref_7[2])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_7[2]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_7[2],ref_7[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_7[2],ref_7[2])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_7[2],ref_7[2])}'),html.B(f'{value_7[2]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_7[2],ref_7[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_7[2],ref_7[2])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -6821,7 +6851,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('3-Индолпропионовая кислота (I3P)',style={'height':'20px'}),html.P('Продукт катаболизма триптофана кишечной микробиотой',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_7[3],ref_7[3])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_7[3]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_7[3],ref_7[3])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_7[3],ref_7[3])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_7[3],ref_7[3])}'),html.B(f'{value_7[3]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_7[3],ref_7[3])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_7[3],ref_7[3])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -6849,7 +6879,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('3-Индолмасляная кислота (I3B)',style={'height':'20px'}),html.P('Продукт катаболизма триптофана кишечной микробиотой',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_7[4],ref_7[4])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_7[4]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_7[4],ref_7[4])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_7[4],ref_7[4])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_7[4],ref_7[4])}'),html.B(f'{value_7[4]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_7[4],ref_7[4])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_7[4],ref_7[4])}','line-height':'53px'}),
                                 # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -6877,7 +6907,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Триптамин',style={'height':'20px'}),html.P('Продукт катаболизма триптофана кишечной микробиотой, прекурсор для нейромедиаторов',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_7[5],ref_7[5])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_7[5]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_7[5],ref_7[5])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_7[5],ref_7[5])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_7[5],ref_7[5])}'),html.B(f'{value_7[5]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_7[5],ref_7[5])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_7[5],ref_7[5])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -6917,7 +6947,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Пролин (Pro)',style={'height':'20px'}),html.P('Заменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_8[0],ref_8[0])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_8[0]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_8[0],ref_8[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_8[0],ref_8[0])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_8[0],ref_8[0])}'),html.B(f'{value_8[0]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_8[0],ref_8[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_8[0],ref_8[0])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -6945,7 +6975,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Гидроксипролин (Hyp)',style={'height':'20px'}),html.P('Источник коллагена',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_8[1],ref_8[1])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_8[1]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_8[1],ref_8[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_8[1],ref_8[1])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_8[1],ref_8[1])}'),html.B(f'{value_8[1]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_8[1],ref_8[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_8[1],ref_8[1])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -6973,7 +7003,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Асимметричный диметиларгинин (ADMA)',style={'height':'20px'}),html.P('Эндогенный ингибитор синтазы оксида азота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_8[2],ref_8[2])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_8[2]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_8[2],ref_8[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_8[2],ref_8[2])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_8[2],ref_8[2])}'),html.B(f'{value_8[2]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_8[2],ref_8[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_8[2],ref_8[2])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -7038,7 +7068,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Монометиларгинин (MMA)',style={'height':'20px'}),html.P('Эндогенный ингибитор синтазы оксида азота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_8[14],ref_8[14])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_8[14]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_8[14],ref_8[14])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_8[14],ref_8[14])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_8[14],ref_8[14])}'),html.B(f'{value_8[14]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_8[14],ref_8[14])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_8[14],ref_8[14])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -7067,7 +7097,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Симметричный диметиларгинин (SDMA)',style={'height':'20px'}),html.P('Продукт метаболизма аргинина, выводится с почками',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_8[3],ref_8[3])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_8[3]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_8[3],ref_8[3])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_8[3],ref_8[3])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_8[3],ref_8[3])}'),html.B(f'{value_8[3]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_8[3],ref_8[3])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_8[3],ref_8[3])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -7095,7 +7125,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Гомоаргинин',style={'height':'20px'}),html.P('Субстрат для синтазы оксида азота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_8[4],ref_8[4])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_8[4]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_8[4],ref_8[4])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_8[4],ref_8[4])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_8[4],ref_8[4])}'),html.B(f'{value_8[4]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_8[4],ref_8[4])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_8[4],ref_8[4])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -7123,7 +7153,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Аргинин',style={'height':'20px'}),html.P('Незаменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_8[5],ref_8[5])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_8[5]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_8[5],ref_8[5])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_8[5],ref_8[5])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_8[5],ref_8[5])}'),html.B(f'{value_8[5]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_8[5],ref_8[5])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_8[5],ref_8[5])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -7151,7 +7181,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Цитруллин (Cit)',style={'height':'20px'}),html.P('Метаболит цикла мочевины',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_8[6],ref_8[6])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_8[6]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_8[6],ref_8[6])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_8[6],ref_8[6])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_8[6],ref_8[6])}'),html.B(f'{value_8[6]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_8[6],ref_8[6])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_8[6],ref_8[6])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -7179,7 +7209,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Орнитин (Orn)',style={'height':'20px'}),html.P('Метаболит цикла мочевины',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_8[7],ref_8[7])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_8[7]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_8[7],ref_8[7])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_8[7],ref_8[7])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_8[7],ref_8[7])}'),html.B(f'{value_8[7]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_8[7],ref_8[7])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_8[7],ref_8[7])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -7207,7 +7237,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Аспарагин (Asn)',style={'height':'20px'}),html.P('Заменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_8[8],ref_8[8])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_8[8]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_8[8],ref_8[8])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_8[8],ref_8[8])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_8[8],ref_8[8])}'),html.B(f'{value_8[8]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_8[8],ref_8[8])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_8[8],ref_8[8])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -7235,7 +7265,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Аспарагиновая кислота (Asp)',style={'height':'20px'}),html.P('Заменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_8[9],ref_8[9])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_8[9]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_8[9],ref_8[9])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_8[9],ref_8[9])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_8[9],ref_8[9])}'),html.B(f'{value_8[9]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_8[9],ref_8[9])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_8[9],ref_8[9])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -7263,7 +7293,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Индекс GABR [Arg / (Orn + Cit)]',style={'height':'20px'}),html.P('Общая биодоступность аргинина',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_8[10],ref_8[10])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_8[10]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_8[10],ref_8[10])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_8[10],ref_8[10])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_8[10],ref_8[10])}'),html.B(f'{value_8[10]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_8[10],ref_8[10])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_8[10],ref_8[10])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -7291,7 +7321,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Индекс AOR [Arg / Orn]',style={'height':'20px'}),html.P('Показывает активность аргиназы',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_8[11],ref_8[11])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_8[11]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_8[11],ref_8[11])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_8[11],ref_8[11])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_8[11],ref_8[11])}'),html.B(f'{value_8[11]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_8[11],ref_8[11])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_8[11],ref_8[11])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -7319,7 +7349,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Индекс Asn / Asp',style={'height':'20px'}),html.P('Показывает активность аспарагинсинтетазы',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_8[12],ref_8[12])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_8[12]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_8[12],ref_8[12])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_8[12],ref_8[12])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_8[12],ref_8[12])}'),html.B(f'{value_8[12]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_8[12],ref_8[12])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_8[12],ref_8[12])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -7347,7 +7377,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Креатинин',style={'height':'20px'}),html.P('Продукт метаболизма аргинина',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_8[13],ref_8[13])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_8[13]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_8[13],ref_8[13])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_8[13],ref_8[13])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_8[13],ref_8[13])}'),html.B(f'{value_8[13]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_8[13],ref_8[13])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_8[13],ref_8[13])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -7387,7 +7417,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Аланин',style={'height':'20px'}),html.P('Заменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_9[0],ref_9[0])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_9[0]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_9[0],ref_9[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_9[0],ref_9[0])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_9[0],ref_9[0])}'),html.B(f'{value_9[0]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_9[0],ref_9[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_9[0],ref_9[0])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -7415,7 +7445,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Карнитин (C0)',style={'height':'20px'}),html.P('Основа для ацилкарнитинов, транспорт жирных кислот',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_9[1],ref_9[1])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_9[1]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_9[1],ref_9[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_9[1],ref_9[1])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_9[1],ref_9[1])}'),html.B(f'{value_9[1]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_9[1],ref_9[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_9[1],ref_9[1])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -7443,7 +7473,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Ацетилкарнитин (C2)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_9[2],ref_9[2])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_9[2]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_9[2],ref_9[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_9[2],ref_9[2])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_9[2],ref_9[2])}'),html.B(f'{value_9[2]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_9[2],ref_9[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_9[2],ref_9[2])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -7481,7 +7511,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Пропионилкарнитин (С3)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_10[0],ref_10[0])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_10[0]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_10[0],ref_10[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_10[0],ref_10[0])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_10[0],ref_10[0])}'),html.B(f'{value_10[0]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_10[0],ref_10[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_10[0],ref_10[0])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -7545,7 +7575,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Бутирилкарнитин (C4)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_10[1],ref_10[1])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_10[1]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_10[1],ref_10[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_10[1],ref_10[1])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_10[1],ref_10[1])}'),html.B(f'{value_10[1]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_10[1],ref_10[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_10[1],ref_10[1])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -7573,7 +7603,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Изовалерилкарнитин (С5)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_10[2],ref_10[2])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_10[2]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_10[2],ref_10[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_10[2],ref_10[2])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_10[2],ref_10[2])}'),html.B(f'{value_10[2]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_10[2],ref_10[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_10[2],ref_10[2])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -7601,7 +7631,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Тиглилкарнитин (C5-1)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_10[3],ref_10[3])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_10[3]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_10[3],ref_10[3])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_10[3],ref_10[3])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_10[3],ref_10[3])}'),html.B(f'{value_10[3]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_10[3],ref_10[3])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_10[3],ref_10[3])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -7629,7 +7659,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Глутарилкарнитин (C5-DC)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_10[4],ref_10[4])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_10[4]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_10[4],ref_10[4])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_10[4],ref_10[4])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_10[4],ref_10[4])}'),html.B(f'{value_10[4]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_10[4],ref_10[4])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_10[4],ref_10[4])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -7657,7 +7687,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Гидроксиизовалерилкарнитин (C5-OH)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_10[5],ref_10[5])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_10[5]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_10[5],ref_10[5])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_10[5],ref_10[5])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_10[5],ref_10[5])}'),html.B(f'{value_10[5]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_10[5],ref_10[5])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_10[5],ref_10[5])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -7695,7 +7725,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Гексаноилкарнитин (C6)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_11[0],ref_11[0])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_11[0]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_11[0],ref_11[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_11[0],ref_11[0])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_11[0],ref_11[0])}'),html.B(f'{value_11[0]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_11[0],ref_11[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_11[0],ref_11[0])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -7723,7 +7753,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Адипоилкарнитин (C6-DC)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_11[1],ref_11[1])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_11[1]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_11[1],ref_11[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_11[1],ref_11[1])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_11[1],ref_11[1])}'),html.B(f'{value_11[1]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_11[1],ref_11[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_11[1],ref_11[1])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -7751,7 +7781,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Октаноилкарнитин (C8)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_11[2],ref_11[2])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_11[2]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_11[2],ref_11[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_11[2],ref_11[2])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_11[2],ref_11[2])}'),html.B(f'{value_11[2]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_11[2],ref_11[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_11[2],ref_11[2])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -7779,7 +7809,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Октеноилкарнитин (C8-1)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_11[3],ref_11[3])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_11[3]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_11[3],ref_11[3])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_11[3],ref_11[3])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_11[3],ref_11[3])}'),html.B(f'{value_11[3]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_11[3],ref_11[3])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_11[3],ref_11[3])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -7807,7 +7837,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Деканоилкарнитин (C10)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_11[4],ref_11[4])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_11[4]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_11[4],ref_11[4])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_11[4],ref_11[4])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_11[4],ref_11[4])}'),html.B(f'{value_11[4]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_11[4],ref_11[4])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_11[4],ref_11[4])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -7835,7 +7865,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Деценоилкарнитин (C10-1)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_11[5],ref_11[5])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_11[5]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_11[5],ref_11[5])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_11[5],ref_11[5])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_11[5],ref_11[5])}'),html.B(f'{value_11[5]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_11[5],ref_11[5])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_11[5],ref_11[5])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -7863,7 +7893,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Декадиеноилкарнитин (C10-2)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_11[6],ref_11[6])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_11[6]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_11[6],ref_11[6])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_11[6],ref_11[6])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_11[6],ref_11[6])}'),html.B(f'{value_11[6]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_11[6],ref_11[6])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_11[6],ref_11[6])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -7891,7 +7921,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Додеканоилкарнитин (C12)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_11[7],ref_11[7])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_11[7]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_11[7],ref_11[7])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_11[7],ref_11[7])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_11[7],ref_11[7])}'),html.B(f'{value_11[7]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_11[7],ref_11[7])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_11[7],ref_11[7])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -7919,7 +7949,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Додеценоилкарнитин (C12-1)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_11[8],ref_11[8])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_11[8]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_11[8],ref_11[8])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_11[8],ref_11[8])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_11[8],ref_11[8])}'),html.B(f'{value_11[8]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_11[8],ref_11[8])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_11[8],ref_11[8])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -7957,7 +7987,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Тетрадеканоилкарнитин (C14)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_12[0],ref_12[0])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_12[0]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_12[0],ref_12[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_12[0],ref_12[0])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_12[0],ref_12[0])}'),html.B(f'{value_12[0]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_12[0],ref_12[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_12[0],ref_12[0])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -7985,7 +8015,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Тетрадеценоилкарнитин (С14-1)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_12[1],ref_12[1])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_12[1]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_12[1],ref_12[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_12[1],ref_12[1])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_12[1],ref_12[1])}'),html.B(f'{value_12[1]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_12[1],ref_12[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_12[1],ref_12[1])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -8013,7 +8043,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Тетрадекадиеноилкарнитин (C14-2)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_12[2],ref_12[2])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_12[2]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_12[2],ref_12[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_12[2],ref_12[2])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_12[2],ref_12[2])}'),html.B(f'{value_12[2]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_12[2],ref_12[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_12[2],ref_12[2])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -8079,7 +8109,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Гидрокситетрадеканоилкарнитин (C14-OH)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_12[3],ref_12[3])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_12[3]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_12[3],ref_12[3])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_12[3],ref_12[3])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_12[3],ref_12[3])}'),html.B(f'{value_12[3]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_12[3],ref_12[3])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_12[3],ref_12[3])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -8107,7 +8137,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Пальмитоилкарнитин (C16)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_12[4],ref_12[4])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_12[4]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_12[4],ref_12[4])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_12[4],ref_12[4])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_12[4],ref_12[4])}'),html.B(f'{value_12[4]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_12[4],ref_12[4])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_12[4],ref_12[4])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -8135,7 +8165,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Гексадецениолкарнитин (C16-1)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_12[5],ref_12[5])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_12[5]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_12[5],ref_12[5])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_12[5],ref_12[5])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_12[5],ref_12[5])}'),html.B(f'{value_12[5]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_12[5],ref_12[5])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_12[5],ref_12[5])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -8163,7 +8193,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Гидроксигексадецениолкарнитин (C16-1-OH)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_12[6],ref_12[6])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_12[6]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_12[6],ref_12[6])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_12[6],ref_12[6])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_12[6],ref_12[6])}'),html.B(f'{value_12[6]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_12[6],ref_12[6])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_12[6],ref_12[6])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -8191,7 +8221,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Гидроксигексадеканоилкарнитин (C16-OH)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_12[7],ref_12[7])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_12[7]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_12[7],ref_12[7])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_12[7],ref_12[7])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_12[7],ref_12[7])}'),html.B(f'{value_12[7]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_12[7],ref_12[7])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_12[7],ref_12[7])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -8219,7 +8249,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Стеароилкарнитин (С18)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_12[8],ref_12[8])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_12[8]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_12[8],ref_12[8])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_12[8],ref_12[8])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_12[8],ref_12[8])}'),html.B(f'{value_12[8]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_12[8],ref_12[8])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_12[8],ref_12[8])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -8247,7 +8277,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Олеоилкарнитин (C18-1)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_12[9],ref_12[9])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_12[9]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_12[9],ref_12[9])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_12[9],ref_12[9])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_12[9],ref_12[9])}'),html.B(f'{value_12[9]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_12[9],ref_12[9])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_12[9],ref_12[9])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -8275,7 +8305,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Гидроксиоктадеценоилкарнитин (C18-1-OH)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_12[10],ref_12[10])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_12[10]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_12[10],ref_12[10])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_12[10],ref_12[10])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_12[10],ref_12[10])}'),html.B(f'{value_12[10]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_12[10],ref_12[10])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_12[10],ref_12[10])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -8303,7 +8333,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Линолеоилкарнитин (C18-2)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_12[11],ref_12[11])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_12[11]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_12[11],ref_12[11])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_12[11],ref_12[11])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_12[11],ref_12[11])}'),html.B(f'{value_12[11]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_12[11],ref_12[11])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_12[11],ref_12[11])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -8331,7 +8361,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Гидроксиоктадеканоилкарнитин (C18-OH)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_12[12],ref_12[12])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_12[12]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_12[12],ref_12[12])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_12[12],ref_12[12])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_12[12],ref_12[12])}'),html.B(f'{value_12[12]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_12[12],ref_12[12])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_12[12],ref_12[12])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -8371,7 +8401,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Пантотеновая кислота',style={'height':'20px'}),html.P('Витамин B5',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_13[0],ref_13[0])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_13[0]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_13[0],ref_13[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_13[0],ref_13[0])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_13[0],ref_13[0])}'),html.B(f'{value_13[0]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_13[0],ref_13[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_13[0],ref_13[0])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -8399,7 +8429,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Рибофлавин',style={'height':'20px'}),html.P('Витамин B2',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_13[1],ref_13[1])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_13[1]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_13[1],ref_13[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_13[1],ref_13[1])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_13[1],ref_13[1])}'),html.B(f'{value_13[1]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_13[1],ref_13[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_13[1],ref_13[1])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -8428,7 +8458,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Мелатонин',style={'height':'20px'}),html.P('Регулирует циркадные ритмы',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_13[2],ref_13[2])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_13[2]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_13[2],ref_13[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_13[2],ref_13[2])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_13[2],ref_13[2])}'),html.B(f'{value_13[2]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_13[2],ref_13[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_13[2],ref_13[2])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -8466,7 +8496,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Уридин',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_14[0],ref_14[0])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_14[0]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_14[0],ref_14[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_14[0],ref_14[0])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_14[0],ref_14[0])}'),html.B(f'{value_14[0]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_14[0],ref_14[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_14[0],ref_14[0])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -8494,7 +8524,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Аденозин',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_14[1],ref_14[1])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_14[1]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_14[1],ref_14[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_14[1],ref_14[1])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_14[1],ref_14[1])}'),html.B(f'{value_14[1]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_14[1],ref_14[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_14[1],ref_14[1])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -8522,7 +8552,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Цитидин',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_14[2],ref_14[2])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_14[2]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_14[2],ref_14[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_14[2],ref_14[2])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_14[2],ref_14[2])}'),html.B(f'{value_14[2]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_14[2],ref_14[2])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_14[2],ref_14[2])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -8572,7 +8602,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Кортизол',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_15[0],ref_15[0])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_15[0]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_15[0],ref_15[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_15[0],ref_15[0])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_15[0],ref_15[0])}'),html.B(f'{value_15[0]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_15[0],ref_15[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_15[0],ref_15[0])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -8600,7 +8630,7 @@ def main():
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Гистамин',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#39507c','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_15[1],ref_15[1])}',style={'width':'30%','text-align':'left'}),html.B(f'{value_15[1]}',style={'text-align':'right','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'space-between','margin-top':f'{need_of_margin(value_15[1],ref_15[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_15[1],ref_15[1])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{need_of_plus_minus(value_15[1],ref_15[1])}'),html.B(f'{value_15[1]}',style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_15[1],ref_15[1])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_15[1],ref_15[1])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
