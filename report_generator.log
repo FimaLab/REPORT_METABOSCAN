@@ -10,3 +10,20 @@
 2025-05-15 12:24:16,419 - ERROR - Report generation error: Dash app failed to start or load content
 2025-05-15 12:35:21,682 - ERROR - Report generation error: Dash app failed to start or load content
 2025-05-15 12:53:09,797 - ERROR - Report generation error: Dash app failed to start or load content
+2025-06-19 12:44:12,486 - ERROR - Report generation error: Dash app failed to start or load content
+2025-06-19 12:46:18,177 - ERROR - Report generation error: Dash app failed to start or load content
+2025-06-19 14:59:11,647 - ERROR - Report generation error: Dash app failed to start or load content
+2025-06-19 15:00:34,700 - ERROR - Report generation error: Dash app failed to start or load content
+2025-06-23 14:35:00,175 - ERROR - Report generation error: Dash app failed to start or load content
+2025-06-23 14:37:27,422 - ERROR - Report generation error: Dash app failed to start or load content
+2025-06-23 14:42:52,343 - ERROR - Report generation error: Dash app failed to start or load content
+2025-06-23 14:43:57,194 - ERROR - Report generation error: Dash app failed to start or load content
+2025-06-23 14:54:29,738 - ERROR - Report generation error: Dash app failed to start or load content
+2025-06-23 14:55:45,974 - ERROR - Report generation error: Dash app failed to start or load content
+2025-06-23 14:56:46,635 - ERROR - Report generation error: Dash app failed to start or load content
+2025-06-23 16:01:38,867 - ERROR - Report generation error: Dash app failed to start or load content
+2025-06-23 16:09:27,362 - ERROR - Report generation error: Dash app failed to start or load content
+2025-06-25 17:03:18,651 - WARNING - There was an error managing chromedriver (error sending request for url (https://googlechromelabs.github.io/chrome-for-testing/known-good-versions-with-downloads.json)); using driver found in the cache
+2025-06-25 17:03:18,651 - WARNING - Error sending stats to Plausible: error sending request for url (https://plausible.io/api/event)
+2025-06-25 17:05:56,689 - WARNING - There was an error managing chromedriver (error sending request for url (https://googlechromelabs.github.io/chrome-for-testing/known-good-versions-with-downloads.json)); using driver found in the cache
+2025-06-25 17:13:32,448 - WARNING - There was an error managing chromedriver (error sending request for url (https://googlechromelabs.github.io/chrome-for-testing/known-good-versions-with-downloads.json)); using driver found in the cache

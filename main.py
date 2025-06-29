@@ -14,6 +14,10 @@ date = '21.07.2023'
 age = 47
 gender = 'М'
 
+procent_speed = 50
+N = 1000
+a = 3.5  
+
 def safe_parse_metabolite_data(file_path):
     """Your existing parse_metabolite_data function with added safety checks"""
     if not os.path.exists(file_path):
@@ -780,6 +784,46 @@ def get_color_under_normal_dist(n):
         return '#f21e08'  # Light orange (similar to 5-6)
     else:
         return '#c90909' # Orange-red (similar to 3-4)
+    
+def get_color_age(n):
+    if n <= 10:
+        return "#50c15085"  # Light green (similar to 9-10)
+    elif n <= 20:
+        return "#96c93881"   # Light yellow (similar to 7-8)
+    elif n<= 30:
+        return "#b2d04785"  # Light orange (similar to 5-6)
+    elif n <= 40:
+        return "#cfdc4081"  # Light orange (similar to 5-6)
+    elif n <= 50:
+        return "#cfdc407c"  # Light orange (similar to 5-6)
+    elif n <=60:
+        return "#fef31d80"  # Light orange (similar to 5-6)
+    elif n <= 70:
+        return "#f290087c"  # Light orange (similar to 5-6)
+    elif n <= 80:
+        return "#f2620881"  # Light orange (similar to 5-6)
+    else:
+        return "#c93c0979" # Orange-red (similar to 3-4)
+    
+def get_color_age_border(n):
+    if n <= 10:
+        return "#327a32"  # Light green (similar to 9-10)
+    elif n <= 20:
+        return "#577520"   # Light yellow (similar to 7-8)
+    elif n<= 30:
+        return "#697a2a"  # Light orange (similar to 5-6)
+    elif n <= 40:
+        return "#6c7222"  # Light orange (similar to 5-6)
+    elif n <= 50:
+        return "#7a8228"  # Light orange (similar to 5-6)
+    elif n <=60:
+        return "#928C1E"  # Light orange (similar to 5-6)
+    elif n <= 70:
+        return "#865004"  # Light orange (similar to 5-6)
+    elif n <= 80:
+        return "#843606"  # Light orange (similar to 5-6)
+    else:
+        return "#762407" # Orange-red (similar to 3-4)
     
 def get_text_from_procent(n):
     if n < 30:
@@ -2291,8 +2335,12 @@ def main():
             
             html.Div([
                 html.Div([
+                    html.Img(src=app.get_asset_url('logo-sechenov.png'), style={'width':'100%','object-fit':'containt'})
+                ],style={'width':'25%','height':'auto', 'margin':'0px', 'display':'flex', 'justify-content':'left', 'align-items':'center'}),
+                html.Div([
                     html.Img(src=app.get_asset_url('logo_inst_tox.png'), style={'width':'100%','object-fit':'containt'})
                 ],style={'width':'20%','height':'auto', 'margin':'0px', 'display':'flex', 'justify-content':'left', 'align-items':'center'}),
+                                
                 html.Div([
                     html.Div([
                         html.Div([
@@ -2307,9 +2355,9 @@ def main():
                         html.Div([
                             html.P('Пол:',style={'margin':'0px'}), html.B(f'{gender}',style={'margin':'0px','margin-left':'5px'})
                         ],style={'margin':'0px','display':'flex', 'justify-content':'left', 'width':'40%',}), 
-                    ],style={'margin-top':'10px','margin-left':'25px','color':'black','font-family':'Calibri','font-size':'15px'}),
+                    ],style={'margin-top':'10px','margin-left':'35px','color':'black','font-family':'Calibri','font-size':'15px'}),
                     
-                ],style={'width':'80%','height':'100px', 'color':'white','margin':'0px','background-image':'url("/assets/rHeader.png")','background-repeat':'no-repeat','background-size':'100%','background-position':'center'}),
+                ],style={'width':'60%','height':'100px', 'color':'white','margin':'0px','background-image':'url("/assets/rHeader_2.png")','background-repeat':'no-repeat','background-size':'100%','background-position':'center'}),
             ], style={'display':'flex', 'justify-content':'right','width':'100%','height':'100px','margin-bottom':'10px'}),
             html.Div([
                 html.H1(children='Панорамный метаболомный обзор', style={'textAlign':'center','margin':'0px'}),]
@@ -2389,21 +2437,20 @@ def main():
                         },
                     ]
                 ),
-            
             html.Div([
             # ADD info icon
             
             html.Img(src=app.get_asset_url('info_icon.png'), style={'width':'20px','height':'20px','margin-right':'15px'}),
             
-            html.P('Ниже показано, какие классы метаболитов составляют функциональные группы, и как изменение в классе метаболитов повлияло на результат Панорамного метаболомного обзора.',
-                    style={'color':'black','font-family':'Calibri','font-size':'16px','text-align':"left"}),
-            ], style={'display': 'flex','margin-top':'10px','margin-bottom':'10px', 'flex-direction': 'row','align-items': 'center', 'width':'fit-content', 'border-radius': '5px', 'padding': '0px 0px 0px 15px', 'background-color': '#fffede'}),
-            
+            html.Div('Данные по оценке рисков получены из экспериментальных данных на образцах из биобанка данных Центра биофармацевтического анализа и метаболомных исследований Сеченовского университета.',
+                    style={'color':'black','font-family':'Calibri','font-size':'16px','text-align':"left", 'margin': '0px !important'}),
+            ], style={'display': 'flex','margin-top':'10px','margin-bottom':'10px', 'flex-direction': 'row','align-items': 'center', 'width':'fit-content', 'border-radius': '5px', 'padding': '5px 7px 5px 15px', 'border': '2px solid rgb(255, 184, 113)', 'background-color': '#fffede'}),
             # Plot risk_scores table
             html.Div([
                 html.Div([
                     html.Div([
-                        html.P('1. Сердечно-сосудистые заболевания', style={'margin': '0px', 'margin-bottom': '1px'}),
+                        html.P('1. ', style={'margin': '0px', 'margin-bottom': '1px'} ),
+                        html.P('Риск сердечно-сосудистых заболеваний', style={'margin': '0px', 'margin-bottom': '1px', 'width':'200px'}),
                         html.Div([
                             html.Div([
                                 html.Div([], style={
@@ -2422,10 +2469,199 @@ def main():
                                 f"{risk_scores.loc[risk_scores['Группа риска'] == 'Риск ССЗ', 'Риск-скор'].values[0]} из 10",
                                 style={'margin': '0px'}
                             )
-                        ], style ={'display': 'flex', 'flex-direction': 'row', 'flex-wrap': 'nowrap'})
+                        ], style ={'display': 'flex', 'flex-direction': 'row', 'flex-wrap': 'nowrap', 'align-items': 'center'})
                     ],  style={
                         'color': 'black',
                         'font-family': 'Calibri',
+                        'font-weight': 'bold',
+                        'font-size': '16px',
+                        'margin': '0px',
+                        'display': 'flex',
+                        'justify-content': 'space-between',
+                        'margin-bottom': '0px',
+                        'margin-top': '5px'
+                    }),
+                    
+                    html.Div([], style={
+                        'width': "100%",
+                        'background-color': "#0874bc",
+                        'height': '2px',
+                        'line-height': 'normal',
+                        'display': 'inline-block',
+                        'vertical-align': 'center',
+                        'margin-bottom':'2px'
+                    }),
+                    
+                    # Make row SE: 97.5% where procent bold
+                    
+                    html.Div([
+                        html.Table([
+                            html.Tr([
+                                html.Td([html.Span("Acc: "), html.B("93,7%")]),
+                                html.Td([html.Span("Se: "), html.B("94,4%")]),
+                                html.Td([html.Span("Sp: "), html.B("89,7%")]),
+                                html.Td([html.Span("+PV: "), html.B("98,2%")]),
+                                html.Td([html.Span("-PV: "), html.B("73,2%")]),
+                            ]),
+                        ], style={'width': '100%', 'border-collapse': 'collapse'}),
+                    ], style={'margin-bottom': '5px', 
+                        'font-family': 'Calibri', 
+                        'font-size': '14px',
+                        'font-style': 'italic', 
+                        'color': '#404547'
+                    }),
+                    html.Div([
+                        html.P('2. ', style={'margin': '0px', 'margin-bottom': '1px'} ),
+                        html.P('Риск заболеваний легких', style={'margin': '0px', 'margin-bottom': '1px', 'width':'200px'}),
+                        html.Div([
+                            html.Div([
+                                html.Div([], style={
+                                    'width': f"{risk_scores.loc[risk_scores['Группа риска'] == 'Риск нейродегенеративных заболеваний', 'Риск-скор'].values[0] * 10}%",
+                                    'background-color': get_color_under_normal_dist(
+                                        100-(risk_scores.loc[risk_scores['Группа риска'] == 'Риск нейродегенеративных заболеваний', 'Риск-скор'].values[0] * 10)
+                                    ),
+                                    'border-radius': '2px',
+                                    'height': '13px',
+                                    'line-height': 'normal',
+                                    'display': 'inline-block',
+                                    'vertical-align': 'center',
+                                }),
+                            ], style={'display': 'flex', 'align-self': 'center','width': '70px', 'height': '13px','line-height': 'normal', 'border-radius': '2px','background-color':  'lightgrey', 'margin-left':'5px', 'margin-right':'5px'}),
+                            html.B(
+                                f"{risk_scores.loc[risk_scores['Группа риска'] == 'Риск нейродегенеративных заболеваний', 'Риск-скор'].values[0]} из 10",
+                                style={'margin': '0px'}
+                            )
+                        ], style ={'display': 'flex', 'flex-direction': 'row', 'flex-wrap': 'nowrap', 'align-items': 'center'})
+                    ],  style={
+                        'color': 'black',
+                        'font-family': 'Calibri',
+                        'font-weight': 'bold',
+                        'font-size': '16px',
+                        'margin': '0px',
+                        'display': 'flex',
+                        'justify-content': 'space-between',
+                        'margin-bottom': '0px',
+                        'margin-top': '39px'
+                    }),
+                    
+                    html.Div([], style={
+                        'width': "100%",
+                        'background-color': "#0874bc",
+                        'height': '2px',
+                        'line-height': 'normal',
+                        'display': 'inline-block',
+                        'vertical-align': 'center',
+                        'margin-bottom':'2px'
+                    }),
+                    
+                    html.Div([
+                        html.Table([
+                            html.Tr([
+                                html.Td([html.Span("Acc: "), html.B("93,7%")]),
+                                html.Td([html.Span("Se: "), html.B("94,4%")]),
+                                html.Td([html.Span("Sp: "), html.B("89,7%")]),
+                                html.Td([html.Span("+PV: "), html.B("98,2%")]),
+                                html.Td([html.Span("-PV: "), html.B("73,2%")]),
+                            ]),
+                        ], style={'width': '100%', 'border-collapse': 'collapse'}),
+                    ], style={'margin-bottom': '5px', 
+                        'font-family': 'Calibri', 
+                        'font-size': '14px',
+                        'font-style': 'italic', 
+                        'color': '#404547'
+                    }),
+            html.Div([
+                        html.P('3. ', style={'margin': '0px', 'margin-bottom': '1px'} ),
+                        html.P('Риск алиментарно-зависимых заболеваний', style={'margin': '0px', 'margin-bottom': '1px', 'width':'200px'}),
+                        html.Div([
+                            html.Div([
+                                html.Div([], style={
+                                    'width': f"{risk_scores.loc[risk_scores['Группа риска'] == 'Риск алиментарно-зависимых заболеваний', 'Риск-скор'].values[0] * 10}%",
+                                    'background-color': get_color_under_normal_dist(
+                                        100-(risk_scores.loc[risk_scores['Группа риска'] == 'Риск алиментарно-зависимых заболеваний', 'Риск-скор'].values[0] * 10)
+                                    ),
+                                    'border-radius': '2px',
+                                    'height': '13px',
+                                    'line-height': 'normal',
+                                    'display': 'inline-block',
+                                    'vertical-align': 'center',
+                                }),
+                            ], style={'display': 'flex', 'align-self': 'center','width': '70px', 'height': '13px','line-height': 'normal', 'border-radius': '2px','background-color':  'lightgrey', 'margin-left':'5px', 'margin-right':'5px'}),
+                            html.B(
+                                f"{risk_scores.loc[risk_scores['Группа риска'] == 'Риск алиментарно-зависимых заболеваний', 'Риск-скор'].values[0]} из 10",
+                                style={'margin': '0px'}
+                            )
+                        ], style ={'display': 'flex', 'flex-direction': 'row', 'flex-wrap': 'nowrap', 'align-items': 'center'})
+                    ],  style={
+                        'color': 'black',
+                        'font-family': 'Calibri',
+                        'font-weight': 'bold',
+                        'font-size': '16px',
+                        'margin': '0px',
+                        'display': 'flex',
+                        'justify-content': 'space-between',
+                        'margin-bottom': '0px',
+                        'margin-top': '35px'
+                    }),
+                    
+                    html.Div([], style={
+                        'width': "100%",
+                        'background-color': "#0874bc",
+                        'height': '2px',
+                        'line-height': 'normal',
+                        'display': 'inline-block',
+                        'vertical-align': 'center',
+                        'margin-bottom':'2px'
+                    }),
+                    
+                    html.Div([
+                        html.Table([
+                            html.Tr([
+                                html.Td([html.Span("Acc: "), html.B("93,7%")]),
+                                html.Td([html.Span("Se: "), html.B("94,4%")]),
+                                html.Td([html.Span("Sp: "), html.B("89,7%")]),
+                                html.Td([html.Span("+PV: "), html.B("98,2%")]),
+                                html.Td([html.Span("-PV: "), html.B("73,2%")]),
+                            ]),
+                        ], style={'width': '100%', 'border-collapse': 'collapse'}),
+                    ], style={'margin-bottom': '5px', 
+                        'font-family': 'Calibri', 
+                        'font-size': '14px',
+                        'font-style': 'italic', 
+                        'color': '#404547'
+                    }),
+                    
+                ], style={'width': '48%', 'height': 'fit-content'}),
+                
+            # колонка 222222222222222222222222222222222
+            
+            html.Div([
+                    html.Div([
+                        html.P('4. ', style={'margin': '0px', 'margin-bottom': '1px'} ),
+                        html.P('Риск онкологических заболеваний', style={'margin': '0px', 'margin-bottom': '1px', 'width':'200px'}),
+                        html.Div([
+                            html.Div([
+                                html.Div([], style={
+                                    'width': f"{risk_scores.loc[risk_scores['Группа риска'] == 'Риск онкологических заболеваний', 'Риск-скор'].values[0] * 10}%",
+                                    'background-color': get_color_under_normal_dist(
+                                        100-(risk_scores.loc[risk_scores['Группа риска'] == 'Риск онкологических заболеваний', 'Риск-скор'].values[0] * 10)
+                                    ),
+                                    'border-radius': '2px',
+                                    'height': '13px',
+                                    'line-height': 'normal',
+                                    'display': 'inline-block',
+                                    'vertical-align': 'center',
+                                }),
+                            ], style={'display': 'flex', 'align-self': 'center','width': '70px', 'height': '13px','line-height': 'normal', 'border-radius': '2px','background-color':  'lightgrey', 'margin-left':'5px', 'margin-right':'5px'}),
+                            html.B(
+                                f"{risk_scores.loc[risk_scores['Группа риска'] == 'Риск онкологических заболеваний', 'Риск-скор'].values[0]} из 10",
+                                style={'margin': '0px'}
+                            )
+                        ], style ={'display': 'flex', 'flex-direction': 'row', 'flex-wrap': 'nowrap', 'align-items': 'center'})
+                    ],  style={
+                        'color': 'black',
+                        'font-family': 'Calibri',
+                        'font-weight': 'bold',
                         'font-size': '16px',
                         'margin': '0px',
                         'display': 'flex',
@@ -2445,181 +2681,31 @@ def main():
                     }),
                     
                     html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 - no_syntase_score}%',
-                                'background-color': get_color(no_syntase_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
-                        html.Div([
-                            html.P('NO-синтаза / Эндотелий', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
+                        html.Table([
+                            html.Tr([
+                                html.Td([html.Span("Acc: "), html.B("95,9%")]),
+                                html.Td([html.Span("Se: "), html.B("93,8%")]),
+                                html.Td([html.Span("Sp: "), html.B("98,3%")]),
+                                html.Td([html.Span("+PV: "), html.B("98,4%")]),
+                                html.Td([html.Span("-PV: "), html.B("93,5%")]),
+                            ]),
+                        ], style={'width': '100%', 'border-collapse': 'collapse'}),
                     ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
+                        'margin-bottom': '5px', 
+                        'font-family': 'Calibri', 
+                        'font-size': '14px',
+                        'font-style': 'italic', 
+                        'color': '#404547'
                     }),
                     
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  inflammation_score}%',
-                                'background-color': get_color(inflammation_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
-                        html.Div([
-                            html.P('Воспаление / IDO путь', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  methilation_score}%',
-                                'background-color': get_color(methilation_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
-                        html.Div([
-                            html.P('Метилирование / холин', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  mitochondrial_score}%',
-                                'background-color': get_color(mitochondrial_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
-                        html.Div([
-                            html.P('Митохондрии / β-окисление', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  insuline_resistance_score}%',
-                                'background-color': get_color(insuline_resistance_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
-                        html.Div([
-                            html.P('Инсулинорезистентность', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                                        
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  neurovegitative_score}%',
-                                'background-color': get_color(neurovegitative_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
-                        html.Div([
-                            html.P('Нейровегетативный стресс', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.P('3. Устойчивость к внешним факторам', style={'margin': '0px', 'margin-bottom': '1px'}),
+                html.Div([
+                        html.P('5. Риск заболеваний печени', style={'margin': '0px', 'margin-bottom': '1px'}),
                         html.Div([
                             html.Div([
                                 html.Div([], style={
-                                    'width': f"{risk_scores.loc[risk_scores['Группа риска'] == 'Резистентность к внешним факторам', 'Риск-скор'].values[0] * 10}%",
+                                    'width': f"{risk_scores.loc[risk_scores['Группа риска'] == 'Печеночные функции', 'Риск-скор'].values[0] * 10}%",
                                     'background-color': get_color_under_normal_dist(
-                                        100-(risk_scores.loc[risk_scores['Группа риска'] == 'Резистентность к внешним факторам', 'Риск-скор'].values[0] * 10)
+                                        100-(risk_scores.loc[risk_scores['Группа риска'] == 'Печеночные функции', 'Риск-скор'].values[0] * 10)
                                     ),
                                     'border-radius': '2px',
                                     'height': '13px',
@@ -2629,7 +2715,138 @@ def main():
                                 }),
                             ], style={'display': 'flex', 'align-self': 'center','width': '70px', 'height': '13px','line-height': 'normal', 'border-radius': '2px','background-color':  'lightgrey', 'margin-left':'5px', 'margin-right':'5px'}),
                             html.B(
-                                f"{risk_scores.loc[risk_scores['Группа риска'] == 'Резистентность к внешним факторам', 'Риск-скор'].values[0]} из 10",
+                                f"{risk_scores.loc[risk_scores['Группа риска'] == 'Печеночные функции', 'Риск-скор'].values[0]} из 10",
+                                style={'margin': '0px'}
+                            )
+                        ], style ={'display': 'flex', 'flex-direction': 'row', 'flex-wrap': 'nowrap'})
+                    ],  style={
+                        'color': 'black',
+                        'font-family': 'Calibri',
+                        'font-weight': 'bold',
+                        'font-size': '16px',
+                        'margin': '0px',
+                        'display': 'flex',
+                        'justify-content': 'space-between',
+                        'margin-bottom': '0px',
+                        'margin-top': '39px'
+                    }),
+                    
+                    html.Div([], style={
+                        'width': "100%",
+                        'background-color': "#0874bc",
+                        'height': '2px',
+                        'line-height': 'normal',
+                        'display': 'inline-block',
+                        'vertical-align': 'center',
+                        'margin-bottom':'2px'
+                    }),
+                    
+                    html.Div([
+                        html.Table([
+                            html.Tr([
+                                html.Td([html.Span("Acc: "), html.B("93,7%")]),
+                                html.Td([html.Span("Se: "), html.B("94,4%")]),
+                                html.Td([html.Span("Sp: "), html.B("89,7%")]),
+                                html.Td([html.Span("+PV: "), html.B("98,2%")]),
+                                html.Td([html.Span("-PV: "), html.B("73,2%")]),
+                            ]),
+                        ], style={'width': '100%', 'border-collapse': 'collapse'}),
+                    ], style={'margin-bottom': '5px', 
+                        'font-family': 'Calibri', 
+                        'font-size': '14px',
+                        'font-style': 'italic', 
+                        'color': '#404547'
+                    }),
+                
+                html.Div([
+                    html.Div([
+                        html.Table([
+                            # Row 1
+                            html.Tr([
+                                html.Td([html.B("Acc: "), html.Span('Точность (диагностическая ценность метода)')]),
+                            ]),
+                            # Row 2
+                            html.Tr([
+                                html.Td([html.B("Se: "), html.Span('Чувствительность (вероятность истинного "положительного теста")')]),
+                            ]),
+                            # Row 3
+                            html.Tr([
+                                html.Td([html.B("Sp: "), html.Span('Специфичность (вероятность истинного "отрицательного теста")')]),
+                            ]),
+                            # Row 4
+                            html.Tr([
+                                html.Td([html.B("+PV: "), html.Span('Точность положительного предсказания (вероятность того, что заболевание присутствует, когда тест положительный)')]),
+                            ]),
+                            # Row 5
+                            html.Tr([
+                                html.Td([html.B("-PV: "), html.Span('Точность отрицательного предсказания (вероятность того, что заболевание отсутствует, когда тест отрицательный)')]),
+                            ]),
+                        ], style={'width': '100%', 'border-collapse': 'collapse'}),
+                    ], style={
+                        'margin-bottom': '5px',
+                        'font-family': 'Calibri',
+                        'font-size': '12px',
+                        'color': '#404547'
+                    }),
+                ], style={
+                    'display': 'flex',
+                    'margin-top': '15px',
+                    'margin-bottom': '5px',
+                    'flex-direction': 'row',
+                    'align-items': 'center',
+                    'width': 'fit-content',
+                    'border-radius': '5px',
+                    'padding': '5px',
+                    'border': '2px solid rgb(51, 131, 223)',
+                    'background-color': "#def2ff"
+                }),
+                ], style={'width': '48%', 'height': 'fit-content'}),
+            
+            ], style={
+                'display': 'flex',
+                'justify-content': 'space-between',
+                'height': 'fit-content',
+                'margin-top': '5px'
+            }),
+            html.P('Результаты данного отчета не являются диагнозом и должны быть интерпретированы лечащим врачом на основании клинико-лабораторных данных и других диагностических исследований.',
+                   style={'page-break-after': 'always','color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"left",'font-style':'italic','margin-top':'10px'}),
+            
+            html.Div([
+                html.Div([
+                    html.B(f"Дата: {date}",style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
+                    html.Div([
+                        html.B(f'Пациент: {name}',style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
+                    ],style={'margin-top':'10px'}),
+                ], style={'width':'33.3%'}),
+                html.Div([
+                    html.B("MetaboScan-Test01",style={'margin':'0px','font-size':'18px','font-family':'Calibri','color':'#FFFFFF'}),
+                ], style={'width':'33.3%','text-align':'center'}),
+                html.Div([
+                    html.Img(src=app.get_asset_url('logo.jpg'),style={'height':'54px','float':'right'}),
+                ], style={'width':'33.3%'}),
+            ], style={'display':'flex', 'justify-content':'space-between','width':'100%','height':'54px','color':'#0874bc'}),
+            # Страница 1.2
+            # Plot risk_scores table
+            html.Div([
+                html.Div([
+                    html.Div([
+                        html.P('6. Токсическая нагрузка', style={'margin': '0px', 'margin-bottom': '1px', 'font-weight': 'bold'}),
+                        html.Div([
+                            html.Div([
+                                html.Div([], style={
+                                    'width': f"{risk_scores.loc[risk_scores['Группа риска'] == 'Токсическая нагрузка и детоксикация', 'Риск-скор'].values[0] * 10}%",
+                                    'background-color': get_color_under_normal_dist(
+                                        100-(risk_scores.loc[risk_scores['Группа риска'] == 'Токсическая нагрузка и детоксикация', 'Риск-скор'].values[0] * 10)
+                                    ),
+                                    'border-radius': '2px',
+                                    'height': '13px',
+                                    'line-height': 'normal',
+                                    'display': 'inline-block',
+                                    'vertical-align': 'center',
+                                }),
+                            ], style={'display': 'flex', 'align-self': 'center','width': '70px', 'height': '13px','line-height': 'normal', 'border-radius': '2px','background-color':  'lightgrey', 'margin-left':'5px', 'margin-right':'5px'}),
+                            html.B(
+                                f"{risk_scores.loc[risk_scores['Группа риска'] == 'Токсическая нагрузка и детоксикация', 'Риск-скор'].values[0]} из 10",
                                 style={'margin': '0px'}
                             )
                         ], style ={'display': 'flex', 'flex-direction': 'row', 'flex-wrap': 'nowrap'})
@@ -2657,8 +2874,8 @@ def main():
                     html.Div([
                         html.Div([
                             html.Div([], style={
-                                'width': f'{100 - oxidative_stress_score}%',
-                                'background-color': get_color(oxidative_stress_score),
+                                'width': f'{100 - amiac_detox_score}%',
+                                'background-color': get_color(amiac_detox_score),
                                 'border-radius': '5px',
                                 'height': '10px',
                                 'line-height': 'normal',
@@ -2667,7 +2884,7 @@ def main():
                             }),
                         ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
                         html.Div([
-                            html.P('Оксидативный стресс', style={
+                            html.P('Аммиачная детоксикация', style={
                                 'margin': '0px',
                                 'font-size': '14px',
                                 'font-family': 'Calibri',
@@ -2685,8 +2902,8 @@ def main():
                     html.Div([
                         html.Div([
                             html.Div([], style={
-                                'width': f'{100 -  inflam_and_microbiotic_score}%',
-                                'background-color': get_color(inflam_and_microbiotic_score),
+                                'width': f'{100 - oxidative_stress_score}%',
+                                'background-color': get_color(oxidative_stress_score),
                                 'border-radius': '5px',
                                 'height': '10px',
                                 'line-height': 'normal',
@@ -2695,7 +2912,7 @@ def main():
                             }),
                         ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
                         html.Div([
-                            html.P('Воспаление и микробный стресс', style={
+                            html.P('Оксидативная нагрузка', style={
                                 'margin': '0px',
                                 'font-size': '14px',
                                 'font-family': 'Calibri',
@@ -2709,34 +2926,6 @@ def main():
                         'width': '100%',
                         'height': '18px'
                     }),
-                    
-                    # html.Div([
-                    #     html.Div([
-                    #         html.Div([], style={
-                    #             'width': f'{100 -  aromatic_toxic_score}%',
-                    #             'background-color': get_color(aromatic_toxic_score),
-                    #             'border-radius': '5px',
-                    #             'height': '10px',
-                    #             'line-height': 'normal',
-                    #             'display': 'inline-block',
-                    #             'vertical-align': 'center'
-                    #         }),
-                    #     ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
-                    #     html.Div([
-                    #         html.P('Ароматические токсины', style={
-                    #             'margin': '0px',
-                    #             'font-size': '14px',
-                    #             'font-family': 'Calibri',
-                    #             'height': '18px',
-                    #             'margin-left': '3px'
-                    #         })
-                    #     ], style={'width': '75%'}),
-                    # ], style={
-                    #     'display': 'flex',
-                    #     'justify-content': 'left',
-                    #     'width': '100%',
-                    #     'height': '18px'
-                    # }),
                     
                     html.Div([
                         html.Div([
@@ -2767,902 +2956,7 @@ def main():
                     }),
                     
                     html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -   lipid_toxic_score}%',
-                                'background-color': get_color(lipid_toxic_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
-                        html.Div([
-                            html.P('Липидные токсины и β-окисление', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                ], style={'width': '48%', 'height': 'fit-content'}),
-                
-            # колонка 222222222222222222222222222222222
-            
-            html.Div([
-                    html.Div([
-                        html.P('2. Печеночные функции', style={'margin': '0px', 'margin-bottom': '1px'}),
-                        html.Div([
-                            html.Div([
-                                html.Div([], style={
-                                    'width': f"{risk_scores.loc[risk_scores['Группа риска'] == 'Печеночные функции', 'Риск-скор'].values[0] * 10}%",
-                                    'background-color': get_color_under_normal_dist(
-                                        100-(risk_scores.loc[risk_scores['Группа риска'] == 'Печеночные функции', 'Риск-скор'].values[0] * 10)
-                                    ),
-                                    'border-radius': '2px',
-                                    'height': '13px',
-                                    'line-height': 'normal',
-                                    'display': 'inline-block',
-                                    'vertical-align': 'center',
-                                }),
-                            ], style={'display': 'flex', 'align-self': 'center','width': '70px', 'height': '13px','line-height': 'normal', 'border-radius': '2px','background-color':  'lightgrey', 'margin-left':'5px', 'margin-right':'5px'}),
-                            html.B(
-                                f"{risk_scores.loc[risk_scores['Группа риска'] == 'Печеночные функции', 'Риск-скор'].values[0]} из 10",
-                                style={'margin': '0px'}
-                            )
-                        ], style ={'display': 'flex', 'flex-direction': 'row', 'flex-wrap': 'nowrap'})
-                    ],  style={
-                        'color': 'black',
-                        'font-family': 'Calibri',
-                        'font-size': '16px',
-                        'margin': '0px',
-                        'display': 'flex',
-                        'justify-content': 'space-between',
-                        'margin-bottom': '0px',
-                        'margin-top': '5px'
-                    }),
-                    
-                    html.Div([], style={
-                        'width': "100%",
-                        'background-color': "#0874bc",
-                        'height': '2px',
-                        'line-height': 'normal',
-                        'display': 'inline-block',
-                        'vertical-align': 'center',
-                        'margin-bottom':'2px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  Methionine_exchange}%',
-                                'background-color': get_color(Methionine_exchange),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
-                        html.Div([
-                            html.P('Обмен метионина и метилирование', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    # html.Div([
-                    #     html.Div([
-                    #         html.Div([], style={
-                    #             'width': f'{100 -  antoxidant_system}%',
-                    #             'background-color': get_color(antoxidant_system),
-                    #             'border-radius': '5px',
-                    #             'height': '10px',
-                    #             'line-height': 'normal',
-                    #             'display': 'inline-block',
-                    #             'vertical-align': 'center'
-                    #         }),
-                    #     ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
-                    #     html.Div([
-                    #         html.P('Антиоксидантная система', style={
-                    #             'margin': '0px',
-                    #             'font-size': '14px',
-                    #             'font-family': 'Calibri',
-                    #             'height': '18px',
-                    #             'margin-left': '3px'
-                    #         })
-                    #     ], style={'width': '75%'}),
-                    # ], style={
-                    #     'display': 'flex',
-                    #     'justify-content': 'left',
-                    #     'width': '100%',
-                    #     'height': '18px'
-                    # }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  protein_exchange}%',
-                                'background-color': get_color(protein_exchange),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
-                        html.Div([
-                            html.P('Белковый обмен', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  aminoacid_profile}%',
-                                'background-color': get_color(aminoacid_profile),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
-                        html.Div([
-                            html.P('Аминокислотный профиль', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    # html.Div([
-                    #     html.Div([
-                    #         html.Div([], style={
-                    #             'width': f'{100 -  conjugation_detoxication}%',
-                    #             'background-color': get_color(conjugation_detoxication),
-                    #             'border-radius': '5px',
-                    #             'height': '10px',
-                    #             'line-height': 'normal',
-                    #             'display': 'inline-block',
-                    #             'vertical-align': 'center'
-                    #         }),
-                    #     ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
-                    #     html.Div([
-                    #         html.P('Конъюгация и детоксикация', style={
-                    #             'margin': '0px',
-                    #             'font-size': '14px',
-                    #             'font-family': 'Calibri',
-                    #             'height': '18px',
-                    #             'margin-left': '3px'
-                    #         })
-                    #     ], style={'width': '75%'}),
-                    # ], style={
-                    #     'display': 'flex',
-                    #     'justify-content': 'left',
-                    #     'width': '100%',
-                    #     'height': '18px'
-                    # }),
-                           
-                    
-                    html.Div([
-                        html.P('4. Состояние кожи и волос', style={'margin': '0px', 'margin-bottom': '1px'}),
-                        html.Div([
-                            html.Div([
-                                html.Div([], style={
-                                    'width': f"{risk_scores.loc[risk_scores['Группа риска'] == 'Состояние кожи и волос', 'Риск-скор'].values[0] * 10}%",
-                                    'background-color': get_color_under_normal_dist(
-                                        100-(risk_scores.loc[risk_scores['Группа риска'] == 'Состояние кожи и волос', 'Риск-скор'].values[0] * 10)
-                                    ),
-                                    'border-radius': '2px',
-                                    'height': '13px',
-                                    'line-height': 'normal',
-                                    'display': 'inline-block',
-                                    'vertical-align': 'center',
-                                }),
-                            ], style={'display': 'flex', 'align-self': 'center','width': '70px', 'height': '13px','line-height': 'normal', 'border-radius': '2px','background-color':  'lightgrey', 'margin-left':'5px', 'margin-right':'5px'}),
-                            html.B(
-                                f"{risk_scores.loc[risk_scores['Группа риска'] == 'Состояние кожи и волос', 'Риск-скор'].values[0]} из 10",
-                                style={'margin': '0px'}
-                            )
-                        ], style ={'display': 'flex', 'flex-direction': 'row', 'flex-wrap': 'nowrap'})
-                    ],  style={
-                        'color': 'black',
-                        'font-family': 'Calibri',
-                        'font-size': '16px',
-                        'margin': '0px',
-                        'display': 'flex',
-                        'justify-content': 'space-between',
-                        'margin-bottom': '0px',
-                        'margin-top': '28px'
-                    }),
-                    
-                    html.Div([], style={
-                        'width': "100%",
-                        'background-color': "#0874bc",
-                        'height': '2px',
-                        'line-height': 'normal',
-                        'display': 'inline-block',
-                        'vertical-align': 'center',
-                        'margin-bottom':'2px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  collagen_score}%',
-                                'background-color': get_color(collagen_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
-                        html.Div([
-                            html.P('Коллаген и соединительная ткань', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  regeneration_score}%',
-                                'background-color': get_color(regeneration_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
-                        html.Div([
-                            html.P('Регенерация и рост', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 - dream_score}%',
-                                'background-color': get_color(dream_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
-                        html.Div([
-                            html.P('Сон и гормональный фон', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 - inflam_stress_score}%',
-                                'background-color': get_color(inflam_stress_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
-                        html.Div([
-                            html.P('Воспаление и стресс', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 - neuro_inflammation_score}%',
-                                'background-color': get_color(neuro_inflammation_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
-                        html.Div([
-                            html.P('Нейровоспаление', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                ], style={'width': '48%', 'height': 'fit-content'}),
-            
-            ], style={
-                'display': 'flex',
-                'justify-content': 'space-between',
-                'height': 'fit-content',
-                'margin-top': '5px'
-            }),
-            html.P('Результаты данного отчета не являются диагнозом и должны быть интерпретированы лечащим врачом на основании клинико-лабораторных данных и других диагностических исследований.',
-                   style={'page-break-after': 'always','color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"left",'font-style':'italic','margin-top':'20px'}),
-            
-            html.Div([
-                html.Div([
-                    html.B(f"Дата: {date}",style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
-                    html.Div([
-                        html.B(f'Пациент: {name}',style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
-                    ],style={'margin-top':'10px'}),
-                ], style={'width':'33.3%'}),
-                html.Div([
-                    html.B("MetaboScan-Test01",style={'margin':'0px','font-size':'18px','font-family':'Calibri','color':'#FFFFFF'}),
-                ], style={'width':'33.3%','text-align':'center'}),
-                html.Div([
-                    html.Img(src=app.get_asset_url('logo.jpg'),style={'height':'54px','float':'right'}),
-                ], style={'width':'33.3%'}),
-            ], style={'display':'flex', 'justify-content':'space-between','width':'100%','height':'54px','color':'#0874bc'}),
-            # Страница 1.2
-            # Plot risk_scores table
-            html.Div([
-                html.Div([
-                    html.Div([
-                        html.P('5. Адаптивность организма', style={'margin': '0px', 'margin-bottom': '1px'}),
-                        html.Div([
-                            html.Div([
-                                html.Div([], style={
-                                    'width': f"{risk_scores.loc[risk_scores['Группа риска'] == 'Адаптивные возможности организма', 'Риск-скор'].values[0] * 10}%",
-                                    'background-color': get_color_under_normal_dist(
-                                        100-(risk_scores.loc[risk_scores['Группа риска'] == 'Адаптивные возможности организма', 'Риск-скор'].values[0] * 10)
-                                    ),
-                                    'border-radius': '2px',
-                                    'height': '13px',
-                                    'line-height': 'normal',
-                                    'display': 'inline-block',
-                                    'vertical-align': 'center',
-                                }),
-                            ], style={'display': 'flex', 'align-self': 'center','width': '70px', 'height': '13px','line-height': 'normal', 'border-radius': '2px','background-color':  'lightgrey', 'margin-left':'5px', 'margin-right':'5px'}),
-                            html.B(
-                                f"{risk_scores.loc[risk_scores['Группа риска'] == 'Адаптивные возможности организма', 'Риск-скор'].values[0]} из 10",
-                                style={'margin': '0px'}
-                            )
-                        ], style ={'display': 'flex', 'flex-direction': 'row', 'flex-wrap': 'nowrap'})
-                    ],  style={
-                        'color': 'black',
-                        'font-family': 'Calibri',
-                        'font-size': '16px',
-                        'margin': '0px',
-                        'display': 'flex',
-                        'justify-content': 'space-between',
-                        'margin-bottom': '0px'
-                    }),
-                    
-                    html.Div([], style={
-                        'width': "100%",
-                        'background-color': "#0874bc",
-                        'height': '2px',
-                        'line-height': 'normal',
-                        'display': 'inline-block',
-                        'vertical-align': 'center',
-                        'margin-bottom':'2px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 - energy_exchange_score}%',
-                                'background-color': get_color(energy_exchange_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
-                        html.Div([
-                            html.P('Энергетический обмен', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  neuroadaptation_score}%',
-                                'background-color': get_color(neuroadaptation_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
-                        html.Div([
-                            html.P('Нейро-адаптация', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  stress_aminoacid_score}%',
-                                'background-color': get_color(stress_aminoacid_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
-                        html.Div([
-                            html.P('Стресс-аминокислоты', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  metochondria_creatinine_score}%',
-                                'background-color': get_color(metochondria_creatinine_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
-                        html.Div([
-                            html.P('Митохондрии и креатин', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  glutamate_exchange_score}%',
-                                'background-color': get_color(glutamate_exchange_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
-                        html.Div([
-                            html.P('Глутамат-глутаминовая ось', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.P('7. Темп биологического старения', style={'margin': '0px', 'margin-bottom': '1px'}),
-                        html.Div([
-                            html.Div([
-                                html.Div([], style={
-                                    'width': f"{risk_scores.loc[risk_scores['Группа риска'] == 'Темп биологического старения', 'Риск-скор'].values[0] * 10}%",
-                                    'background-color': get_color_under_normal_dist(
-                                        100-(risk_scores.loc[risk_scores['Группа риска'] == 'Темп биологического старения', 'Риск-скор'].values[0] * 10)
-                                    ),
-                                    'border-radius': '2px',
-                                    'height': '13px',
-                                    'line-height': 'normal',
-                                    'display': 'inline-block',
-                                    'vertical-align': 'center',
-                                }),
-                            ], style={'display': 'flex', 'align-self': 'center','width': '70px', 'height': '13px','line-height': 'normal', 'border-radius': '2px','background-color':  'lightgrey', 'margin-left':'5px', 'margin-right':'5px'}),
-                            html.B(
-                                f"{risk_scores.loc[risk_scores['Группа риска'] == 'Темп биологического старения', 'Риск-скор'].values[0]} из 10",
-                                style={'margin': '0px'}
-                            )
-                        ], style ={'display': 'flex', 'flex-direction': 'row', 'flex-wrap': 'nowrap'})
-                    ],  style={
-                        'color': 'black',
-                        'font-family': 'Calibri',
-                        'font-size': '16px',
-                        'margin': '0px',
-                        'display': 'flex',
-                        'justify-content': 'space-between',
-                        'margin-bottom': '0px',
-                        'margin-top': '10px'
-                    }),
-                    
-                    html.Div([], style={
-                        'width': "100%",
-                        'background-color': "#0874bc",
-                        'height': '2px',
-                        'line-height': 'normal',
-                        'display': 'inline-block',
-                        'vertical-align': 'center',
-                        'margin-bottom':'2px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  tryptophan_inflam_score}%',
-                                'background-color': get_color(tryptophan_inflam_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
-                        html.Div([
-                            html.P('Триптофан / воспаление', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  oxidative_stress_age_score}%',
-                                'background-color': get_color(oxidative_stress_age_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
-                        html.Div([
-                            html.P('Оксидативный стресс', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  mitochondria_age_score}%',
-                                'background-color': get_color(mitochondria_age_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
-                        html.Div([
-                            html.P('Митохондрии', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  neuro_endocrine_score}%',
-                                'background-color': get_color(neuro_endocrine_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
-                        html.Div([
-                            html.P('Нейроэндокринная ось', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  integrative_index_score}%',
-                                'background-color': get_color(integrative_index_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
-                        html.Div([
-                            html.P('Интегративные индексы', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    
-                ], style={'width': '48%', 'height': 'fit-content'}),
-                
-            # колонка 222222222222222222222222222222222
-            
-            html.Div([
-                    html.Div([
-                        html.P('6. Здоровье микробиоты', style={'margin': '0px', 'margin-bottom': '1px'}),
-                        html.Div([
-                            html.Div([
-                                html.Div([], style={
-                                    'width': f"{risk_scores.loc[risk_scores['Группа риска'] == 'Здоровье микробиоты', 'Риск-скор'].values[0] * 10}%",
-                                    'background-color': get_color_under_normal_dist(
-                                        100-(risk_scores.loc[risk_scores['Группа риска'] == 'Здоровье микробиоты', 'Риск-скор'].values[0] * 10)
-                                    ),
-                                    'border-radius': '2px',
-                                    'height': '13px',
-                                    'line-height': 'normal',
-                                    'display': 'inline-block',
-                                    'vertical-align': 'center',
-                                }),
-                            ], style={'display': 'flex', 'align-self': 'center','width': '70px', 'height': '13px','line-height': 'normal', 'border-radius': '2px','background-color':  'lightgrey', 'margin-left':'5px', 'margin-right':'5px'}),
-                            html.B(
-                                f"{risk_scores.loc[risk_scores['Группа риска'] == 'Здоровье микробиоты', 'Риск-скор'].values[0]} из 10",
-                                style={'margin': '0px'}
-                            )
-                        ], style ={'display': 'flex', 'flex-direction': 'row', 'flex-wrap': 'nowrap'})
-                    ],  style={
-                        'color': 'black',
-                        'font-family': 'Calibri',
-                        'font-size': '16px',
-                        'margin': '0px',
-                        'display': 'flex',
-                        'justify-content': 'space-between',
-                        'margin-bottom': '0px'
-                    }),
-                    
-                    html.Div([], style={
-                        'width': "100%",
-                        'background-color': "#0874bc",
-                        'height': '2px',
-                        'line-height': 'normal',
-                        'display': 'inline-block',
-                        'vertical-align': 'center',
-                        'margin-bottom':'2px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 - tryptophan_metabolism_score}%',
-                                'background-color': get_color(tryptophan_metabolism_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
-                        html.Div([
-                            html.P('Метаболизм триптофана', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  inflam_immune_score}%',
-                                'background-color': get_color(inflam_immune_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
-                        html.Div([
-                            html.P('Воспаление и иммунитет', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),       
-                    
-                    html.Div([
-                        html.P('8. Воспалительные процессы', style={'margin': '0px', 'margin-bottom': '1px'}),
+                        html.P('7. Воспалительные процессы', style={'margin': '0px', 'margin-bottom': '1px'}),
                         html.Div([
                             html.Div([
                                 html.Div([], style={
@@ -3685,12 +2979,13 @@ def main():
                     ],  style={
                         'color': 'black',
                         'font-family': 'Calibri',
+                        'font-weight': 'bold',
                         'font-size': '16px',
                         'margin': '0px',
                         'display': 'flex',
                         'justify-content': 'space-between',
                         'margin-bottom': '0px',
-                        'margin-top': '64px'
+                        'margin-top': '30px'
                     }),
                     
                     html.Div([], style={
@@ -3843,26 +3138,19 @@ def main():
                         'height': '18px'
                     }),
                     
-                    
                 ], style={'width': '48%', 'height': 'fit-content'}),
+                
+            # колонка 222222222222222222222222222222222
             
-            ], style={
-                'display': 'flex',
-                'justify-content': 'space-between',
-                'height': 'fit-content',
-                'margin-top': '30px'}),
-            
-            # Plot risk_scores table
             html.Div([
-                html.Div([
                     html.Div([
-                        html.P('9. Токсическая нагрузка', style={'margin': '0px', 'margin-bottom': '1px'}),
+                        html.P('9. Митохондриальное здоровье', style={'margin': '0px', 'margin-bottom': '1px','font-weight': 'bold'}),
                         html.Div([
                             html.Div([
                                 html.Div([], style={
-                                    'width': f"{risk_scores.loc[risk_scores['Группа риска'] == 'Токсическая нагрузка и детоксикация', 'Риск-скор'].values[0] * 10}%",
+                                    'width': f"{risk_scores.loc[risk_scores['Группа риска'] == 'Митохондриальное здоровье', 'Риск-скор'].values[0] * 10}%",
                                     'background-color': get_color_under_normal_dist(
-                                        100-(risk_scores.loc[risk_scores['Группа риска'] == 'Токсическая нагрузка и детоксикация', 'Риск-скор'].values[0] * 10)
+                                        100-(risk_scores.loc[risk_scores['Группа риска'] == 'Митохондриальное здоровье', 'Риск-скор'].values[0] * 10)
                                     ),
                                     'border-radius': '2px',
                                     'height': '13px',
@@ -3872,7 +3160,7 @@ def main():
                                 }),
                             ], style={'display': 'flex', 'align-self': 'center','width': '70px', 'height': '13px','line-height': 'normal', 'border-radius': '2px','background-color':  'lightgrey', 'margin-left':'5px', 'margin-right':'5px'}),
                             html.B(
-                                f"{risk_scores.loc[risk_scores['Группа риска'] == 'Токсическая нагрузка и детоксикация', 'Риск-скор'].values[0]} из 10",
+                                f"{risk_scores.loc[risk_scores['Группа риска'] == 'Митохондриальное здоровье', 'Риск-скор'].values[0]} из 10",
                                 style={'margin': '0px'}
                             )
                         ], style ={'display': 'flex', 'flex-direction': 'row', 'flex-wrap': 'nowrap'})
@@ -3900,8 +3188,8 @@ def main():
                     html.Div([
                         html.Div([
                             html.Div([], style={
-                                'width': f'{100 - amiac_detox_score}%',
-                                'background-color': get_color(amiac_detox_score),
+                                'width': f'{100 - energy_exchange_carnitine_score}%',
+                                'background-color': get_color(energy_exchange_carnitine_score),
                                 'border-radius': '5px',
                                 'height': '10px',
                                 'line-height': 'normal',
@@ -3910,7 +3198,7 @@ def main():
                             }),
                         ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
                         html.Div([
-                            html.P('Аммиачная детоксикация', style={
+                            html.P('Энергетический обмен', style={
                                 'margin': '0px',
                                 'font-size': '14px',
                                 'font-family': 'Calibri',
@@ -3928,8 +3216,8 @@ def main():
                     html.Div([
                         html.Div([
                             html.Div([], style={
-                                'width': f'{100 - oxidative_stress_score}%',
-                                'background-color': get_color(oxidative_stress_score),
+                                'width': f'{100 -  mitochondrial_score}%',
+                                'background-color': get_color(mitochondrial_score),
                                 'border-radius': '5px',
                                 'height': '10px',
                                 'line-height': 'normal',
@@ -3938,7 +3226,7 @@ def main():
                             }),
                         ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
                         html.Div([
-                            html.P('Оксидативная нагрузка', style={
+                            html.P('β-окисление / жирные кислоты', style={
                                 'margin': '0px',
                                 'font-size': '14px',
                                 'font-family': 'Calibri',
@@ -3956,8 +3244,8 @@ def main():
                     html.Div([
                         html.Div([
                             html.Div([], style={
-                                'width': f'{100 -  nitrogen_toxic_score}%',
-                                'background-color': get_color(nitrogen_toxic_score),
+                                'width': f'{100 -  antoxidant_system}%',
+                                'background-color': get_color(antoxidant_system),
                                 'border-radius': '5px',
                                 'height': '10px',
                                 'line-height': 'normal',
@@ -3966,7 +3254,7 @@ def main():
                             }),
                         ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
                         html.Div([
-                            html.P('Азотистые токсины', style={
+                            html.P('Антиоксидантная защита', style={
                                 'margin': '0px',
                                 'font-size': '14px',
                                 'font-family': 'Calibri',
@@ -3981,9 +3269,231 @@ def main():
                         'height': '18px'
                     }),
                     
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -   complex_index}%',
+                                'background-color': get_color(complex_index),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Митохондриальная нейросвязь', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                           
+                    html.Div([
+                        html.P('10. Адаптивные возможности', style={'margin': '0px', 'margin-bottom': '1px', 'font-weight': 'bold'}),
+                        html.Div([
+                            html.Div([
+                                html.Div([], style={
+                                    'width': f"{risk_scores.loc[risk_scores['Группа риска'] == 'Адаптивные возможности организма', 'Риск-скор'].values[0] * 10}%",
+                                    'background-color': get_color_under_normal_dist(
+                                        100-(risk_scores.loc[risk_scores['Группа риска'] == 'Адаптивные возможности организма', 'Риск-скор'].values[0] * 10)
+                                    ),
+                                    'border-radius': '2px',
+                                    'height': '13px',
+                                    'line-height': 'normal',
+                                    'display': 'inline-block',
+                                    'vertical-align': 'center',
+                                }),
+                            ], style={'display': 'flex', 'align-self': 'center','width': '70px', 'height': '13px','line-height': 'normal', 'border-radius': '2px','background-color':  'lightgrey', 'margin-left':'5px', 'margin-right':'5px'}),
+                            html.B(
+                                f"{risk_scores.loc[risk_scores['Группа риска'] == 'Адаптивные возможности организма', 'Риск-скор'].values[0]} из 10",
+                                style={'margin': '0px'}
+                            )
+                        ], style ={'display': 'flex', 'flex-direction': 'row', 'flex-wrap': 'nowrap'})
+                    ], style={
+                        'color': 'black',
+                        'font-family': 'Calibri',
+                        'font-size': '16px',
+                        'margin': '0px',
+                        'display': 'flex',
+                        'justify-content': 'space-between',
+                        'margin-bottom': '0px',
+                        'margin-top': '12px'
+                    }),
+                    
+                    html.Div([], style={
+                        'width': "100%",
+                        'background-color': "#0874bc",
+                        'height': '2px',
+                        'line-height': 'normal',
+                        'display': 'inline-block',
+                        'vertical-align': 'center',
+                        'margin-bottom':'2px'
+                    }),
+                    
                     
                     html.Div([
-                        html.P('11. Нутриентный статус', style={'margin': '0px', 'margin-bottom': '1px'}),
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 - energy_exchange_score}%',
+                                'background-color': get_color(energy_exchange_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Энергетический обмен', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  neuroadaptation_score}%',
+                                'background-color': get_color(neuroadaptation_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Нейро-адаптация', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  stress_aminoacid_score}%',
+                                'background-color': get_color(stress_aminoacid_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Стресс-аминокислоты', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  metochondria_creatinine_score}%',
+                                'background-color': get_color(metochondria_creatinine_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Митохондрии и креатин', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  glutamate_exchange_score}%',
+                                'background-color': get_color(glutamate_exchange_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Глутамат-глутаминовая ось', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                ], style={'width': '48%', 'height': 'fit-content'}),
+            
+            ], style={
+                'display': 'flex',
+                'justify-content': 'space-between',
+                'height': 'fit-content',
+                'margin-top': '5px'}),
+            
+            # Plot risk_scores table
+            html.Div([
+                html.Div([
+                    
+                    html.Div([
+                        html.P('8. Нутриентный статус', style={'margin': '0px', 'margin-bottom': '1px', 'font-weight': 'bold'}),
                         html.Div([
                             html.Div([
                                 html.Div([], style={
@@ -4011,7 +3521,7 @@ def main():
                         'display': 'flex',
                         'justify-content': 'space-between',
                         'margin-bottom': '0px',
-                        'margin-top': '47px'
+                        'margin-top': '10px'
                     }),
                     
                     html.Div([], style={
@@ -4248,19 +3758,20 @@ def main():
                         'height': '18px'
                     }),
                     
+                    
                 ], style={'width': '48%', 'height': 'fit-content'}),
                 
             # колонка 222222222222222222222222222222222
             
             html.Div([
                     html.Div([
-                        html.P('10. Митохондриальное здоровье', style={'margin': '0px', 'margin-bottom': '1px'}),
+                        html.P('11. Здоровье микробиоты', style={'margin': '0px', 'margin-bottom': '1px', 'font-weight': 'bold'}),
                         html.Div([
                             html.Div([
                                 html.Div([], style={
-                                    'width': f"{risk_scores.loc[risk_scores['Группа риска'] == 'Митохондриальное здоровье', 'Риск-скор'].values[0] * 10}%",
+                                    'width': f"{risk_scores.loc[risk_scores['Группа риска'] == 'Здоровье микробиоты', 'Риск-скор'].values[0] * 10}%",
                                     'background-color': get_color_under_normal_dist(
-                                        100-(risk_scores.loc[risk_scores['Группа риска'] == 'Митохондриальное здоровье', 'Риск-скор'].values[0] * 10)
+                                        100-(risk_scores.loc[risk_scores['Группа риска'] == 'Здоровье микробиоты', 'Риск-скор'].values[0] * 10)
                                     ),
                                     'border-radius': '2px',
                                     'height': '13px',
@@ -4270,7 +3781,7 @@ def main():
                                 }),
                             ], style={'display': 'flex', 'align-self': 'center','width': '70px', 'height': '13px','line-height': 'normal', 'border-radius': '2px','background-color':  'lightgrey', 'margin-left':'5px', 'margin-right':'5px'}),
                             html.B(
-                                f"{risk_scores.loc[risk_scores['Группа риска'] == 'Митохондриальное здоровье', 'Риск-скор'].values[0]} из 10",
+                                f"{risk_scores.loc[risk_scores['Группа риска'] == 'Здоровье микробиоты', 'Риск-скор'].values[0]} из 10",
                                 style={'margin': '0px'}
                             )
                         ], style ={'display': 'flex', 'flex-direction': 'row', 'flex-wrap': 'nowrap'})
@@ -4282,7 +3793,7 @@ def main():
                         'display': 'flex',
                         'justify-content': 'space-between',
                         'margin-bottom': '0px',
-                        'margin-top': '10px'
+                        'margin-top': '10px',
                     }),
                     
                     html.Div([], style={
@@ -4298,8 +3809,8 @@ def main():
                     html.Div([
                         html.Div([
                             html.Div([], style={
-                                'width': f'{100 - energy_exchange_carnitine_score}%',
-                                'background-color': get_color(energy_exchange_carnitine_score),
+                                'width': f'{100 - tryptophan_metabolism_score}%',
+                                'background-color': get_color(tryptophan_metabolism_score),
                                 'border-radius': '5px',
                                 'height': '10px',
                                 'line-height': 'normal',
@@ -4308,7 +3819,7 @@ def main():
                             }),
                         ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
                         html.Div([
-                            html.P('Энергетический обмен', style={
+                            html.P('Метаболизм триптофана', style={
                                 'margin': '0px',
                                 'font-size': '14px',
                                 'font-family': 'Calibri',
@@ -4326,8 +3837,8 @@ def main():
                     html.Div([
                         html.Div([
                             html.Div([], style={
-                                'width': f'{100 -  mitochondrial_score}%',
-                                'background-color': get_color(mitochondrial_score),
+                                'width': f'{100 -  inflam_immune_score}%',
+                                'background-color': get_color(inflam_immune_score),
                                 'border-radius': '5px',
                                 'height': '10px',
                                 'line-height': 'normal',
@@ -4336,7 +3847,7 @@ def main():
                             }),
                         ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
                         html.Div([
-                            html.P('β-окисление / жирные кислоты', style={
+                            html.P('Воспаление и иммунитет', style={
                                 'margin': '0px',
                                 'font-size': '14px',
                                 'font-family': 'Calibri',
@@ -4348,75 +3859,17 @@ def main():
                         'display': 'flex',
                         'justify-content': 'left',
                         'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  antoxidant_system}%',
-                                'background-color': get_color(antoxidant_system),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
-                        html.Div([
-                            html.P('Антиоксидантная защита', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -   complex_index}%',
-                                'background-color': get_color(complex_index),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
-                        html.Div([
-                            html.P('Митохондриальная нейросвязь', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                           
-                    
-                    html.Div([
-                        html.P('12. ', style={'margin': '0px', 'margin-bottom': '1px'} ),
-                        html.P('Алиментарно-зависимые заболевания', style={'margin': '0px', 'margin-bottom': '1px', 'width':'200px'}),
+                        'height': '10px'
+                    }),       
+                  html.Div([
+                        html.P('12. ', style={'margin': '0px', 'margin-bottom': '1px', 'font-weight': 'bold'} ),
+                        html.P('Резистентность к внешним факторам', style={'margin': '0px', 'margin-bottom': '1px', 'width':'200px', 'font-weight': 'bold'}),
                         html.Div([
                             html.Div([
                                 html.Div([], style={
-                                    'width': f"{risk_scores.loc[risk_scores['Группа риска'] == 'Риск алиментарно-зависимых заболеваний', 'Риск-скор'].values[0] * 10}%",
+                                    'width': f"{risk_scores.loc[risk_scores['Группа риска'] == 'Резистентность к внешним факторам', 'Риск-скор'].values[0] * 10}%",
                                     'background-color': get_color_under_normal_dist(
-                                        100-(risk_scores.loc[risk_scores['Группа риска'] == 'Риск алиментарно-зависимых заболеваний', 'Риск-скор'].values[0] * 10)
+                                        100-(risk_scores.loc[risk_scores['Группа риска'] == 'Резистентность к внешним факторам', 'Риск-скор'].values[0] * 10)
                                     ),
                                     'border-radius': '2px',
                                     'height': '13px',
@@ -4426,7 +3879,7 @@ def main():
                                 }),
                             ], style={'display': 'flex', 'align-self': 'center','width': '70px', 'height': '13px','line-height': 'normal', 'border-radius': '2px','background-color':  'lightgrey', 'margin-left':'5px', 'margin-right':'5px'}),
                             html.B(
-                                f"{risk_scores.loc[risk_scores['Группа риска'] == 'Риск алиментарно-зависимых заболеваний', 'Риск-скор'].values[0]} из 10",
+                                f"{risk_scores.loc[risk_scores['Группа риска'] == 'Резистентность к внешним факторам', 'Риск-скор'].values[0]} из 10",
                                 style={'margin': '0px'}
                             )
                         ], style ={'display': 'flex', 'flex-direction': 'row', 'flex-wrap': 'nowrap', 'align-items': 'center'})
@@ -4438,8 +3891,9 @@ def main():
                         'display': 'flex',
                         'justify-content': 'space-between',
                         'margin-bottom': '0px',
-                        'margin-top': '28px'
+                        'margin-top': '30px'
                     }),
+                    
                     
                     html.Div([], style={
                         'width': "100%",
@@ -4454,627 +3908,8 @@ def main():
                     html.Div([
                         html.Div([
                             html.Div([], style={
-                                'width': f'{100 -  over_sugar_score}%',
-                                'background-color': get_color(over_sugar_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
-                        html.Div([
-                            html.P('Избыток сахара / углеводов', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  over_lipid_score}%',
-                                'background-color': get_color(over_lipid_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
-                        html.Div([
-                            html.P('Избыток жиров / липидов', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 - over_protein_score}%',
-                                'background-color': get_color(over_protein_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
-                        html.Div([
-                            html.P('Избыток белка / аминокислот', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 - deficit_nutrients_score}%',
-                                'background-color': get_color(deficit_nutrients_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
-                        html.Div([
-                            html.P('Дефицит нутриентов', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  supply_score}%',
-                                'background-color': get_color(supply_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
-                        html.Div([
-                            html.P('Нарушение пищевого поведения', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    
-                ], style={'width': '48%', 'height': 'fit-content'}),
-            
-            ], style={
-                'display': 'flex',
-                'justify-content': 'space-between',
-                'height': 'fit-content',
-                'margin-top': '5px'}),
-            
-            # Plot risk_scores table
-            html.Div([
-                html.Div([
-                    html.Div([
-                        html.P('13. Обмен веществ', style={'margin': '0px', 'margin-bottom': '1px'}),
-                        html.Div([
-                            html.Div([
-                                html.Div([], style={
-                                    'width': f"{risk_scores.loc[risk_scores['Группа риска'] == 'Обмен веществ', 'Риск-скор'].values[0] * 10}%",
-                                    'background-color': get_color_under_normal_dist(
-                                        100-(risk_scores.loc[risk_scores['Группа риска'] == 'Обмен веществ', 'Риск-скор'].values[0] * 10)
-                                    ),
-                                    'border-radius': '2px',
-                                    'height': '13px',
-                                    'line-height': 'normal',
-                                    'display': 'inline-block',
-                                    'vertical-align': 'center',
-                                }),
-                            ], style={'display': 'flex', 'align-self': 'center','width': '70px', 'height': '13px','line-height': 'normal', 'border-radius': '2px','background-color':  'lightgrey', 'margin-left':'5px', 'margin-right':'5px'}),
-                            html.B(
-                                f"{risk_scores.loc[risk_scores['Группа риска'] == 'Обмен веществ', 'Риск-скор'].values[0]} из 10",
-                                style={'margin': '0px'}
-                            )
-                        ], style ={'display': 'flex', 'flex-direction': 'row', 'flex-wrap': 'nowrap'})
-                    ],  style={
-                        'color': 'black',
-                        'font-family': 'Calibri',
-                        'font-size': '16px',
-                        'margin': '0px',
-                        'display': 'flex',
-                        'justify-content': 'space-between',
-                        'margin-bottom': '0px',
-                        'margin-top': '10px'
-                    }),
-                    
-                    html.Div([], style={
-                        'width': "100%",
-                        'background-color': "#0874bc",
-                        'height': '2px',
-                        'line-height': 'normal',
-                        'display': 'inline-block',
-                        'vertical-align': 'center',
-                        'margin-bottom':'2px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  aa_exchange }%',
-                                'background-color': get_color( aa_exchange ),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
-                        html.Div([
-                            html.P('Аминокислотный обмен', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  sug_exchange}%',
-                                'background-color': get_color(sug_exchange),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
-                        html.Div([
-                            html.P('Углеводный обмен', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  lip_exchange}%',
-                                'background-color': get_color(lip_exchange),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
-                        html.Div([
-                            html.P('Липидный обмен', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  insulin_exchange}%',
-                                'background-color': get_color(insulin_exchange),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
-                        html.Div([
-                            html.P('Инсулинорезистентность', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  insuline_resistance_score}%',
-                                'background-color': get_color(insuline_resistance_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
-                        html.Div([
-                            html.P('Инсулинорезистентность', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                                        
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  hormone_exchange}%',
-                                'background-color': get_color(hormone_exchange),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
-                        html.Div([
-                            html.P('Гормональные связи', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    html.Div([
-                        html.P('15. ', style={'margin': '0px', 'margin-bottom': '1px'} ),
-                        html.P('Нейродегенеративные заболевания', style={'margin': '0px', 'margin-bottom': '1px', 'width':'200px'}),
-                        html.Div([
-                            html.Div([
-                                html.Div([], style={
-                                    'width': f"{risk_scores.loc[risk_scores['Группа риска'] == 'Риск нейродегенеративных заболеваний', 'Риск-скор'].values[0] * 10}%",
-                                    'background-color': get_color_under_normal_dist(
-                                        100-(risk_scores.loc[risk_scores['Группа риска'] == 'Риск нейродегенеративных заболеваний', 'Риск-скор'].values[0] * 10)
-                                    ),
-                                    'border-radius': '2px',
-                                    'height': '13px',
-                                    'line-height': 'normal',
-                                    'display': 'inline-block',
-                                    'vertical-align': 'center',
-                                }),
-                            ], style={'display': 'flex', 'align-self': 'center','width': '70px', 'height': '13px','line-height': 'normal', 'border-radius': '2px','background-color':  'lightgrey', 'margin-left':'5px', 'margin-right':'5px'}),
-                            html.B(
-                                f"{risk_scores.loc[risk_scores['Группа риска'] == 'Риск нейродегенеративных заболеваний', 'Риск-скор'].values[0]} из 10",
-                                style={'margin': '0px'}
-                            )
-                        ], style ={'display': 'flex', 'flex-direction': 'row', 'flex-wrap': 'nowrap', 'align-items': 'center'})
-                    ],  style={
-                        'color': 'black',
-                        'font-family': 'Calibri',
-                        'font-size': '16px',
-                        'margin': '0px',
-                        'display': 'flex',
-                        'justify-content': 'space-between',
-                        'margin-bottom': '0px',
-                        'margin-top': '10px'
-                    }),
-                    
-                    html.Div([], style={
-                        'width': "100%",
-                        'background-color': "#0874bc",
-                        'height': '2px',
-                        'line-height': 'normal',
-                        'display': 'inline-block',
-                        'vertical-align': 'center',
-                        'margin-bottom':'2px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  ido_neuroinflam_score}%',
-                                'background-color': get_color(ido_neuroinflam_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
-                        html.Div([
-                            html.P('Обмен метионина и метилирование', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    # html.Div([
-                    #     html.Div([
-                    #         html.Div([], style={
-                    #             'width': f'{100 -  antoxidant_system}%',
-                    #             'background-color': get_color(antoxidant_system),
-                    #             'border-radius': '5px',
-                    #             'height': '10px',
-                    #             'line-height': 'normal',
-                    #             'display': 'inline-block',
-                    #             'vertical-align': 'center'
-                    #         }),
-                    #     ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
-                    #     html.Div([
-                    #         html.P('Антиоксидантная система', style={
-                    #             'margin': '0px',
-                    #             'font-size': '14px',
-                    #             'font-family': 'Calibri',
-                    #             'height': '18px',
-                    #             'margin-left': '3px'
-                    #         })
-                    #     ], style={'width': '75%'}),
-                    # ], style={
-                    #     'display': 'flex',
-                    #     'justify-content': 'left',
-                    #     'width': '100%',
-                    #     'height': '18px'
-                    # }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  disbalance_metabolites_score}%',
-                                'background-color': get_color(disbalance_metabolites_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
-                        html.Div([
-                            html.P('Дисбаланс метаболитов', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  neuromediators_neuro_score}%',
-                                'background-color': get_color(neuromediators_neuro_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
-                        html.Div([
-                            html.P('Нейромедиаторы', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  mitochondria_stress_score}%',
-                                'background-color': get_color(mitochondria_stress_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
-                        html.Div([
-                            html.P('Митохондрии и стресс', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                ], style={'width': '48%', 'height': 'fit-content'}),
-                
-            # колонка 222222222222222222222222222222222
-            
-            html.Div([
-                html.Div([
-                        html.P('14. Онкологические заболевания', style={'margin': '0px', 'margin-bottom': '1px'}),
-                        html.Div([
-                            html.Div([
-                                html.Div([], style={
-                                    'width': f"{risk_scores.loc[risk_scores['Группа риска'] == 'Риск онкологических заболеваний', 'Риск-скор'].values[0] * 10}%",
-                                    'background-color': get_color_under_normal_dist(
-                                        100-(risk_scores.loc[risk_scores['Группа риска'] == 'Риск онкологических заболеваний', 'Риск-скор'].values[0] * 10)
-                                    ),
-                                    'border-radius': '2px',
-                                    'height': '13px',
-                                    'line-height': 'normal',
-                                    'display': 'inline-block',
-                                    'vertical-align': 'center',
-                                }),
-                            ], style={'display': 'flex', 'align-self': 'center','width': '70px', 'height': '13px','line-height': 'normal', 'border-radius': '2px','background-color':  'lightgrey', 'margin-left':'5px', 'margin-right':'5px'}),
-                            html.B(
-                                f"{risk_scores.loc[risk_scores['Группа риска'] == 'Риск онкологических заболеваний', 'Риск-скор'].values[0]} из 10",
-                                style={'margin': '0px'}
-                            )
-                        ], style ={'display': 'flex', 'flex-direction': 'row', 'flex-wrap': 'nowrap'})
-                    ], style={
-                        'color': 'black',
-                        'font-family': 'Calibri',
-                        'font-size': '16px',
-                        'margin': '0px',
-                        'display': 'flex',
-                        'justify-content': 'space-between',
-                        'margin-bottom': '0px',
-                        'margin-top': '10px'
-                    }),
-                    
-                    html.Div([], style={
-                        'width': "100%",
-                        'background-color': "#0874bc",
-                        'height': '2px',
-                        'line-height': 'normal',
-                        'display': 'inline-block',
-                        'vertical-align': 'center',
-                        'margin-bottom':'2px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 - chronic_inflamm_score}%',
-                                'background-color': get_color(chronic_inflamm_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
-                        html.Div([
-                            html.P('Хроническое воспаление', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  ox_stress_score}%',
-                                'background-color': get_color(ox_stress_score),
+                                'width': f'{100 - oxidative_stress_score}%',
+                                'background-color': get_color(oxidative_stress_score),
                                 'border-radius': '5px',
                                 'height': '10px',
                                 'line-height': 'normal',
@@ -5101,8 +3936,8 @@ def main():
                     html.Div([
                         html.Div([
                             html.Div([], style={
-                                'width': f'{100 -   metil_epigen_score}%',
-                                'background-color': get_color( metil_epigen_score),
+                                'width': f'{100 -  inflam_and_microbiotic_score}%',
+                                'background-color': get_color(inflam_and_microbiotic_score),
                                 'border-radius': '5px',
                                 'height': '10px',
                                 'line-height': 'normal',
@@ -5111,7 +3946,63 @@ def main():
                             }),
                         ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
                         html.Div([
-                            html.P('Метилирование / эпигенетика', style={
+                            html.P('Воспаление и микробный стресс', style={
+                                'margin': '0px',
+                                'font-size': '14px',
+                                'font-family': 'Calibri',
+                                'height': '18px',
+                                'margin-left': '3px'
+                            })
+                        ], style={'width': '75%'}),
+                    ], style={
+                        'display': 'flex',
+                        'justify-content': 'left',
+                        'width': '100%',
+                        'height': '18px'
+                    }),
+                    
+                    # html.Div([
+                    #     html.Div([
+                    #         html.Div([], style={
+                    #             'width': f'{100 -  aromatic_toxic_score}%',
+                    #             'background-color': get_color(aromatic_toxic_score),
+                    #             'border-radius': '5px',
+                    #             'height': '10px',
+                    #             'line-height': 'normal',
+                    #             'display': 'inline-block',
+                    #             'vertical-align': 'center'
+                    #         }),
+                    #     ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                    #     html.Div([
+                    #         html.P('Ароматические токсины', style={
+                    #             'margin': '0px',
+                    #             'font-size': '14px',
+                    #             'font-family': 'Calibri',
+                    #             'height': '18px',
+                    #             'margin-left': '3px'
+                    #         })
+                    #     ], style={'width': '75%'}),
+                    # ], style={
+                    #     'display': 'flex',
+                    #     'justify-content': 'left',
+                    #     'width': '100%',
+                    #     'height': '18px'
+                    # }),
+                    
+                    html.Div([
+                        html.Div([
+                            html.Div([], style={
+                                'width': f'{100 -  nitrogen_toxic_score}%',
+                                'background-color': get_color(nitrogen_toxic_score),
+                                'border-radius': '5px',
+                                'height': '10px',
+                                'line-height': 'normal',
+                                'display': 'inline-block',
+                                'vertical-align': 'center'
+                            }),
+                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
+                        html.Div([
+                            html.P('Азотистые токсины', style={
                                 'margin': '0px',
                                 'font-size': '14px',
                                 'font-family': 'Calibri',
@@ -5129,8 +4020,8 @@ def main():
                     html.Div([
                         html.Div([
                             html.Div([], style={
-                                'width': f'{100 -    microbiota_detox_score }%',
-                                'background-color': get_color( microbiota_detox_score ),
+                                'width': f'{100 -   lipid_toxic_score}%',
+                                'background-color': get_color(lipid_toxic_score),
                                 'border-radius': '5px',
                                 'height': '10px',
                                 'line-height': 'normal',
@@ -5139,7 +4030,7 @@ def main():
                             }),
                         ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
                         html.Div([
-                            html.P('Микробиота и детоксикация', style={
+                            html.P('Липидные токсины и β-окисление', style={
                                 'margin': '0px',
                                 'font-size': '14px',
                                 'font-family': 'Calibri',
@@ -5153,264 +4044,12 @@ def main():
                         'width': '100%',
                         'height': '18px'
                     }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -     metabolic_stress_score }%',
-                                'background-color': get_color(  metabolic_stress_score ),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
-                        html.Div([
-                            html.P('Метаболический стресс', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 - neuro_endocrine_controle_score }%',
-                                'background-color': get_color(neuro_endocrine_controle_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
-                        html.Div([
-                            html.P('Нейроэндокринный контроль', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 - prolifiration_mitosis_score}%',
-                                'background-color': get_color(prolifiration_mitosis_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px'}),
-                        html.Div([
-                            html.P('Пролиферация и митоз', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                        
-                ], style={
-                    'display': 'flex',
-                    'justify-content': 'left',
-                    'width': '100%',
-                    'height': '18px'
-                }),
-                    
-               
-                html.Div(
-                style={'maxWidth': 'auto'},
-                children=[
-                    # Header
-                    html.Div(
-                        style={
-                            'backgroundColor': '#0874bc',
-                            'color': 'white',
-                            'padding': '5px 15px',
-                            'borderTopLeftRadius': '4px',
-                            'borderTopRightRadius': '4px',
-                            'margin-top': '20px'
-                        },
-                        children=[
-                            html.H2('Общая оценка метаболизма', style={'margin': '0', 'font-family': 'Calibri', 'font-size': '16px'})
-                        ]
-                    ),
-                    
-                    # Main content
-                    html.Div(
-                        style={
-                            'border': '1px solid #ddd',
-                            'padding': '8px 8px 8px 20px',
-                            'borderBottomLeftRadius': '4px',
-                            'borderBottomRightRadius': '4px'
-                        },
-                        children=[
-                            html.Div(
-                                style={'display': 'flex', 'marginBottom': '7px'},
-                                children=[
-                                    # Left side - Rating boxes
-                                    html.Div(
-                                        style={'flex': '1'},
-                                        children=[
-                                            # Excellent
-                                            html.Div(
-                                                style={
-                                                    'backgroundColor': '#e8f5e9',
-                                                    'padding': '4px 8px',
-                                                    'marginBottom': '10px',
-                                                    'borderRadius': '4px',
-                                                    'font-family': 'Calibri', 
-                                                    'font-size': '14px'
-                                                },
-                                                children=[
-                                                    html.Span('Отлично'),
-                                                    html.Span('90 +', style={'float': 'right'})
-                                                ]
-                                            ),
+                
+                
                                             
-                                            # Good
-                                            html.Div(
-                                                style={
-                                                    'backgroundColor': '#fff3e0',
-                                                    'padding': '4px 8px',
-                                                    'marginBottom': '10px',
-                                                    'borderRadius': '4px',
-                                                    'font-family': 'Calibri', 
-                                                    'font-size': '14px'
-                                                },
-                                                children=[
-                                                    html.Span('Хорошо'),
-                                                    html.Span('67 +', style={'float': 'right'})
-                                                ]
-                                            ),
-                                            
-                                            # Needs correction
-                                            html.Div(
-                                                style={
-                                                    'backgroundColor': '#ffebee',
-                                                    'padding': '4px 8px',
-                                                    'marginBottom': '10px',
-                                                    'borderRadius': '4px',
-                                                    'font-family': 'Calibri', 
-                                                    'font-size': '14px'
-                                                },
-                                                children=[
-                                                    html.Span('Требуется коррекция'),
-                                                    html.Span('50 +', style={'float': 'right'})
-                                                ]
-                                            ),
-                                            
-                                            # Serious pathologies
-                                            html.Div(
-                                                style={
-                                                    'backgroundColor': '#ffcdd2',
-                                                    'padding': '4px 8px',
-                                                    'borderRadius': '4px',
-                                                    'font-family': 'Calibri', 
-                                                    'font-size': '14px'
-                                                },
-                                                children=[
-                                                    html.Span('Серьезные нарушения'),
-                                                    html.Span('<50', style={'float': 'right'})
-                                                ]
-                                            )
-                                        ]
-                                    ),
-                                    
-                                    # Right side - Score display
-                                    html.Div(
-                                        style={
-                                            'flex': '0.8',
-                                            'display': 'flex',
-                                            'justifyContent': 'center',
-                                            'alignItems': 'center'
-                                        },
-                                        children=[
-                                            html.Div(
-                                                style={'textAlign': 'center'},
-                                                children=[
-                                                    html.Div(
-                                                        style={
-                                                            'fontSize': '32px',
-                                                            'fontWeight': 'bold',
-                                                            'marginBottom': '5px',
-                                                            'font-family': 'Calibri' 
-                                                        },
-                                                        children=[
-                                                            # Corrected sum calculation
-                                                            f"{int(round(pd.to_numeric(risk_scores['Риск-скор'], errors='coerce').sum() * 100 / 150, 0))}",
-                                                            html.Span(
-                                                                '/100%',
-                                                                style={
-                                                                    'fontSize': '16px',
-                                                                    'color': '#666',
-                                                                    'marginLeft': '5px',
-                                                                    'font-family': 'Calibri' 
-                                                                }
-                                                            )
-                                                        ]
-                                                    ),
-                                                    html.Div(
-                                                        # Dynamic status based on score
-                                                        children=[
-                                                            html.Span(
-                                                                'Отлично' if (pd.to_numeric(risk_scores['Риск-скор'], errors='coerce').sum()* 100 / 150) >= 90
-                                                                else 'Хорошо' if (pd.to_numeric(risk_scores['Риск-скор'], errors='coerce').sum()* 100 / 150) >= 67
-                                                                else 'Требуется коррекция' if (pd.to_numeric(risk_scores['Риск-скор'], errors='coerce').sum()* 100 / 150) >= 50
-                                                                else 'Серьезные нарушения'
-                                                            )
-                                                        ],
-                                                        style={
-                                                            'backgroundColor': '#e8f5e9' if (pd.to_numeric(risk_scores['Риск-скор'], errors='coerce').sum()* 100 / 150) >= 90
-                                                            else '#fff3e0' if (pd.to_numeric(risk_scores['Риск-скор'], errors='coerce').sum()* 100 / 150 ) >= 67
-                                                            else '#ffebee' if (pd.to_numeric(risk_scores['Риск-скор'], errors='coerce').sum()) >= 50
-                                                            else '#ffcdd2',
-                                                            'color':'#50c150' if (pd.to_numeric(risk_scores['Риск-скор'], errors='coerce').sum()* 100 / 150) >= 100
-                                                            else '#fe991d' if (pd.to_numeric(risk_scores['Риск-скор'], errors='coerce').sum())* 100 / 150 >= 67
-                                                            else '#f25708' if (pd.to_numeric(risk_scores['Риск-скор'], errors='coerce').sum())* 100 / 150 >= 50
-                                                            else '#f21f08',
-                                                            'padding': '5px 15px',
-                                                            'borderRadius': '15px',
-                                                            'display': 'inline-block',
-                                                            'font-family': 'Calibri',
-                                                            'font-weight': 'bold',
-                                                            'margin': '0px 10px'
-                                                        }
-                                                    )
-                                                ]
-                                            )
-                                        ]
-                                    )
-                                ]
-                            )
-                        ]
-                    )
-                ]
-            )                                            
                     
                 ], style={'width': '48%', 'height': 'fit-content'}),
+            
             
             
             
@@ -5420,8 +4059,281 @@ def main():
                 'height': 'fit-content',
                 'margin-top': '5px'}),
             
+            html.Div([
+                # First Column (48%)
+                html.Div([
+                    html.Div([
+                        html.Div([
+                            
+                            html.Div([
+                            # ADD info icon
+                            
+                            html.Img(src=app.get_asset_url('info_icon.png'), style={'width':'20px','height':'20px','margin-right':'10px'}),
+                            
+                            html.Div('На основании панорамного метаболомного профиля был оценен темп старения организма',
+                                    style={'color':'black','font-family':'Calibri','font-size':'16px','text-align':"left", 'margin': '0px !important'}),
+                            ], style={'display': 'flex','margin-top':'10px','margin-bottom':'10px', 'flex-direction': 'row','align-items': 'center', 'width':'fit-content', 'border-radius': '5px', 'padding': '5px 12px 5px 15px', 'border': '2px solid rgb(255, 184, 113)', 'background-color': '#fffede'}),
+                                        
+                                            
+                            # Image container
+                            html.Div([
+                                html.Img(
+                                    src=app.get_asset_url(f'{normal_dist(N,a,procent_speed)}'), 
+                                    style={'width': '100%', }
+                                )
+                            ], style={'height': 'fit-content'}),
+                            
+                            # Speed labels (медленно, нормально, быстро)
+                            html.Div([
+                                html.P("медленно", style={
+                                    'margin': '0px',
+                                    'display': 'inline-block',
+                                    'background-color': "#e3e3e3",
+                                    'border': '2px solid #b5b5b5',
+                                    'border-radius': '5px',
+                                    'padding': '3px 6px',
+                                    'width': 'fit-content',
+                                    'text-align': 'center'
+                                }),
+                                html.P("нормально", style={
+                                    'margin': '0px',
+                                    'display': 'inline-block',                                    'background-color': "#e3e3e3",
+                                    'border': '2px solid #b5b5b5',
+                                    'border-radius': '5px',
+                                    'padding': '3px 6px',
+                                    
+                                    
+                                    'width': 'fit-content',
+                                }),
+                                html.P("быстро", style={
+                                    'margin': '0px',
+                                    'display': 'inline-block',                                    'background-color': "#e3e3e3",
+                                    'border': '2px solid #b5b5b5',
+                                    'border-radius': '5px',
+                                    'padding': '3px 6px',
+                                    
+                                    'width': 'fit-content',
+                                    
+                                    'text-align': 'center'
+                                }),
+                            ], style={
+                                'width': '100%',
+                                'color': "#696969",
+                                'font-family': 'Calibri',
+                                'font-size': '16px',
+                                'margin-top': '5px',
+                                'display': 'flex',
+                                'text-align': 'center',
+                                'justify-content': 'space-between'
+                            }),
+                            
+                            # Colored status box
+                            html.Div([
+                                html.P(
+                                    f'{get_text_from_procent(procent_speed)}',
+                                    style={
+                                        'margin': '0',
+                                        'padding': '5px 15px',
+                                        'font-size': '19px',
+                                        'color': f'{get_color_age_border(procent_speed)}',
+                                        'font-family': 'Calibri',
+                                        'font-weight': 'bold',
+                                        'text-align': 'center'
+                                    }
+                                ),
+                            ], style={
+                                'background-color': f'{get_color_age(procent_speed)}',
+                                
+                                'border-color': f'{get_color_age_border(procent_speed)}',
+                                'border-radius': '5px',
+                                'margin-top': '15px',
+                                'justify-self': 'center',  
+                                'width': 'fit-content'
+                            }),
+                            
+                        ], style={'width': '100%'}),
+                    ]),
+                ], style={
+                    'width': '48%',
+                    'display': 'inline-block',
+                    'padding': '10px'
+                }),
+                
+                # Second Column (48%)
+                html.Div([
+                    html.Div(
+                        style={'maxWidth': 'auto'},
+                        children=[
+                            # Header
+                            html.Div(
+                                style={
+                                    'backgroundColor': '#0874bc',
+                                    'color': 'white',
+                                    'padding': '5px 15px',
+                                    'borderTopLeftRadius': '4px',
+                                    'borderTopRightRadius': '4px',
+                                    'margin-top': '20px'
+                                },
+                                children=[
+                                    html.H2('Общая оценка метаболизма', 
+                                        style={'margin': '0', 'font-family': 'Calibri', 'font-size': '16px'})
+                                ]
+                            ),
+                            
+                            # Main content
+                            html.Div(
+                                style={
+                                    'border': '1px solid #ddd',
+                                    'padding': '8px 8px 8px 20px',
+                                    'borderBottomLeftRadius': '4px',
+                                    'borderBottomRightRadius': '4px'
+                                },
+                                children=[
+                                    html.Div(
+                                        style={'display': 'flex', 'marginBottom': '7px'},
+                                        children=[
+                                            # Left side - Rating boxes
+                                            html.Div(
+                                                style={'flex': '1'},
+                                                children=[
+                                                    # Excellent
+                                                    html.Div(
+                                                        style={
+                                                            'backgroundColor': '#e8f5e9',
+                                                            'padding': '4px 8px',
+                                                            'marginBottom': '10px',
+                                                            'borderRadius': '4px',
+                                                            'font-family': 'Calibri', 
+                                                            'font-size': '14px'
+                                                        },
+                                                        children=[
+                                                            html.Span('Отлично'),
+                                                            html.Span('90 +', style={'float': 'right'})
+                                                        ]
+                                                    ),
+                                                    
+                                                    # Good
+                                                    html.Div(
+                                                        style={
+                                                            'backgroundColor': '#fff3e0',
+                                                            'padding': '4px 8px',
+                                                            'marginBottom': '10px',
+                                                            'borderRadius': '4px',
+                                                            'font-family': 'Calibri', 
+                                                            'font-size': '14px'
+                                                        },
+                                                        children=[
+                                                            html.Span('Хорошо'),
+                                                            html.Span('67 +', style={'float': 'right'})
+                                                        ]
+                                                    ),
+                                                    
+                                                    # Needs correction
+                                                    html.Div(
+                                                        style={
+                                                            'backgroundColor': '#ffebee',
+                                                            'padding': '4px 8px',
+                                                            'marginBottom': '10px',
+                                                            'borderRadius': '4px',
+                                                            'font-family': 'Calibri', 
+                                                            'font-size': '14px'
+                                                        },
+                                                        children=[
+                                                            html.Span('Требуется коррекция'),
+                                                            html.Span('50 +', style={'float': 'right'})
+                                                        ]
+                                                    ),
+                                                    
+                                                    # Serious pathologies
+                                                    html.Div(
+                                                        style={
+                                                            'backgroundColor': '#ffcdd2',
+                                                            'padding': '4px 8px',
+                                                            'borderRadius': '4px',
+                                                            'font-family': 'Calibri', 
+                                                            'font-size': '14px'
+                                                        },
+                                                        children=[
+                                                            html.Span('Серьезные нарушения'),
+                                                            html.Span('<50', style={'float': 'right'})
+                                                        ]
+                                                    )
+                                                ]
+                                            ),
+                                            
+                                            # Right side - Score display
+                                            html.Div(
+                                                style={
+                                                    'flex': '0.8',
+                                                    'display': 'flex',
+                                                    'justifyContent': 'center',
+                                                    'alignItems': 'center'
+                                                },
+                                                children=[
+                                                    html.Div(
+                                                        style={'textAlign': 'center'},
+                                                        children=[
+                                                            html.Div(
+                                                                style={
+                                                                    'fontSize': '32px',
+                                                                    'fontWeight': 'bold',
+                                                                    'marginBottom': '5px',
+                                                                    'font-family': 'Calibri' 
+                                                                },
+                                                                children=[
+                                                                    f"{int(round(pd.to_numeric(risk_scores['Риск-скор'], errors='coerce').sum() * 100 / 120, 0))}",
+                                                                    html.Span(
+                                                                        '/100%',
+                                                                        style={
+                                                                            'fontSize': '16px',
+                                                                            'color': '#666',
+                                                                            'marginLeft': '5px',
+                                                                            'font-family': 'Calibri' 
+                                                                        }
+                                                                    )
+                                                                ]
+                                                            ),
+                                                            html.Div(
+                                                                children=[
+                                                                    html.Span(
+                                                                        'Отлично' if (pd.to_numeric(risk_scores['Риск-скор'], errors='coerce').sum()* 100 / 120) >= 90
+                                                                        else 'Хорошо' if (pd.to_numeric(risk_scores['Риск-скор'], errors='coerce').sum()* 100 / 120) >= 67
+                                                                        else 'Требуется коррекция' if (pd.to_numeric(risk_scores['Риск-скор'], errors='coerce').sum()* 100 / 120) >= 50
+                                                                        else 'Серьезные нарушения'
+                                                                    )
+                                                                ],
+                                                                style={
+                                                                    'backgroundColor': '#e8f5e9' if (pd.to_numeric(risk_scores['Риск-скор'], errors='coerce').sum()* 100 / 120) >= 90
+                                                                    else '#fff3e0' if (pd.to_numeric(risk_scores['Риск-скор'], errors='coerce').sum()* 100 / 120 ) >= 67
+                                                                    else '#ffebee' if (pd.to_numeric(risk_scores['Риск-скор'], errors='coerce').sum()) >= 50
+                                                                    else '#ffcdd2',
+                                                                    'color':'#50c150' if (pd.to_numeric(risk_scores['Риск-скор'], errors='coerce').sum()* 100 / 120) >= 100
+                                                                    else '#fe991d' if (pd.to_numeric(risk_scores['Риск-скор'], errors='coerce').sum())* 100 / 120 >= 67
+                                                                    else '#f25708' if (pd.to_numeric(risk_scores['Риск-скор'], errors='coerce').sum())* 100 / 120 >= 50
+                                                                    else '#f21f08',
+                                                                    'padding': '5px 15px',
+                                                                    'borderRadius': '8px',
+                                                                    'display': 'inline-block',
+                                                                    'font-family': 'Calibri',
+                                                                    'font-weight': 'bold',
+                                                                    'margin': '0px 10px'
+                                                                }
+                                                            )
+                                                        ]
+                                                    )
+                                                ]
+                                            )
+                                        ]
+                                    )
+                                ]
+                            )
+                        ]
+                    )
+                ], style={'width': '48%', 'display': 'inline-block'})
+            ], style={'display': 'flex','margin-top': '130px', 'justify-content': 'space-between', 'align-items': 'center', 'width': '100%'}),
+            
             html.P('Результаты данного отчета не являются диагнозом и должны быть интерпретированы лечащим врачом на основании клинико-лабораторных данных и других диагностических исследований.',
-                   style={'page-break-after': 'always','color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"left",'font-style':'italic','margin-top':'20px'}),
+                   style={'page-break-after': 'always','color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"left",'font-style':'italic','margin-top':'40px'}),
             
             # 2 страница
             html.Div([],style={'height':'8mm','width':'100%'}),
