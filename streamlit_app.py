@@ -6,6 +6,7 @@ from datetime import datetime
 import base64
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service #для корректной работы на сервере
 import subprocess
 import sys
 import logging
@@ -25,13 +26,16 @@ logging.basicConfig(
 def setup_chrome_driver():
     """Configure Chrome WebDriver with extended timeout settings"""
     chrome_options = Options()
+    chrome_options.binary_location = "/usr/bin/chromium" #для корректной работы на сервере
     chrome_options.add_argument("--headless=new")
     chrome_options.add_argument("--disable-gpu")
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("--window-size=1920,1080")
+
+    service = Service("/usr/bin/chromedriver") #для корректной работы на сервере
     
-    driver = webdriver.Chrome(options=chrome_options)
+    driver = webdriver.Chrome(service=service, options=chrome_options) #для корректной работы на сервере
     driver.set_page_load_timeout(45)
     driver.set_script_timeout(30)
     return driver
