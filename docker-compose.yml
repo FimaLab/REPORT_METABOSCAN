@@ -13,5 +13,3 @@ services:
     environment:
       - USER_ID=1000
       - GROUP_ID=1000
-  restart: always
-
