@@ -6,8 +6,9 @@ EXPOSE 8501
 # Устанавливаем рабочую директорию
 WORKDIR /app
 
-# Устанавливаем зависимости ОС
-RUN apt-get update && apt-get install -y \
+# Обновляем систему и устанавливаем зависимости
+# Используем buildkit + кешируемые слои
+RUN apt-get update && apt-get install -y --no-install-recommends \
     wget \
     unzip \
     gnupg \
@@ -32,17 +33,20 @@ RUN apt-get update && apt-get install -y \
     chromium \
     && rm -rf /var/lib/apt/lists/*
 
-# Устанавливаем Python-зависимости
-COPY requirements.txt ./requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+# Кеш pip и requirements
+ENV PIP_NO_CACHE_DIR=off
+ENV PIP_CACHE_DIR=/root/.cache/pip
 
-# Копируем код приложения
+COPY requirements.txt ./
+RUN pip install --upgrade pip && pip install -r requirements.txt
+
+# Копируем исходники приложения
 COPY . .
 
-# Задаём переменные окружения, чтобы selenium нашёл chromium
+# Переменные окружения для Selenium
 ENV CHROME_BIN=/usr/bin/chromium
 ENV CHROMEDRIVER_PATH=/usr/lib/chromium/chromedriver
 ENV PATH=$CHROMEDRIVER_PATH:$PATH
 
-# Запуск Streamlit
+# Запуск приложения
 CMD ["streamlit", "run", "streamlit_app.py"]
