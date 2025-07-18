@@ -60,7 +60,8 @@ def create_ref_stats_from_excel(excel_path):
     
     return ref_stats
 
-ref_stats = create_ref_stats_from_excel("Ref.xlsx")
+
+ref_stats = create_ref_stats_from_excel('Ref.xlsx')
 
 def plot_metabolite_z_scores(metabolite_concentrations, group_title, norm_ref=[-1, 1]):
     # Set font to Calibri
@@ -303,14 +304,13 @@ def get_status_text(value, norm_str):
         # Handle cases where norm_str is not in expected format
         return "Не определено"  # Default text for invalid format
     
-def smart_round(value, ref_stats_entry=None, default_decimals=3):
+def smart_round(value, decimals=3):
     """
-    Округляет число с учетом значимых цифр, определяя количество знаков после запятой
-    на основе ref_min и ref_max из ref_stats_entry.
+    Округляет число с сохранением первой ненулевой цифры после запятой,
+    если округление приводит к нулю.
     
     :param value: исходное значение (число или строка)
-    :param ref_stats_entry: словарь с данными метаболита из ref_stats (должен содержать ref_min и ref_max)
-    :param default_decimals: количество знаков по умолчанию, если ref_stats_entry не указан
+    :param decimals: количество знаков после запятой для округления
     :return: округлённое значение с учётом значащих цифр
     """
     try:
@@ -321,31 +321,6 @@ def smart_round(value, ref_stats_entry=None, default_decimals=3):
     if num == 0:
         return 0.0
     
-    # Определяем количество знаков после запятой на основе ref_stats
-    if ref_stats_entry and 'ref_min' in ref_stats_entry and 'ref_max' in ref_stats_entry:
-        try:
-            # Получаем ref_min и ref_max как строки
-            ref_min_str = str(ref_stats_entry['ref_min'])
-            ref_max_str = str(ref_stats_entry['ref_max'])
-            
-            # Функция для определения количества знаков в числе
-            def count_decimals(s):
-                if '.' in s:
-                    return len(s.split('.')[1].rstrip('0'))
-                return 0
-            
-            # Находим максимальное количество знаков из ref_min и ref_max
-            decimals = max(
-                count_decimals(ref_min_str),
-                count_decimals(ref_max_str),
-                default_decimals  # Минимум default_decimals знаков
-            )
-        except (AttributeError, ValueError):
-            decimals = default_decimals
-    else:
-        decimals = default_decimals
-    
-    # Первое округление с вычисленным количеством знаков
     rounded = round(num, decimals)
     
     # Если округлённое значение не ноль, возвращаем его
@@ -845,18 +820,30 @@ def color_text_ref(value: float, ref: str):
         # Handle other cases if needed
         return '#404547'
     
-def get_ref_min_max(ref_stats):
-    ref_min = ref_stats["ref_min"]
-    ref_max = ref_stats["ref_max"]
-    return ref_min, ref_max
+# def get_ref_min_max(ref_stats):
+#     ref_min = ref_stats["ref_min"]
+#     ref_max = ref_stats["ref_max"]
+#     return ref_min, ref_max
 
-def heighlight_out_of_range(value: float, ref_stats: str):
-    ref_min, ref_max = get_ref_min_max(ref_stats)
-    if value > ref_max:
-        return '#f8d7da'
-    elif value <  ref_min:
-        return '#f8d7da'
+def heighlight_out_of_range(value: float, ref: str):
+    if ' - ' in ref:
+        lower, upper = map(float, ref.split(' - '))
+        if value > upper:
+            return '#f8d7da'
+        elif value < lower:
+            return '#f8d7da'
+        else:
+            return 'white'
+    elif ref.startswith('< '):
+        upper = float(ref.split('< ')[1])
+        if value > upper:
+            return '#f8d7da'
+        elif value < 0:  # Assuming <45 means 0-45 as per your note
+            return '#f8d7da'
+        else:
+            return 'white'
     else:
+        # Handle other cases if needed
         return 'white'
     
 def need_of_margin(value: float, ref: str):
@@ -5228,7 +5215,7 @@ html.Div(
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Фенилаланин (Phe)',style={'height':'20px'}),html.P('Незаменимая глюко-, кетогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{smart_round((metabolite_data['Phenylalanine'], ref_stats['Phenylalanine']))}',style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data['Phenylalanine'], ref_stats['Phenylalanine'])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_1[0],ref_1[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_1[0],ref_1[0])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{value_1[0]}',style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(value_1[0],ref_1[0])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_1[0],ref_1[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_1[0],ref_1[0])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
