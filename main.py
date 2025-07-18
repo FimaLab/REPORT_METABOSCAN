@@ -16,122 +16,130 @@ procent_speed = 50
 N = 1000
 a = 3.5
 
+import pandas as pd
+import json
+
 def create_ref_stats_from_excel(excel_path):
-    # Read the Excel file with explicit encoding support
+    # Read Excel with explicit handling of decimal commas
     df = pd.read_excel(excel_path, engine='openpyxl')
     
-    # Initialize the dictionary
+    # Transpose to metabolites-as-rows format
+    df = df.set_index('metabolite').T.reset_index()
+    df.columns.name = None
+    
     ref_stats = {}
     
-    # Get all metabolite columns (skip the first column which is 'metabolite')
-    metabolites = df.columns[1:]
-    
-    # Create a mapping of metric names to their row indices
-    metric_map = {metric.lower(): idx for idx, metric in enumerate(df['metabolite'])}
-    
-    for metabolite in metabolites:
+    for _, row in df.iterrows():
         try:
-            # Get the Russian name if available (case-insensitive check)
-            name_view_idx = metric_map.get('name_view')
-            name = str(df[metabolite].iloc[name_view_idx]) if name_view_idx is not None else str(metabolite)
-            
-            # Ensure proper encoding of Cyrillic characters
-            try:
-                name = name.encode('latin1').decode('utf-8') if not name.isascii() else name
-            except:
-                pass
-            
-            # Get mean and sd
-            mean = float(str(df[metabolite].iloc[metric_map['mean']]).replace(',', '.'))
-            sd = float(str(df[metabolite].iloc[metric_map['sd']]).replace(',', '.'))
-            
-            # Get reference ranges with comma-to-dot conversion
-            ref_min = float(str(df[metabolite].iloc[metric_map['ref_min']]).replace(',', '.')) if 'ref_min' in metric_map else None
-            ref_max = float(str(df[metabolite].iloc[metric_map['ref_max']]).replace(',', '.')) if 'ref_max' in metric_map else None
-            
-            # Create norm string
-            norm = None
-            if ref_min is not None and ref_max is not None:
-                if ref_min == 0:
-                    norm = f"< {ref_max}"
-                else:
-                    norm = f"{ref_min} - {ref_max}"
-            
-            # Create the metabolite entry
-            metabolite_data = {
-                "mean": mean,
-                "sd": sd,
-                "norm": norm
+            metabolite = row['index']
+            data = {
+                'mean': float(str(row['mean']).replace(',', '.')),
+                'sd': float(str(row['sd']).replace(',', '.')),
+                'ref_min': float(str(row['ref_min']).replace(',', '.')) if pd.notna(row['ref_min']) else None,
+                'ref_max': float(str(row['ref_max']).replace(',', '.')) if pd.notna(row['ref_max']) else None,
+                'smart_round': int(row['smart_round']),
+                'name_view': row['name_view']
             }
             
-            # Add optional fields
-            if ref_min is not None:
-                metabolite_data["ref_min"] = ref_min
-            if ref_max is not None:
-                metabolite_data["ref_max"] = ref_max
+            # Generate norm string
+            if data['ref_min'] is not None and data['ref_max'] is not None:
+                if data['ref_min'] == 0:
+                    data['norm'] = f"< {data['ref_max']}"
+                else:
+                    data['norm'] = f"{data['ref_min']} - {data['ref_max']}"
             
-            # Add smart_round if available
-            if 'smart_round' in metric_map:
-                smart_round = int(df[metabolite].iloc[metric_map['smart_round']])
-                metabolite_data["smart_round"] = smart_round
-            
-            # Add to dictionary with proper Unicode handling
-            ref_stats[name] = metabolite_data
+            ref_stats[metabolite] = {k: v for k, v in data.items() if v is not None}
             
         except Exception as e:
-            print(f"Error processing metabolite {metabolite}: {str(e)}")
+            print(f"Error processing {row.get('index', 'unknown')}: {str(e)}")
             continue
+    
+    # Save to JSON
+    with open('ref_stats.json', 'w', encoding='utf-8') as f:
+        json.dump(ref_stats, f, ensure_ascii=False, indent=2)
+    
     return ref_stats
 
 ref_stats = create_ref_stats_from_excel("Ref.xlsx")
 
-def plot_metabolite_z_scores(metabolite_concentrations, group_title, norm_ref = [-1, 1]):
+def plot_metabolite_z_scores(metabolite_concentrations, group_title, norm_ref=[-1, 1]):
     # Set font to Calibri
     mpl.rcParams['font.family'] = 'Calibri'
     
     # Calculate z-scores and determine colors
     data = []
     highlight_green_metabolites = []
-    for name, conc in metabolite_concentrations.items():
+    missing_metabolites = []
+    name_translations = {}  # Track original to display name mappings
+    
+    for original_name, conc in metabolite_concentrations.items():
+        # Skip if metabolite not in reference
+        if original_name not in ref_stats:
+            missing_metabolites.append(original_name)
+            continue
+            
+        ref_data = ref_stats[original_name]
+        
+        # Skip if required fields are missing
+        if "mean" not in ref_data or "sd" not in ref_data:
+            missing_metabolites.append(original_name)
+            continue
+            
+        # Get display name (use name_view if available, otherwise original)
+        display_name = ref_data.get("name_view", original_name)
+        name_translations[original_name] = display_name
         
         # Calculate z-score (deviation from mean in SD units)
-        z_score = round((conc - ref_stats[name]["mean"]) / ref_stats[name]["sd"], 2)
-        
-        
-        if "<" in ref_stats[name]["norm"] and z_score <= 0:
-            z_score = 0
-            highlight_green_metabolites.append(name)
-        
-        # Determine color based on z-score
-        if abs(z_score) > 1.2:  # Significant deviation
-            color = "#dc2626"  # red
-        elif abs(z_score) > 1:   # Moderate deviation
-            color = "#feb61d"  # orange
-        else:                   # Normal range
-            color = "#10b981"  # green
-        
-        data.append({
-            "name": name,
-            "value": z_score,
-            "color": color,
-            "original_value": conc
-        })
+        try:
+            z_score = round((conc - ref_data["mean"]) / ref_data["sd"], 2)
+            
+            # Handle special case for "<" reference ranges
+            if "norm" in ref_data and isinstance(ref_data["norm"], str):
+                if "<" in ref_data["norm"] and z_score <= 0:
+                    z_score = 0
+                    highlight_green_metabolites.append(display_name)
+            
+            # Determine color based on z-score
+            if abs(z_score) > 1.2:  # Significant deviation
+                color = "#dc2626"  # red
+            elif abs(z_score) > 1:   # Moderate deviation
+                color = "#feb61d"  # orange
+            else:                   # Normal range
+                color = "#10b981"  # green
+                
+            data.append({
+                "original_name": original_name,
+                "display_name": display_name,
+                "value": z_score,
+                "color": color,
+                "original_value": conc
+            })
+            
+        except (TypeError, ValueError):
+            missing_metabolites.append(original_name)
 
-    # Create figure
+    # Create figure - show empty plot if no valid data
     fig, ax = plt.subplots(figsize=(8, 6), dpi=300)
+    if not data:
+        ax.text(0.5, 0.5, 
+               "No valid reference data available\nfor these metabolites", 
+               ha='center', va='center',
+               fontsize=14, color='#6B7280')
+        ax.set_title(group_title, fontsize=22, pad=20, color='#404547', fontweight='bold')
+        for spine in ['top', 'right', 'bottom', 'left']:
+            ax.spines[spine].set_visible(False)
+        ax.set_xticks([])
+        ax.set_yticks([])
+        plt.tight_layout()
+        return fig_to_uri(fig)
 
-    # Create bars
-    bars = ax.bar([d["name"] for d in data], 
+    # Create bars using display names
+    bars = ax.bar([d["display_name"] for d in data], 
                  [d["value"] for d in data], 
                  color=[d["color"] for d in data], 
                  edgecolor='white', 
                  linewidth=1)
-    
-    
-    xticklabels = ax.get_xticklabels()
-    
 
-            
     # Add value labels on top of bars
     for bar, item in zip(bars, data):
         height = item["value"]
@@ -139,26 +147,22 @@ def plot_metabolite_z_scores(metabolite_concentrations, group_title, norm_ref = 
         y = height + 0.05 if height >= 0 else height - 0.05
         
         # Determine text color - green if in highlight list, otherwise black
-        text_color = '#10b981' if item["name"] in highlight_green_metabolites else 'black'
+        text_color = '#10b981' if item["display_name"] in highlight_green_metabolites else 'black'
         
         # Adjust fontsize based on number of labels
-        fontsize = 11 if len(xticklabels) > 15 else 14
+        fontsize = 11 if len(data) > 15 else 14
         
         ax.text(bar.get_x() + bar.get_width()/2., y,
-            f'{height:.2f}',
-            ha='center', va=va, 
-            fontsize=fontsize, 
-            fontweight='bold',
-            color=text_color)  # Set the text color here
-
-    
+               f'{height:.2f}',
+               ha='center', va=va, 
+               fontsize=fontsize, 
+               fontweight='bold',
+               color=text_color)
 
     # Add horizontal lines
     ax.axhline(0, color='#374151', linewidth=1)
     ax.axhline(norm_ref[1], color='#6B7280', linestyle='--', linewidth=1)
     ax.axhline(norm_ref[0], color='#6B7280', linestyle='--', linewidth=1)
-
-    # Add additional reference lines at ±1.2
     ax.axhline(1.2, color='#6B7280', linestyle=':', linewidth=1, alpha=0.5)
     ax.axhline(-1.2, color='#6B7280', linestyle=':', linewidth=1, alpha=0.5)
 
@@ -167,64 +171,63 @@ def plot_metabolite_z_scores(metabolite_concentrations, group_title, norm_ref = 
     ax.set_ylabel(f"Отклонение от состояния ЗДОРОВЫЙ, норма от {norm_ref[0]} до {norm_ref[1]}", 
                  fontsize=14, labelpad=15)
                  
-    # Set y-axis scale with 0.5 steps
+    # Set y-axis scale with appropriate steps
     y_min = round(min(-1.5, min([d["value"] for d in data])) - 0.2, 1)
     y_max = round(max(1.5, max([d["value"] for d in data])) + 0.2, 1)
     ax.set_ylim(y_min, y_max)
-    # Determine the step size based on y_min and y_max
+    
     y_range = max(abs(y_min), abs(y_max))
-    if y_range > 15:
-        step= 3.0
-    elif y_range > 10:
-        step = 1.5
-    elif y_range > 7:
-        step = 1.0
-    elif y_range > 5:
-        step = 0.75
-    else:
-        step = 0.5
-
-    # Generate the ticks
+    step = 3.0 if y_range > 15 else 1.5 if y_range > 10 else 1.0 if y_range > 7 else 0.75 if y_range > 5 else 0.5
     ax.set_yticks(np.arange(np.floor(y_min), np.ceil(y_max) + step, step))
 
     # Customize axes
     for spine in ['top', 'right', 'bottom', 'left']:
         ax.spines[spine].set_visible(False)
-    
     ax.xaxis.set_tick_params(length=0)
     ax.yaxis.set_tick_params(length=0)
     plt.yticks(fontsize=13)
 
-    # Get the x-axis tick labels
+    # Adjust x-axis labels
     xticklabels = ax.get_xticklabels()
-    
-    def get_fontsize(label):
-        if len(label) > 20:
-            return 13.5
-        elif len(label) > 12:
-            return 15
-        else:
-            return 15.5
-    
-    font_sizes= [get_fontsize(label.get_text()) for label in xticklabels]
-    
-    for i, label in enumerate(xticklabels):
-        label.set_fontsize(font_sizes[i])
+    for label in xticklabels:
+        display_name = label.get_text()
+        fontsize = (13.5 if len(display_name) > 20 else 
+                   15 if len(display_name) > 12 else 15.5)
+        label.set_fontsize(fontsize)
         label.set_rotation(45)
         label.set_ha('right')
-    # Adjust layout
-    plt.tight_layout()
-    
-    def fig_to_uri(fig):
-        buf = BytesIO()
-        fig.savefig(buf, format="png", dpi=300, bbox_inches='tight')
-        buf.seek(0)
-        img = base64.b64encode(buf.getvalue()).decode("ascii")
+
+    # Add warning about missing metabolites if needed
+    if missing_metabolites:
+        # Try to get display names for missing metabolites
+        missing_display_names = []
+        for name in missing_metabolites:
+            if name in ref_stats and "name_view" in ref_stats[name]:
+                missing_display_names.append(ref_stats[name]["name_view"])
+            else:
+                missing_display_names.append(name)
+                
+        warning_text = (f"Missing data for:\n{', '.join(missing_display_names[:3])}" + 
+                       ("..." if len(missing_display_names) > 3 else ""))
         
-        return f"data:image/png;base64,{img}"
-    
-    plt.close()
+        ax.text(1.02, 0.95, 
+               warning_text,
+               transform=ax.transAxes,
+               fontsize=10, color='#dc2626',
+               ha='left', va='top',
+               bbox=dict(facecolor='white', alpha=0.8, edgecolor='#fecaca', pad=4))
+
+    plt.tight_layout()
     return fig_to_uri(fig)
+
+def fig_to_uri(fig):
+    """Convert matplotlib figure to data URI"""
+    buf = BytesIO()
+    fig.savefig(buf, format="png", dpi=300, bbox_inches='tight')
+    buf.seek(0)
+    img = base64.b64encode(buf.getvalue()).decode("ascii")
+    plt.close(fig)
+    return f"data:image/png;base64,{img}"
 
 def safe_parse_metabolite_data(file_path):
     """Your existing parse_metabolite_data function with added safety checks"""
@@ -300,13 +303,14 @@ def get_status_text(value, norm_str):
         # Handle cases where norm_str is not in expected format
         return "Не определено"  # Default text for invalid format
     
-def smart_round(value, decimals=3):
+def smart_round(value, ref_stats_entry=None, default_decimals=3):
     """
-    Округляет число с сохранением первой ненулевой цифры после запятой,
-    если округление приводит к нулю.
+    Округляет число с учетом значимых цифр, определяя количество знаков после запятой
+    на основе ref_min и ref_max из ref_stats_entry.
     
     :param value: исходное значение (число или строка)
-    :param decimals: количество знаков после запятой для округления
+    :param ref_stats_entry: словарь с данными метаболита из ref_stats (должен содержать ref_min и ref_max)
+    :param default_decimals: количество знаков по умолчанию, если ref_stats_entry не указан
     :return: округлённое значение с учётом значащих цифр
     """
     try:
@@ -317,6 +321,31 @@ def smart_round(value, decimals=3):
     if num == 0:
         return 0.0
     
+    # Определяем количество знаков после запятой на основе ref_stats
+    if ref_stats_entry and 'ref_min' in ref_stats_entry and 'ref_max' in ref_stats_entry:
+        try:
+            # Получаем ref_min и ref_max как строки
+            ref_min_str = str(ref_stats_entry['ref_min'])
+            ref_max_str = str(ref_stats_entry['ref_max'])
+            
+            # Функция для определения количества знаков в числе
+            def count_decimals(s):
+                if '.' in s:
+                    return len(s.split('.')[1].rstrip('0'))
+                return 0
+            
+            # Находим максимальное количество знаков из ref_min и ref_max
+            decimals = max(
+                count_decimals(ref_min_str),
+                count_decimals(ref_max_str),
+                default_decimals  # Минимум default_decimals знаков
+            )
+        except (AttributeError, ValueError):
+            decimals = default_decimals
+    else:
+        decimals = default_decimals
+    
+    # Первое округление с вычисленным количеством знаков
     rounded = round(num, decimals)
     
     # Если округлённое значение не ноль, возвращаем его
@@ -815,26 +844,19 @@ def color_text_ref(value: float, ref: str):
     else:
         # Handle other cases if needed
         return '#404547'
+    
+def get_ref_min_max(ref_stats):
+    ref_min = ref_stats["ref_min"]
+    ref_max = ref_stats["ref_max"]
+    return ref_min, ref_max
 
-def heighlight_out_of_range(value: float, ref: str):
-    if ' - ' in ref:
-        lower, upper = map(float, ref.split(' - '))
-        if value > upper:
-            return '#f8d7da'
-        elif value < lower:
-            return '#f8d7da'
-        else:
-            return 'white'
-    elif ref.startswith('< '):
-        upper = float(ref.split('< ')[1])
-        if value > upper:
-            return '#f8d7da'
-        elif value < 0:  # Assuming <45 means 0-45 as per your note
-            return '#f8d7da'
-        else:
-            return 'white'
+def heighlight_out_of_range(value: float, ref_stats: str):
+    ref_min, ref_max = get_ref_min_max(ref_stats)
+    if value > ref_max:
+        return '#f8d7da'
+    elif value <  ref_min:
+        return '#f8d7da'
     else:
-        # Handle other cases if needed
         return 'white'
     
 def need_of_margin(value: float, ref: str):
@@ -1997,7 +2019,7 @@ def main():
                 "name": "GSG Index = (Glu/(Ser+Gly))",
                 "value": smart_round(metabolite_data['GSG Index'], 4),
                 "norm": "0.0844 - 0.66",
-                "description": "отражает баланс между возбуждающей нейромедиаторной активностью и антиоксидантной, противовоспалительной защитой организма."
+                "description": "Отражает баланс между возбуждающей нейромедиаторной активностью и антиоксидантной, противовоспалительной защитой организма."
             }
         ]
 
@@ -2018,13 +2040,13 @@ def main():
                 "name": "Cумма длинноцепочечных ацилкарнитинов (СДК)",
                 "value": smart_round(metabolite_data['СДК'], 2),
                 "norm": "0.28 - 0.45",
-                "description": "отражает общий уровень длинноцепочечных ацилкарнитинов (С14–С18), которые являются промежуточными метаболитами β-окисления жирных кислот в митохондриях."
+                "description": "Отражает общий уровень длинноцепочечных ацилкарнитинов (С14–С18), которые являются промежуточными метаболитами β-окисления жирных кислот в митохондриях."
             },
             {
                 "name": "Cумма среднецепочечных ацилкарнитинов (ССК)",
                 "value": smart_round(metabolite_data['ССК'], 2),
                 "norm": "0.31 - 0.62",
-                "description": "отражает общий уровень среднецепочечных ацилкарнитинов (С6–С12), которые являются промежуточными метаболитами β-окисления жирных кислот средней длины в митохондриях."
+                "description": "Отражает общий уровень среднецепочечных ацилкарнитинов (С6–С12), которые являются промежуточными метаболитами β-окисления жирных кислот средней длины в митохондриях."
             },
             {
                 "name": "Cумма короткоцепочечных ацилкарнитинов (СКК)",
@@ -2087,34 +2109,34 @@ def main():
         
         fig_phenylalanine_metabolism = plot_metabolite_z_scores(
         metabolite_concentrations={
-                "Фенилаланин": metabolite_data["Phenylalanine"],
-                "Тирозин": metabolite_data["Tyrosin"],
-                "Сумма Leu-Ile": metabolite_data["Summ Leu-Ile"],
-                "Валин": metabolite_data["Valine"],
+                "Phenylalanine": metabolite_data["Phenylalanine"],
+                "Tyrosin": metabolite_data["Tyrosin"],
+                "Summ Leu-Ile": metabolite_data["Summ Leu-Ile"],
+                "Valine": metabolite_data["Valine"],
                 "BCAA": metabolite_data["BCAA"],
                 "BCAA/AAA": metabolite_data["BCAA/AAA"],
-                "Phe / Tyr": metabolite_data["Phe/Tyr"],
-                "Val / C4": metabolite_data["Val/C4"],
-                "(Leu+Ile)/(C3+С5+С5-1+C5-DC)": metabolite_data["(Leu+IsL)/(C3+С5+С5-1+C5-DC)"],
+                "Phe/Tyr": metabolite_data["Phe/Tyr"],
+                "Val/C4": metabolite_data["Val/C4"],
+                "(Leu+IsL)/(C3+С5+С5-1+C5-DC)": metabolite_data["(Leu+IsL)/(C3+С5+С5-1+C5-DC)"],
             },
             group_title="Метаболизм фенилаланина"
         )
         
         fig_histidine_metabolism = plot_metabolite_z_scores(
             metabolite_concentrations={
-                "Гистидин": metabolite_data["Histidine"],
-                "Метилгистидин": metabolite_data["Methylhistidine"],
-                "Треонин": metabolite_data["Threonine"],
-                "Глицин": metabolite_data["Glycine"],
+                "Histidine": metabolite_data["Histidine"],
+                "Methylhistidine": metabolite_data["Methylhistidine"],
+                "Threonine": metabolite_data["Threonine"],
+                "Glycine": metabolite_data["Glycine"],
                 "DMG": metabolite_data["DMG"],
-                "Серин": metabolite_data["Serine"],
-                "Лизин": metabolite_data["Lysine"], 
-                "Глутамат": metabolite_data["Glutamic acid"],
-                "Глутамин": metabolite_data["Glutamine"],
-                "Глутамин / Глутамат": metabolite_data["Glutamine/Glutamate"],
-                "Глицин / Серин": metabolite_data["Glycine/Serine"],
-                "Индекс GSG": metabolite_data["GSG Index"],
-                "Карнозин": metabolite_data["Carnosine"],
+                "Serine": metabolite_data["Serine"],
+                "Lysine": metabolite_data["Lysine"], 
+                "Glutamic acid": metabolite_data["Glutamic acid"],
+                "Glutamine/Glutamate": metabolite_data["Glutamine"],
+                "Glutamine/Glutamate": metabolite_data["Glutamine/Glutamate"],
+                "Glycine/Serine": metabolite_data["Glycine/Serine"],
+                "GSG Index": metabolite_data["GSG Index"],
+                "Carnosine": metabolite_data["Carnosine"],
             },
             group_title="Метаболизм гистидина"
         )
@@ -2122,17 +2144,17 @@ def main():
         # Methionine Metabolism
         fig_methionine_metabolism = plot_metabolite_z_scores(
             metabolite_concentrations={
-                "Метионин": metabolite_data["Methionine"],
-                "Метионин сульфоксид": metabolite_data["Methionine-Sulfoxide"],
-                "Таурин": metabolite_data["Taurine"],
-                "Бетаин": metabolite_data["Betaine"],
-                "Холин": metabolite_data["Choline"],
+                "Methionine": metabolite_data["Methionine"],
+                "Methionine-Sulfoxide": metabolite_data["Methionine-Sulfoxide"],
+                "Taurine": metabolite_data["Taurine"],
+                "Betaine": metabolite_data["Betaine"],
+                "Choline": metabolite_data["Choline"],
                 "TMAO": metabolite_data["TMAO"],
-                "Бетаин / Холин": metabolite_data["Betaine/choline"],
-                "Метионин + Таурин": metabolite_data["Methionine + Taurine"],
-                "Окисление метионина": metabolite_data["Met Oxidation"],
-                "Синтез TMAO": metabolite_data["TMAO Synthesis"],
-                "DMG / Холин": metabolite_data["DMG / Choline"],
+                "Betaine/choline": metabolite_data["Betaine/choline"],
+                "Methionine + Taurine": metabolite_data["Methionine + Taurine"],
+                "Met Oxidation": metabolite_data["Met Oxidation"],
+                "TMAO Synthesis": metabolite_data["TMAO Synthesis"],
+                "DMG / Choline": metabolite_data["DMG / Choline"],
             },
             group_title="Метаболизм метионина"
         )
@@ -2140,15 +2162,15 @@ def main():
         # Kynurenine Pathway
         fig_kynurenine_pathway = plot_metabolite_z_scores(
             metabolite_concentrations={
-                "Триптофан": metabolite_data["Tryptophan"],
-                "Кинуренин": metabolite_data["Kynurenine"],
-                "Антранилловая кислота": metabolite_data["Antranillic acid"],
-                "Хинолиновая кислота": metabolite_data["Quinolinic acid"],
-                "Ксантуреновая кислота": metabolite_data["Xanthurenic acid"],
-                "Кинуреновая кислота": metabolite_data["Kynurenic acid"],
-                "Kyn / Trp": metabolite_data["Kynurenine / Trp"],
-                "Trp / (Kyn+QA)": metabolite_data["Trp/(Kyn+QA)"],
-                "Kyn / Quin": metabolite_data["Kyn/Quin"],
+                "Tryptophan": metabolite_data["Tryptophan"],
+                "Kynurenine": metabolite_data["Kynurenine"],
+                "Antranillic acid": metabolite_data["Antranillic acid"],
+                "Quinolinic acid": metabolite_data["Quinolinic acid"],
+                "Xanthurenic acid": metabolite_data["Xanthurenic acid"],
+                "Kynurenic acid": metabolite_data["Kynurenic acid"],
+                "Kyn/Trp": metabolite_data["Kyn/Trp"],
+                "Trp/(Kyn+QA)": metabolite_data["Trp/(Kyn+QA)"],
+                "Kyn/Quin": metabolite_data["Kyn/Quin"],
             },
             group_title="Кинурениновый путь"
         )
@@ -2156,10 +2178,10 @@ def main():
         # Serotonin Pathway
         fig_serotonin_pathway = plot_metabolite_z_scores(
             metabolite_concentrations={
-                "Серотонин": metabolite_data["Serotonin"],
+                "Serotonin": metabolite_data["Serotonin"],
                 "HIAA": metabolite_data["HIAA"],
-                "5-гидрокситриптофан": metabolite_data["5-hydroxytryptophan"],
-                "Ser / Trp": metabolite_data["Serotonin / Trp"],
+                "5-hydroxytryptophan": metabolite_data["5-hydroxytryptophan"],
+                "Serotonin / Trp": metabolite_data["Serotonin / Trp"],
             },
             group_title="Серотониновый путь"
         )
@@ -2167,13 +2189,13 @@ def main():
         # Indole Pathway
         fig_indole_pathway = plot_metabolite_z_scores(
             metabolite_concentrations={
-                "3-индолуксусная кислота": metabolite_data["Indole-3-acetic acid"],
-                "3-индолмолочная кислота": metabolite_data["Indole-3-lactic acid"],
-                "3-индолкарбоксальдегид": metabolite_data["Indole-3-carboxaldehyde"],
-                "3-индолпропионовая кислота": metabolite_data["Indole-3-propionic acid"],
-                "3-индолмасляная": metabolite_data["Indole-3-butyric"],
-                "Триптамин": metabolite_data["Tryptamine"],
-                "TA / IAA": metabolite_data["Tryptamine / IAA"],
+                "Indole-3-acetic acid": metabolite_data["Indole-3-acetic acid"],
+                "Indole-3-lactic acid": metabolite_data["Indole-3-lactic acid"],
+                "Indole-3-carboxaldehyde": metabolite_data["Indole-3-carboxaldehyde"],
+                "Indole-3-propionic acid": metabolite_data["Indole-3-propionic acid"],
+                "Indole-3-butyric": metabolite_data["Indole-3-butyric"],
+                "Tryptamine": metabolite_data["Tryptamine"],
+                "Tryptamine / IAA": metabolite_data["Tryptamine / IAA"],
             },
             group_title="Индоловый путь"
         )
@@ -2181,26 +2203,26 @@ def main():
         # Arginine Metabolism
         fig_arginine_metabolism = plot_metabolite_z_scores(
             metabolite_concentrations={
-                "Пролин": metabolite_data["Proline"],
-                "Гидроксипролин": metabolite_data["Hydroxyproline"],
+                "Proline": metabolite_data["Proline"],
+                "Hydroxyproline": metabolite_data["Hydroxyproline"],
                 "ADMA": metabolite_data["ADMA"],
                 "NMMA": metabolite_data["NMMA"],
-                "SDMA": metabolite_data["TotalDMA (SDMA)"],
-                "Гомоаргинин": metabolite_data["Homoarginine"],
-                "Аргинин": metabolite_data["Arginine"],
-                "Цитруллин": metabolite_data["Citrulline"],
-                "Орнитин": metabolite_data["Ornitine"],
-                "Аспарагин": metabolite_data["Asparagine"],
-                "Аспарагиновая кислота": metabolite_data["Aspartic acid"],
-                "Креатинин": metabolite_data["Creatinine"],
-                "Arg / ADMA": metabolite_data["Arg/ADMA"],
-                "(Arg + HomoArg)/ADMA": metabolite_data["(Arg+HomoArg)/ADMA"],
+                "TotalDMA (SDMA)": metabolite_data["TotalDMA (SDMA)"],
+                "Homoarginine": metabolite_data["Homoarginine"],
+                "Arginine": metabolite_data["Arginine"],
+                "Citrulline": metabolite_data["Citrulline"],
+                "Ornitine": metabolite_data["Ornitine"],
+                "Asparagine": metabolite_data["Asparagine"],
+                "Aspartic acid": metabolite_data["Aspartic acid"],
+                "Creatinine": metabolite_data["Creatinine"],
+                "Arg/ADMA": metabolite_data["Arg/ADMA"],
+                "(Arg+HomoArg)/ADMA": metabolite_data["(Arg+HomoArg)/ADMA"],
                 "Arg/Orn+Cit": metabolite_data["Arg/Orn+Cit"],
-                "ADMA/(Adenosin + Arg)": metabolite_data["ADMA/(Adenosin+Arginine)"],
-                "SDMA / Arg": metabolite_data["Symmetrical Arg Methylation"],
-                "SDMA + ADMA": metabolite_data["Sum of Dimethylated Arg"],
-                "Pro / Cit": metabolite_data["Ratio of Pro to Cit"],
-                "Синтез Cit": metabolite_data["Cit Synthesis"],
+                "ADMA/(Adenosin+Arginine)": metabolite_data["ADMA/(Adenosin+Arginine)"],
+                "Symmetrical Arg Methylation": metabolite_data["Symmetrical Arg Methylation"],
+                "Sum of Dimethylated Arg": metabolite_data["Sum of Dimethylated Arg"],
+                "Ratio of Pro to Cit": metabolite_data["Ratio of Pro to Cit"],
+                "Cit Synthesis": metabolite_data["Cit Synthesis"],
             },
             group_title="Метаболизм аргинина"
         )
@@ -2208,21 +2230,21 @@ def main():
         # Acylcarnitine Metabolism (ratios)
         fig_acylcarnitine_ratios = plot_metabolite_z_scores(
             metabolite_concentrations={
-                "Аланин": metabolite_data["Alanine"],
+                "Alanine": metabolite_data["Alanine"],
                 "C0": metabolite_data["C0"],
-                "AC-OHs / ACs": metabolite_data["Ratio of AC-OHs to ACs"],
+                "Ratio of AC-OHs to ACs": metabolite_data["Ratio of AC-OHs to ACs"],
                 "СДК": metabolite_data["СДК"],
                 "ССК": metabolite_data["ССК"],
                 "СКК": metabolite_data["СКК"],
                 "C0/(C16+C18)": metabolite_data["C0/(C16+C18)"],
-                "(C16+C18-1)/C2": metabolite_data["CPT-2 Deficiency (NBS)"],
+                "CPT-2 Deficiency (NBS)": metabolite_data["CPT-2 Deficiency (NBS)"],
                 "С2/С0": metabolite_data["С2/С0"],
-                "СКК/СДК": metabolite_data["Ratio of Short-Chain to Long-Chain ACs"],
-                "ССК/СДК": metabolite_data["Ratio of Medium-Chain to Long-Chain ACs"],
-                "СКК/ССК": metabolite_data["Ratio of Short-Chain to Medium-Chain ACs"],
-                "Сумма ACs": metabolite_data["Sum of ACs"],
-                "Сумма ACs + С0": metabolite_data["Sum of ACs + С0"],
-                "Сумма ACs/C0": metabolite_data["Sum of ACs/C0"],
+                "Ratio of Short-Chain to Long-Chain ACs": metabolite_data["Ratio of Short-Chain to Long-Chain ACs"],
+                "Ratio of Medium-Chain to Long-Chain ACs": metabolite_data["Ratio of Medium-Chain to Long-Chain ACs"],
+                "Ratio of Short-Chain to Medium-Chain ACs": metabolite_data["Ratio of Short-Chain to Medium-Chain ACs"],
+                "Sum of ACs": metabolite_data["Sum of ACs"],
+                "Sum of ACs + С0": metabolite_data["Sum of ACs + С0"],
+                "Sum of ACs/C0": metabolite_data["Sum of ACs/C0"],
             },
             group_title="Метаболизм ацилкарнитинов (соотношения)"
         )
@@ -2280,14 +2302,14 @@ def main():
         # # Other Metabolites
         fig_other_metabolites = plot_metabolite_z_scores(
             metabolite_concentrations={
-                "Пантотеновая кислота": metabolite_data["Pantothenic"],
-                "Рибофлавин": metabolite_data["Riboflavin"],
-                "Мелатонин": metabolite_data["Melatonin"],
-                "Уридин": metabolite_data["Uridine"],
-                "Аденозин": metabolite_data["Adenosin"],
-                "Цитидин": metabolite_data["Cytidine"],
-                "Кортизол": metabolite_data["Cortisol"],
-                "Гистамин": metabolite_data["Histamine"],
+                "Pantothenic": metabolite_data["Pantothenic"],
+                "Riboflavin": metabolite_data["Riboflavin"],
+                "Melatonin": metabolite_data["Melatonin"],
+                "Uridine": metabolite_data["Uridine"],
+                "Adenosin": metabolite_data["Adenosin"],
+                "Cytidine": metabolite_data["Cytidine"],
+                "Cortisol": metabolite_data["Cortisol"],
+                "Histamine": metabolite_data["Histamine"],
             },
             group_title="Другие метаболиты"
         )
@@ -3765,7 +3787,7 @@ def main():
                     html.B(f"Дата: {date}",style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
                     html.Div([
                         html.B(f'Пациент: {name}',style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
-                    ],style={'margin-top':'10px'}),
+                    ],style={'margin-top':'2px'}),
                 ], style={'width':'33.3%'}),
                 html.Div([
                     html.B("MetaboScan-Test01",style={'margin':'0px','font-size':'18px','font-family':'Calibri','color':'#FFFFFF'}),
@@ -3782,8 +3804,8 @@ def main():
             html.Img(src=app.get_asset_url('info_icon.png'), style={'width':'20px','height':'20px','margin-right':'15px'}),
             
             html.Div('Данные по оценке состояния организма получены из экспериментальных данных на образцах из биобанка Центра биофармацевтического анализа и метаболомных исследований Сеченовского университета.',
-                    style={'color':'black','font-family':'Calibri','font-size':'16px','text-align':"left", 'margin': '0px !important'}),
-            ], style={'display': 'flex','margin-top':'10px','margin-bottom':'10px', 'flex-direction': 'row','align-items': 'center', 'width':'fit-content', "borderRadius": "0.5rem", 'padding': '5px 7px 5px 15px', 'border': '2px solid rgb(255, 184, 113)', 'background-color': '#fffede'}),
+                    style={'color':'#3d1502','font-family':'Calibri','font-size':'13px','text-align':"left", 'margin': '0px !important'}),
+            ], style={'display': 'flex','margin-top':'10px','margin-bottom':'10px', 'flex-direction': 'row','align-items': 'center', 'width':'fit-content', "borderRadius": "0.5rem", 'padding': '5px 7px 5px 15px', 'background-color': '#fee4cf'}),
  
 html.Div(
     style={
@@ -4229,7 +4251,7 @@ html.Div(
     style={
         "width": "800px",
         "margin": "0 auto",
-"marginTop": "10px",
+"marginTop": "15px",
         "fontFamily": "Calibri, Arial, sans-serif",
         "display": "flex",
         "flexWrap": "wrap",
@@ -4670,7 +4692,7 @@ html.Div(
     style={
         "width": "800px",
         "margin": "0 auto",
-        "marginTop": "10px",
+        "marginTop": "15px",
         "fontFamily": "Calibri, Arial, sans-serif",
         "display": "flex",
         "flexWrap": "wrap",
@@ -5125,18 +5147,18 @@ html.Div(
                             ]),
                             # Row 4
                             html.Tr([
-                                html.Td([html.B("+PV: "), html.Span('Точность положительного предсказания (вероятность того, что заболевание присутствует, когда тест положительный)')]),
+                                html.Td([html.B("+PV: "), html.Span('Прогностичность положительного результата (вероятность того, что заболевание присутствует, когда тест положительный)')]),
                             ]),
                             # Row 5
                             html.Tr([
-                                html.Td([html.B("-PV: "), html.Span('Точность отрицательного предсказания (вероятность того, что заболевание отсутствует, когда тест отрицательный)')]),
+                                html.Td([html.B("-PV: "), html.Span('Прогностичность отрицательного результата (вероятность того, что заболевание отсутствует, когда тест отрицательный)')]),
                             ]),
                         ], style={'width': '100%', 'border-collapse': 'collapse'}),
                     ], style={
                         'margin-bottom': '5px',
                         'font-family': 'Calibri',
                         'font-size': '12px',
-                        'color': '#404547'
+                        'color': '#150c77'
                     }),
                 ], style={
                     'display': 'flex',
@@ -5148,11 +5170,10 @@ html.Div(
                     'width': '95%',
                     "borderRadius": "0.5rem",
                     'padding': '3px  15px',
-                    'border': '2px solid rgba(51, 131, 223, 0.6)',
-                    'background-color': "#eff9ff"
+                    'background-color': "#dbeafe"
                 }),
             html.P('Результаты данного отчета не являются диагнозом и должны быть интерпретированы лечащим врачом на основании клинико-лабораторных данных и других диагностических исследований.',
-                   style={'page-break-after': 'always','color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"left",'font-style':'italic','margin-top':'30px'}),
+                   style={'page-break-after': 'always','color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"left",'font-style':'italic','margin-top':'20px'}),
             # Страница 1.1
             
             # 2 страница
@@ -5162,7 +5183,7 @@ html.Div(
                         html.B(f"Дата: {date}",style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
                         html.Div([
                             html.B(f'Пациент: {name}',style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
-                        ],style={'margin-top':'10px'}),
+                        ],style={'margin-top':'2px'}),
                     ], style={'width':'33.3%'}),
                     html.Div([
                         html.B("MetaboScan-Test01",style={'margin':'0px','font-size':'18px','font-family':'Calibri','color':'#FFFFFF'}),
@@ -5207,7 +5228,7 @@ html.Div(
                         html.Div([
                             html.Div([
                                 html.Div([html.B('Фенилаланин (Phe)',style={'height':'20px'}),html.P('Незаменимая глюко-, кетогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(f'{value_1[0]}',style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(value_1[0],ref_1[0])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_1[0],ref_1[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_1[0],ref_1[0])}','line-height':'53px'}),
+                                html.Div([html.Div([html.Div([html.B(f'{smart_round((metabolite_data['Phenylalanine'], ref_stats['Phenylalanine']))}',style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data['Phenylalanine'], ref_stats['Phenylalanine'])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':f'{need_of_margin(value_1[0],ref_1[0])}'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(value_1[0],ref_1[0])}','line-height':'53px'}),
                                                         # Progress bar with pointer
                                 html.Div([
                                     # Progress bar
@@ -5761,7 +5782,7 @@ html.Div(
                         html.B(f"Дата: {date}",style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
                         html.Div([
                             html.B(f'Пациент: {name}',style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
-                        ],style={'margin-top':'10px'}),
+                        ],style={'margin-top':'2px'}),
                     ], style={'width':'33.3%'}),
                     html.Div([
                         html.B("MetaboScan-Test01",style={'margin':'0px','font-size':'18px','font-family':'Calibri','color':'#FFFFFF'}),
@@ -6329,7 +6350,7 @@ html.Div(
                         html.B(f"Дата: {date}",style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
                         html.Div([
                             html.B(f'Пациент: {name}',style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
-                        ],style={'margin-top':'10px'}),
+                        ],style={'margin-top':'2px'}),
                     ], style={'width':'33.3%'}),
                     html.Div([
                         html.B("MetaboScan-Test01",style={'margin':'0px','font-size':'18px','font-family':'Calibri','color':'#FFFFFF'}),
@@ -6868,7 +6889,7 @@ html.Div(
                         html.B(f"Дата: {date}",style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
                         html.Div([
                             html.B(f'Пациент: {name}',style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
-                        ],style={'margin-top':'10px'}),
+                        ],style={'margin-top':'2px'}),
                     ], style={'width':'33.3%'}),
                     html.Div([
                         html.B("MetaboScan-Test01",style={'margin':'0px','font-size':'18px','font-family':'Calibri','color':'#FFFFFF'}),
@@ -7489,7 +7510,7 @@ html.Div(
                         html.B(f"Дата: {date}",style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
                         html.Div([
                             html.B(f'Пациент: {name}',style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
-                        ],style={'margin-top':'10px'}),
+                        ],style={'margin-top':'2px'}),
                     ], style={'width':'33.3%'}),
                     html.Div([
                         html.B("MetaboScan-Test01",style={'margin':'0px','font-size':'18px','font-family':'Calibri','color':'#FFFFFF'}),
@@ -8027,7 +8048,7 @@ html.Div(
                         html.B(f"Дата: {date}",style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
                         html.Div([
                             html.B(f'Пациент: {name}',style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
-                        ],style={'margin-top':'10px'}),
+                        ],style={'margin-top':'2px'}),
                     ], style={'width':'33.3%'}),
                     html.Div([
                         html.B("MetaboScan-Test01",style={'margin':'0px','font-size':'18px','font-family':'Calibri','color':'#FFFFFF'}),
@@ -8354,8 +8375,8 @@ html.Div(
                                                     'borderRight': '5px solid transparent',
                                                     'borderTop': '8px solid #2563eb' if get_status_color(item['value'], item['norm']) == 'blue' else 'none',
                                                     'borderBottom': '8px solid #dc3545' if get_status_color(item['value'], item['norm']) == 'red' else 'none',
-                                                    'visibility': 'visible' if get_status_color(item['value'], item['norm']) in ['red', 'blue'] else 'hidden',
-                                                    'marginLeft': '4px'
+                                                    'visibility': 'visible' if get_status_color(item['value'], item['norm']) in ['blue', 'red'] else 'collapse',
+                                                    'marginLeft': '4px' if get_status_color(item['value'], item['norm']) in ['red', 'blue'] else '0px'
                                                 }
                                             )
                                         ]
@@ -8435,7 +8456,7 @@ html.Div(
                     html.B(f"Дата: {date}",style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
                     html.Div([
                         html.B(f'Пациент: {name}',style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
-                    ],style={'margin-top':'10px'}),
+                    ],style={'margin-top':'2px'}),
                 ], style={'width':'33.3%'}),
                 html.Div([
                     html.B("MetaboScan-Test01",style={'margin':'0px','font-size':'18px','font-family':'Calibri','color':'#FFFFFF'}),
@@ -8569,8 +8590,8 @@ html.Div(
                                                     'borderRight': '5px solid transparent',
                                                     'borderTop': '8px solid #2563eb' if get_status_color(item['value'], item['norm']) == 'blue' else 'none',
                                                     'borderBottom': '8px solid #dc3545' if get_status_color(item['value'], item['norm']) == 'red' else 'none',
-                                                    'visibility': 'visible' if get_status_color(item['value'], item['norm']) in ['red', 'blue'] else 'hidden',
-                                                    'marginLeft': '4px'
+                                                    'visibility': 'visible' if get_status_color(item['value'], item['norm']) in ['blue', 'red'] else 'collapse',
+                                                    'marginLeft': '4px' if get_status_color(item['value'], item['norm']) in ['red', 'blue'] else '0px'
                                                 }
                                             )
                                         ]
@@ -8647,7 +8668,7 @@ html.Div(
                     html.B(f"Дата: {date}",style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
                     html.Div([
                         html.B(f'Пациент: {name}',style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
-                    ],style={'margin-top':'10px'}),
+                    ],style={'margin-top':'2px'}),
                 ], style={'width':'33.3%'}),
                 html.Div([
                     html.B("MetaboScan-Test01",style={'margin':'0px','font-size':'18px','font-family':'Calibri','color':'#FFFFFF'}),
@@ -8780,8 +8801,8 @@ html.Div(
                                                     'borderRight': '5px solid transparent',
                                                     'borderTop': '8px solid #2563eb' if get_status_color(item['value'], item['norm']) == 'blue' else 'none',
                                                     'borderBottom': '8px solid #dc3545' if get_status_color(item['value'], item['norm']) == 'red' else 'none',
-                                                    'visibility': 'visible' if get_status_color(item['value'], item['norm']) in ['red', 'blue'] else 'hidden',
-                                                    'marginLeft': '4px'
+                                                    'visibility': 'visible' if get_status_color(item['value'], item['norm']) in ['blue', 'red'] else 'collapse',
+                                                    'marginLeft': '4px' if get_status_color(item['value'], item['norm']) in ['red', 'blue'] else '0px'
                                                 }
                                             )
                                         ]
@@ -8857,7 +8878,7 @@ html.Div(
                     html.B(f"Дата: {date}",style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
                     html.Div([
                         html.B(f'Пациент: {name}',style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
-                    ],style={'margin-top':'10px'}),
+                    ],style={'margin-top':'2px'}),
                 ], style={'width':'33.3%'}),
                 html.Div([
                     html.B("MetaboScan-Test01",style={'margin':'0px','font-size':'18px','font-family':'Calibri','color':'#FFFFFF'}),
@@ -8991,8 +9012,8 @@ html.Div(
                                                     'borderRight': '5px solid transparent',
                                                     'borderTop': '8px solid #2563eb' if get_status_color(item['value'], item['norm']) == 'blue' else 'none',
                                                     'borderBottom': '8px solid #dc3545' if get_status_color(item['value'], item['norm']) == 'red' else 'none',
-                                                    'visibility': 'visible' if get_status_color(item['value'], item['norm']) in ['red', 'blue'] else 'hidden',
-                                                    'marginLeft': '4px'
+                                                    'visibility': 'visible' if get_status_color(item['value'], item['norm']) in ['blue', 'red'] else 'collapse',
+                                                    'marginLeft': '4px' if get_status_color(item['value'], item['norm']) in ['red', 'blue'] else '0px'
                                                 }
                                             )
                                         ]
@@ -9070,7 +9091,7 @@ html.Div(
                     html.B(f"Дата: {date}",style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
                     html.Div([
                         html.B(f'Пациент: {name}',style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
-                    ],style={'margin-top':'10px'}),
+                    ],style={'margin-top':'2px'}),
                 ], style={'width':'33.3%'}),
                 html.Div([
                     html.B("MetaboScan-Test01",style={'margin':'0px','font-size':'18px','font-family':'Calibri','color':'#FFFFFF'}),
@@ -9204,8 +9225,8 @@ html.Div(
                                                     'borderRight': '5px solid transparent',
                                                     'borderTop': '8px solid #2563eb' if get_status_color(item['value'], item['norm']) == 'blue' else 'none',
                                                     'borderBottom': '8px solid #dc3545' if get_status_color(item['value'], item['norm']) == 'red' else 'none',
-                                                    'visibility': 'visible' if get_status_color(item['value'], item['norm']) in ['red', 'blue'] else 'hidden',
-                                                    'marginLeft': '4px'
+                                                    'visibility': 'visible' if get_status_color(item['value'], item['norm']) in ['blue', 'red'] else 'collapse',
+                                                    'marginLeft': '4px' if get_status_color(item['value'], item['norm']) in ['red', 'blue'] else '0px'
                                                 }
                                             )
                                         ]
@@ -9284,7 +9305,7 @@ html.Div(
                     html.B(f"Дата: {date}",style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
                     html.Div([
                         html.B(f'Пациент: {name}',style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
-                    ],style={'margin-top':'10px'}),
+                    ],style={'margin-top':'2px'}),
                 ], style={'width':'33.3%'}),
                 html.Div([
                     html.B("MetaboScan-Test01",style={'margin':'0px','font-size':'18px','font-family':'Calibri','color':'#FFFFFF'}),
@@ -9375,8 +9396,8 @@ html.Div(
                                                     'borderRight': '5px solid transparent',
                                                     'borderTop': '8px solid #2563eb' if get_status_color(item['value'], item['norm']) == 'blue' else 'none',
                                                     'borderBottom': '8px solid #dc3545' if get_status_color(item['value'], item['norm']) == 'red' else 'none',
-                                                    'visibility': 'visible' if get_status_color(item['value'], item['norm']) in ['red', 'blue'] else 'hidden',
-                                                    'marginLeft': '4px'
+                                                    'visibility': 'visible' if get_status_color(item['value'], item['norm']) in ['blue', 'red'] else 'collapse',
+                                                    'marginLeft': '4px' if get_status_color(item['value'], item['norm']) in ['red', 'blue'] else '0px'
                                                 }
                                             )
                                         ]
@@ -9451,7 +9472,7 @@ html.Div(
                         html.B(f"Дата: {date}", style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
                         html.Div([
                             html.B(f'Пациент: {name}', style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
-                        ], style={'margin-top':'10px'}),
+                        ], style={'margin-top':'2px'}),
                     ], style={'width':'33.3%'}),
                     
                     html.Div([
@@ -9479,8 +9500,8 @@ html.Div(
             html.Img(src=app.get_asset_url('info_icon.png'), style={'width':'20px','height':'20px','margin-right':'15px'}),
             
             html.Div('Данные по оценке стандартного отклонения от средних показателей здоровых людей получены из экспериментальных данных образцов биобанка Центра биофармацевтического анализа и метаболомных исследований Сеченовского университета.',
-                    style={'color':'black','font-family':'Calibri','font-size':'13px','text-align':"left", 'margin': '0px !important'}),
-            ], style={'display': 'flex','margin-top':'10px','margin-bottom':'10px', 'flex-direction': 'row','align-items': 'center', 'width':'fit-content', "borderRadius": "0.5rem", 'padding': '5px 7px 5px 15px', 'border': '2px solid rgb(255, 184, 113)', 'background-color': '#fffede'}),
+                    style={'color':'#3d1502','font-family':'Calibri','font-size':'13px','text-align':"left", 'margin': '0px !important'}),
+            ], style={'display': 'flex','margin-top':'10px','margin-bottom':'10px', 'flex-direction': 'row','align-items': 'center', 'width':'fit-content', "borderRadius": "0.5rem", 'padding': '5px 7px 5px 15px', 'background-color': '#fee4cf'}),
  
             
             html.Div([
@@ -9643,7 +9664,7 @@ html.Div(
                         html.B(f"Дата: {date}", style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
                         html.Div([
                             html.B(f'Пациент: {name}', style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
-                        ], style={'margin-top':'10px'}),
+                        ], style={'margin-top':'2px'}),
                     ], style={'width':'33.3%'}),
                     
                     html.Div([
@@ -9671,8 +9692,8 @@ html.Div(
             html.Img(src=app.get_asset_url('info_icon.png'), style={'width':'20px','height':'20px','margin-right':'15px'}),
             
             html.Div('Данные по оценке стандартного отклонения от средних показателей здоровых людей получены из экспериментальных данных образцов биобанка Центра биофармацевтического анализа и метаболомных исследований Сеченовского университета.',
-                    style={'color':'black','font-family':'Calibri','font-size':'13px','text-align':"left", 'margin': '0px !important'}),
-            ], style={'display': 'flex','margin-top':'10px','margin-bottom':'10px', 'flex-direction': 'row','align-items': 'center', 'width':'fit-content', "borderRadius": "0.5rem", 'padding': '5px 7px 5px 15px', 'border': '2px solid rgb(255, 184, 113)', 'background-color': '#fffede'}),
+                    style={'color':'#3d1502','font-family':'Calibri','font-size':'13px','text-align':"left", 'margin': '0px !important'}),
+            ], style={'display': 'flex','margin-top':'10px','margin-bottom':'10px', 'flex-direction': 'row','align-items': 'center', 'width':'fit-content', "borderRadius": "0.5rem", 'padding': '5px 7px 5px 15px', 'background-color': '#fee4cf'}),
  
             
             html.Div([
@@ -9833,7 +9854,7 @@ html.Div(
                         html.B(f"Дата: {date}", style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
                         html.Div([
                             html.B(f'Пациент: {name}', style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
-                        ], style={'margin-top':'10px'}),
+                        ], style={'margin-top':'2px'}),
                     ], style={'width':'33.3%'}),
                     
                     html.Div([
