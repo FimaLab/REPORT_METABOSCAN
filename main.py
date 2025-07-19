@@ -656,34 +656,807 @@ def generate_radial_diagram(df_result, output_path):
     # Save the figure
     fig.savefig(output_path, bbox_inches='tight', dpi=300)
     plt.close(fig)
-        
-    
 
-def get_group_score(risk_group, category):
+#[template_elements_img/group_params.png]
+def render_category_params(group_number, group_risk_name, risk_scores, ref_params):
+    # Filter the reference parameters for the specific group risk
+    group_data = ref_params[ref_params['Группа_риска'] == group_risk_name]
+    
+    # Calculate scores for each parameter in the group
+    param_scores = {}
+    for _, row in group_data.iterrows():
+        param_name = row['Категория']
+        score = row['Subgroup_score']
+        param_scores[param_name] = score
+    
+    # Get the overall risk score for this group
+    overall_score = risk_scores.loc[risk_scores['Группа риска'] == group_risk_name, 'Риск-скор'].values[0]
+    
+    # Create header based on name length
+    if len(group_risk_name) > 30:
+        header = html.Div([
+            # Header container
+            html.Div([
+                html.Div([
+                    html.P(f"{group_number}.", style={
+                        'margin': '0px', 
+                        'margin-bottom': '1px', 
+                        'font-weight': 'bold', 
+                        'margin-right': '5px', 
+                        'color': '#404547'
+                    }),
+                    html.P(group_risk_name, style={
+                        'margin': '0px', 
+                        'margin-bottom': '1px', 
+                        'width': '200px', 
+                        'font-weight': 'bold', 
+                        'color': '#404547'
+                    }),
+                ], style={
+                    'display': 'flex', 
+                    'justify-content': 'left', 
+                    'width': 'auto', 
+                    'height': '18px'
+                }),
+                
+                # Score container
+                html.Div([
+                    html.Div([
+                        html.Div([], style={
+                            'width': f"{overall_score * 10}%",
+                            'background-color': get_color_under_normal_dist(100 - (overall_score * 10)),
+                            'border-radius': '2px',
+                            'height': '13px',
+                            'line-height': 'normal',
+                            'display': 'inline-block',
+                            'vertical-align': 'center',
+                        }),
+                    ], style={
+                        'display': 'flex', 
+                        'align-self': 'center',
+                        'width': '70px', 
+                        'height': '13px',
+                        'line-height': 'normal', 
+                        'border-radius': '2px',
+                        'background-color': 'lightgrey', 
+                        'margin-left': '5px', 
+                        'margin-right': '5px'
+                    }),
+                    html.B(
+                        f"{overall_score} из 10",
+                        style={'margin': '0px', 'color': '#404547'}
+                    )
+                ], style={
+                    'display': 'flex', 
+                    'flex-direction': 'row', 
+                    'flex-wrap': 'nowrap', 
+                    'align-items': 'center'
+                })
+            ], style={
+                'color': 'black',
+                'font-family': 'Calibri',
+                'font-size': '16px',
+                'margin': '0px',
+                'display': 'flex',
+                'justify-content': 'space-between',
+                'margin-bottom': '15px'
+            })
+        ])
+    else:
+        # Standard header for short names
+        header = html.Div([
+            html.P(f"{group_number}. {group_risk_name}", style={
+                'margin': '0px', 
+                'margin-bottom': '1px', 
+                'font-weight': 'bold', 
+                'color': '#404547'
+            }),
+            html.Div([
+                html.Div([
+                    html.Div([], style={
+                        'width': f"{overall_score * 10}%",
+                        'background-color': get_color_under_normal_dist(100 - (overall_score * 10)),
+                        'border-radius': '2px',
+                        'height': '13px',
+                        'line-height': 'normal',
+                        'display': 'inline-block',
+                        'vertical-align': 'center',
+                    }),
+                ], style={
+                    'display': 'flex', 
+                    'align-self': 'center',
+                    'width': '70px', 
+                    'height': '13px',
+                    'line-height': 'normal', 
+                    'border-radius': '2px',
+                    'background-color': 'lightgrey', 
+                    'margin-left': '5px', 
+                    'margin-right': '5px'
+                }),
+                html.B(
+                    f"{overall_score} из 10",
+                    style={'margin': '0px', 'color': '#404547'}
+                )
+            ], style={'display': 'flex', 'flex-direction': 'row', 'flex-wrap': 'nowrap'})
+        ], style={
+            'color': 'black',
+            'font-family': 'Calibri',
+            'font-size': '16px',
+            'margin': '0px',
+            'display': 'flex',
+            'justify-content': 'space-between',
+            'margin-bottom': '0px'
+        })
+    
+    # Create the HTML structure
+    return html.Div([
+        # Header
+        header,
+        
+        # Divider line
+        html.Div([], style={
+            'width': "100%",
+            'background-color': "#2563eb",
+            'height': '2px',
+            'line-height': 'normal',
+            'display': 'inline-block',
+            'vertical-align': 'center',
+            'margin-bottom': '2px'
+        }),
+        
+        # Parameters list
+        *[
+            html.Div([
+                html.Div([
+                    html.Div([], style={
+                        'width': f'{100 - score}%',
+                        'background-color': get_color_under_normal_dist(score),
+                        'border-radius': '5px',
+                        'height': '10px',
+                        'line-height': 'normal',
+                        'display': 'inline-block',
+                        'vertical-align': 'center',
+                    }),
+                ], style={
+                    'width': '23%', 
+                    'height': '18px', 
+                    'line-height': '18px', 
+                    'margin-right': '5px'
+                }),
+                html.Div([
+                    html.P(param_name, style={
+                        'margin': '0px',
+                        'font-size': '14px',
+                        'font-family': 'Calibri',
+                        'height': '18px',
+                        'margin-left': '3px'
+                    })
+                ], style={'width': '75%'}),
+            ], style={
+                'display': 'flex',
+                'justify-content': 'left',
+                'width': '100%',
+                'height': '18px'
+            })
+            for param_name, score in param_scores.items()
+        ]
+    ], style={'width': '100%', 'height': 'fit-content'})
+    
+#[template_elements_img/ml_card.png]
+def render_ml_score_card(title, subtitle, description, metrics, risk_scores):
     """
-    Get subgroup score for specified risk group and category
+    Render a standardized ML score card component with improved title formatting
     
-    Args:
-        risk_params_df: Pre-loaded DataFrame with risk parameters
-        risk_group: Risk group name (e.g., 'Резистентность к стрессорам')
-        category: Category name (e.g., 'Оксидативный стресс')
-    
-    Returns:
-        Score between 0-90 (capped at 90) or 100 if error occurs
+    Parameters:
+    - title: Main title string (will be split at hyphens)
+    - subtitle: Subtitle text
+    - description: Detailed description text
+    - metrics: Dictionary of metrics to display
+    - risk_scores: DataFrame containing risk scores
     """
     try:
-        filtered = risk_params.loc[
-            (risk_params['Группа_риска'] == risk_group) & 
-            (risk_params['Категория'] == category)
-        ]
-        total = filtered.iloc[0]['Subgroup_score']
-        return min(total, 90)
+        score = int(round(risk_scores.loc[risk_scores["Группа риска"] == title, "Риск-скор"].values[0], 0))
     except Exception as e:
-        print(f"Error calculating score for {risk_group}/{category}: {e}")
-        return 100
+        print(f"Error getting score for '{title}': {e}")
+        score = 0
+    
+    try:
+        score_color = get_color_under_normal_dist(100 - score * 10)
+        status_level = get_status_level(100 - score * 10)
+    except Exception as e:
+        print(f"Error calculating color/status: {e}")
+        score_color = "#e5e7eb"
+        status_level = "Н/Д"
 
+    # Process status level to display vertically
+    status_words = status_level.split()
+    status_display = html.Div(
+        [html.Div(word, style={"margin": "2px 0"}) for word in status_words],
+        style={
+            "color": score_color,
+            "fontWeight": "600",
+            "fontSize": "0.9rem",
+            "textAlign": "center",
+            "width": "100%",
+            "margin": "5px 0 0 0",
+            "padding": "0",
+            "lineHeight": "0.8",
+            "display": "flex",
+            "flexDirection": "column",
+            "alignItems": "center"
+        }
+    )
+
+    # Score visualization components
+    score_circle = dcc.Graph(
+        figure={
+            "data": [{
+                "type": "pie",
+                "values": [score, 10-score],
+                "hole": 0.8,
+                "marker": {"colors": [score_color, "#e5e7eb"]},
+                "rotation": 90,
+                "direction": "clockwise",
+                "showlegend": False,
+                "textinfo": "none",
+                "hoverinfo": "none"
+            }],
+            "layout": {
+                "width": 70,
+                "height": 70,
+                "margin": {"l": 0, "r": 0, "b": 0, "t": 0},
+                "paper_bgcolor": "rgba(0,0,0,0)",
+                "plot_bgcolor": "rgba(0,0,0,0)"
+            }
+        },
+        config={"staticPlot": True},
+        style={"position": "absolute", "zIndex": 1}
+    )
+
+    score_display = html.Div(
+        style={
+            "position": "absolute",
+            "top": "50%",
+            "left": "50%",
+            "transform": "translate(-50%, -50%)",
+            "textAlign": "center",
+            "zIndex": 2,
+            "width": "100%"
+        },
+        children=[
+            html.Div(
+                f"{score}",
+                style={
+                    "fontSize": "1.4rem",
+                    "fontWeight": "bold",
+                    "color": "#111827",
+                    "lineHeight": "1"
+                }
+            ),
+            html.Div(
+                "/10",
+                style={
+                    "fontSize": "0.7rem",
+                    "color": "#6b7280",
+                    "lineHeight": "1"
+                }
+            )
+        ]
+    )
+
+    # Left section (30% width)
+    left_section = html.Div(
+        style={
+            "flex": "0 0 29%",
+            "display": "flex",
+            "flexDirection": "column",
+            "alignItems": "center",
+            "paddingRight": "10px"
+        },
+        children=[
+            html.H2(
+                title,
+                style={
+                    "fontSize": "0.9rem",
+                    "fontWeight": "bold",
+                    "color": "#111827",
+                    "lineHeight": "1.25",
+                    "marginBottom": "0.75rem",
+                    "alignSelf": "flex-start",
+                    "width": "100%",
+                    "textAlign": "left"
+                }
+            ),
+            html.Div(
+                [score_circle, score_display],
+                style={
+                    "position": "relative",
+                    "width": "70px",
+                    "height": "70px",
+                    "marginBottom": "0.25rem"
+                }
+            ),
+            status_display
+        ]
+    )
+
+    # Right section (70% width)
+    metrics_display = [
+        html.Div(
+            [html.Span(f"{key}: "), html.Span(value, style={"fontWeight": "bold"})],
+            style={"fontSize": "0.75rem", "color": "#111827"}
+        )
+        for key, value in metrics.items()
+    ]
+
+    right_section = html.Div(
+        style={
+            "flex": "1",
+            "paddingLeft": "10px",
+            "borderLeft": "1px solid #e5e7eb"
+        },
+        children=[
+            html.H3(
+                subtitle,
+                style={
+                    "fontSize": "0.8rem",
+                    "fontWeight": "600",
+                    "color": "#111827",
+                    "marginBottom": "0.5rem"
+                }
+            ),
+            html.P(
+                description,
+                style={
+                    "color": "#374151",
+                    "fontSize": "0.75rem",
+                    "lineHeight": "1.4",
+                    "marginBottom": "0.75rem"
+                }
+            ),
+            html.Div(
+                metrics_display,
+                style={
+                    "display": "flex",
+                    "gap": "0.75rem",
+                    "flexWrap": "wrap",
+                    "marginTop": "0.25rem"
+                }
+            )
+        ]
+    )
+
+    # Main card container
+    return html.Div(
+        style={
+            "flex": "0 0 50%",
+            "backgroundColor": "white",
+            "border": "1px solid #e5e7eb",
+            "borderRadius": "0.5rem",
+            "padding": "0.25rem 1rem 0.75rem 1rem",
+            "boxSizing": "border-box",
+            "fontFamily": "Calibri"
+        },
+        children=[
+            html.Div(
+                [left_section, right_section],
+                style={
+                    "display": "flex",
+                    "width": "100%",
+                    "height": "100%"
+                }
+            )
+        ]
+    )
+    
+#[template_elements_img/metabolite_row.png]
+def render_metabolite_row(concentration, ref_stats_entry, subtitle):
+    """
+    Render a metabolite row with title, subtitle (if exists), concentration value, and reference stats
+    
+    Parameters:
+    - concentration: Current concentration value
+    - ref_stats_entry: Reference statistics dictionary entry
+    - subtitle: Description (e.g., "Незаменимая глюко-, кетогенная аминокислота") or empty string
+    """
+    # Determine if we should show the subtitle
+    show_subtitle = bool(subtitle.strip())
+    
+    return html.Div(
+        style={'margin': '0px'},
+        children=[
+            html.Div(
+                style={'margin': '0px', 'margin-left': '20px'},
+                children=[
+                    html.Div(
+                        style={
+                            'width': '100%',
+                            'display': 'flex', 
+                            'justify-content': 'space-between',
+                            'height': '45px' if not show_subtitle else '53px',  # Adjust height based on subtitle
+                            'margin-left': '5px'
+                        },
+                        children=[
+                            # Title and subtitle column (39%)
+                            html.Div(
+                                style={
+                                    'width': '39%',
+                                    'height': '45px' if not show_subtitle else '53px',
+                                    'margin': '0px',
+                                    'font-size': '15px',
+                                    'font-family': 'Calibri',
+                                    'color': 'black',
+                                    'display': 'flex',
+                                    'flex-direction': 'column',
+                                    'justify-content': 'center'  # Center vertically
+                                },
+                                children=[
+                                    html.B(ref_stats_entry["name_view"], style={'height': '20px'}),
+                                    html.P(
+                                        subtitle,
+                                        style={
+                                            'height': '20px',
+                                            'font-size': '12px',
+                                            'font-family': 'Calibri',
+                                            'color': '#2563eb',
+                                            'margin': '0px',
+                                            'margin-left': '5px',
+                                            'line-height': '0.9em',
+                                            'display': 'none' if not show_subtitle else 'block'  # Hide if no subtitle
+                                        }
+                                    ) if subtitle else None  # Don't render at all if no subtitle
+                                ]
+                            ),
+                            
+                            # Concentration value column (8%)
+                            html.Div(
+                                style={
+                                    'width': '8%',
+                                    'height': '45px' if not show_subtitle else '53px',
+                                    'margin': '0px',
+                                    'font-size': '15px',
+                                    'font-family': 'Calibri',
+                                    'color': color_text_ref(concentration, ref_stats_entry=ref_stats_entry),
+                                    'display': 'flex',
+                                    'align-items': 'center',
+                                    'justify-content': 'center'
+                                },
+                                children=[
+                                    html.Div(
+                                        html.B(
+                                            smart_round(concentration, ref_stats_entry=ref_stats_entry),
+                                            style={
+                                                'text-align': 'center',
+                                                'background-color': heighlight_out_of_range(concentration, ref_stats_entry=ref_stats_entry),
+                                                'padding': '3px 8px', 
+                                                'borderRadius': '12px'
+                                            }
+                                        )
+                                    )
+                                ]
+                            ),
+                            
+                            # Progress bar column (27%)
+                            html.Div(
+                                style={
+                                    'width': '27%', 
+                                    'height': '45px' if not show_subtitle else '53px', 
+                                    'margin': '0px', 
+                                    'font-size': '15px', 
+                                    'font-family': 'Calibri', 
+                                    'color': '#2563eb', 
+                                    'display': 'flex',
+                                    'align-items': 'center',
+                                    'position': 'relative'
+                                },
+                                children=[
+                                    html.Div(
+                                        style={
+                                            'width': '100%',
+                                            'position': 'relative'
+                                        },
+                                        children=[
+                                            # Progress bar
+                                            html.Img(
+                                                src="assets/progress.png" if ref_stats_entry["ref_min"] != 0 else "assets/progress_left.png",
+                                                style={
+                                                    'width': '100%', 
+                                                    'height': '18px', 
+                                                    'line-height': 'normal', 
+                                                    'display': 'inline-block', 
+                                                    'vertical-align': 'center'
+                                                }
+                                            ),
+                                            # Pointer (arrow)
+                                            html.Img(
+                                                src='assets/pointer.png', 
+                                                style={
+                                                    'position': 'absolute',
+                                                    'height': '38px',
+                                                    'width': '4px',
+                                                    'left': f'{calculate_pointer_position(concentration, ref_stats_entry=ref_stats_entry)}%',
+                                                    'top': '50%',
+                                                    'transform': 'translate(-50%, -50%)'
+                                                }
+                                            )
+                                        ]
+                                    )
+                                ]
+                            ),
+                            
+                            # Reference range column (21%)
+                            html.Div(
+                                style={
+                                    'width': '21%',
+                                    'height': '45px' if not show_subtitle else '53px',
+                                    'margin': '0px',
+                                    'font-size': '15px',
+                                    'font-family': 'Calibri',
+                                    'color': 'black',
+                                    'display': 'flex',
+                                    'align-items': 'center',
+                                    'justify-content': 'center'
+                                },
+                                children=[
+                                    html.P(
+                                        ref_stats_entry["norm"],
+                                        style={
+                                            'height': '20px',
+                                            'line-height': 'normal',
+                                            'display': 'inline-block',
+                                            'vertical-align': 'center',
+                                            'margin': '0'
+                                        }
+                                    )
+                                ]
+                            )
+                        ]
+                    )
+                ]
+            )
+        ]
+    )
+
+def render_category_header(order_number, title):
+    """
+    Render a category header with blue background and white text
+    
+    Parameters:
+    - title: The header text to display (e.g., "4. Метаболизм жирных кислот")
+    """
+    return html.Div(
+        style={
+            'width': '100%',
+            'background-color': '#2563eb',
+            'border-radius': '5px 5px 0px 0px',
+            'color': 'white',
+            'font-family': 'Calibri',
+            'margin': '0px',
+            'height': '35px',
+            'line-height': '35px',
+            'text-align': 'center',
+            'margin-top': '5px'
+        },
+        children=[
+            html.H3(
+                children=order_number + '. ' + title,
+                style={
+                    'textAlign': 'center',
+                    'margin': '0px',
+                    'line-height': 'normal',
+                    'display': 'inline-block',
+                    'vertical-align': 'center'
+                }
+            )
+        ]
+    )
+
+def render_metabolite_category_header(title):
+    """
+    Render a metabolite category header with title, scale markers, and reference label
+    
+    Parameters:
+    - title: The category title to display (e.g., "Индоловый путь")
+    """
+    return html.Div([
+        html.Div([
+            html.Div([
+                html.Div([
+                    html.B(title, style={
+                        'height': '20px',
+                        'line-height': 'normal',
+                        'display': 'inline-block',
+                        'vertical-align': 'center'
+                    })
+                ], style={
+                    'width': '39%',
+                    'height': '40px',
+                    'margin': '0px',
+                    'font-size': '16px',
+                    'font-family': 'Calibri',
+                    'color': '#2563eb',
+                    'line-height': '40px'
+                }),
+                html.Div([
+                    html.Div('Результат', style={
+                        'display': 'inline-block',
+                        'fontSize': '14px',
+                        'color': '#4D5052',
+                        'fontWeight': '500'
+                    })
+                ], style={
+                    'width': '7%',
+                    'height': '20px',
+                    'margin': '0px',
+                    'font-size': '15px',
+                    'font-family': 'Calibri',
+                    'color': 'black',
+                    'text-align': 'center'
+                }),
+                html.Div([
+                    html.Div([
+                        html.Span('20%', style={
+                            'display': 'inline-block',
+                            'width': '25%',
+                            'text-align': 'center'
+                        }),
+                        html.Span('40%', style={
+                            'display': 'inline-block',
+                            'width': '25%',
+                            'text-align': 'center'
+                        }),
+                        html.Span('60%', style={
+                            'display': 'inline-block',
+                            'width': '25%',
+                            'text-align': 'center'
+                        }),
+                        html.Span('80%', style={
+                            'display': 'inline-block',
+                            'width': '25%',
+                            'text-align': 'center'
+                        }),
+                    ], style={
+                        'width': '100%',
+                        'display': 'flex',
+                        'justify-content': 'space-between',
+                        'font-family': 'Calibri',
+                        'color': '#4D5052',
+                        'font-size': '13px',
+                        'padding': '4px 8px',
+                    })
+                ], style={'width': '27%', 'margin': '0px'}),
+                html.Div([
+                    html.Div('Норма, мкмоль/л')
+                ], style={
+                    'width': '21%',
+                    'height': '20px',
+                    'margin': '0px',
+                    'font-size': '14px',
+                    'font-family': 'Calibri',
+                    'color': '#4D5052',
+                    'text-align': 'center'
+                }),
+            ], style={
+                'width': '100%',
+                'display': 'flex',
+                'alignItems': 'center',
+                'justify-content': 'space-between',
+                'height': '40px'
+            }), 
+        ], style={'margin': '0px', 'margin-left': '20px'})
+    ])
+    
+def render_page_header(date, name, logo_height='53px'):
+    """
+    Render the main header with date/name on left and logo on right
+    
+    Parameters:
+    - date: Date string to display
+    - name: Patient name string to display
+    - logo_height: Height of the logo image (default '53px')
+    """
+    return html.Div(
+        style={
+            'display': 'flex',
+            'justify-content': 'space-between',
+            'width': '100%',
+            'height': '53px',
+            'color': '#2563eb'
+        },
+        children=[
+            # Left section with date and name
+            html.Div(
+                style={'width': '50%'},
+                children=[
+                    html.B(
+                        f"Дата: {date}",
+                        style={
+                            'margin': '0px',
+                            'font-size': '18px',
+                            'font-family': 'Calibri'
+                        }
+                    ),
+                    html.Div(
+                        style={'margin-top': '2px'},
+                        children=[
+                            html.B(
+                                f'Пациент: {name}',
+                                style={
+                                    'margin': '0px',
+                                    'font-size': '18px',
+                                    'font-family': 'Calibri'
+                                }
+                            )
+                        ]
+                    )
+                ]
+            ),
+            
+            # Right section with logo
+            html.Div(
+                style={'width': '50%', 'text-align': 'right'},
+                children=[
+                    html.Img(
+                        src=app.get_asset_url('logo.jpg'),
+                        style={
+                            'height': logo_height,
+                            'float': 'right'
+                        }
+                    )
+                ]
+            )
+        ]
+    )
+
+def render_page_footer(page_number):
+    """
+    Render a standardized page footer with disclaimer and page number
+    
+    Parameters:
+    - page_number: The page number to display (e.g., 4)
+    - margin_top: Top margin for the footer container (default '10px')
+    """
+    return html.Div(
+        style={
+            'page-break-after': 'always',
+            'margin': '0px',
+            'display': 'flex',
+            'justify-content': 'space-between',
+            'width': '100%',
+            'margin-top': '10px'
+        },
+        children=[
+            # Disclaimer text
+            html.P(
+                'Результаты данного отчета не являются диагнозом и должны быть интерпретированы лечащим врачом на основании клинико-лабораторных данных и других диагностических исследований.',
+                style={
+                    'color': 'black',
+                    'font-family': 'Calibri',
+                    'font-size': '14px',
+                    'margin': '0px',
+                    'text-align': "left",
+                    'font-style': 'italic',
+                    'width': '85%'
+                }
+            ),
+            # Page number
+            html.P(
+                f'|{page_number}',
+                style={
+                    'color': 'black',
+                    'font-family': 'Calibri',
+                    'font-size': '14px',
+                    'margin': '0px',
+                    'text-align': "right",
+                    'font-style': 'italic',
+                    'margin-top': '15px',  # Note: Overrides the 5px from parent
+                    'width': '10%'
+                }
+            )
+        ]
+    )
+    
 app = Dash(__name__)
-
 
 import argparse
 import signal
@@ -722,314 +1495,264 @@ def main():
         metabolite_data = safe_parse_metabolite_data(metabolomic_data_path)
         
         risk_scores = pd.read_excel(risk_scores_path)
+        ref_params = pd.read_excel(risk_params_path)
         
         # Generate radial diagram
         radial_path = os.path.join('assets', "radial_diagram.png")
         generate_radial_diagram(risk_scores, radial_path)
+                
         
+        # vascular_data = [
+        #         {
+        #             "name": "Аргинин/ADMA",
+        #             "value": smart_round(metabolite_data['Arg/ADMA'], 2),
+        #             "norm": '33.93 - 290.07',
+        #             "description": "Отражает баланс между доступным для синтеза оксида азота (NO) аргинином и ингибитором синтеза NO – асимметричным диметиларгинином (ADMA).",
+        #         },
+        #         {
+        #             "name": "(Аргинин + Гомоаргинин) / ADMA",
+        #             "value": smart_round(metabolite_data['(Arg+HomoArg)/ADMA'], 2),
+        #             "norm": '37.49 - 298.4',
+        #             "description": "Отражает общий баланс сосудорасширяющих (вазопротективных) и сосудосуживающих (вазопатогенных) факторов, связанных с синтезом оксида азота (NO) и эндотелиальной функцией.",
+        #         },
+        #         {
+        #             "name": "GABR = Аргинин / (Орнитин + Цитруллин)",
+        #             "value": smart_round(metabolite_data['GABR'], 2),
+        #             "norm": '0.29 - 1.53',
+        #             "description": "Отражает активность и баланс обменных процессов в цикле мочевины и доступность аргинина как субстрата для синтеза оксида азота (NO).",
+        #         },
+        #         {
+        #             "name": "ADMA / (Аденозин + Аргинин)",
+        #             "value": smart_round(metabolite_data['ADMA/(Adenosin+Arginine)'], 3),
+        #             "norm": '0.001 - 0.011',
+        #             "description": "Отражает баланс между сосудосуживающими и воспалительными влияниями (связанными с ADMA) и сосудорасширяющими, защитными эффектами, обусловленными аденозином и аргинином.",
+        #         },
+        #         {
+        #             "name": "ADMA / Аргинин",
+        #             "value":  smart_round(1 / metabolite_data['Arg/ADMA'], 3),
+        #             "norm": '0.001 - 0.011',
+        #             "description": "Отражает степень метилирования аргинина, приводящего к образованию асимметричного диметиларгинина (ADMA), в сравнении с доступностью аргинина.",
+        #         },
+        #         {
+        #             "name": "SDMA / Аргинин",
+        #             "value":  smart_round(metabolite_data['Symmetrical Arg Methylation'], 3),
+        #             "norm": '0.001 - 0.011',
+        #             "description": "Отражает степень метилирования аргинина, приводящего к образованию симметричного диметиларгинина (SDMA), в сравнении с доступностью аргинина.",
+        #         },
+        #         {
+        #             "name": "Сумма диметилированных производных аргинина (ADMA+SDMA)",
+        #             "value":  smart_round(metabolite_data['Sum of Dimethylated Arg'], 2),
+        #             "norm": '0.79 - 1.83',
+        #             "description": "Отражает общий уровень метилированных производных аргинина, связанных с сосудистым воспалением, эндотелиальной дисфункцией и состоянием почечной фильтрации.",
+        #         },
+        #     ]
         
-        # Calculate all scores using the same variable names
-        # Состояние сердечно-сосудистой системы
-        mitochondrial_score = get_group_score('Здоровье митохондрий', 'β-окисление / жирные кислоты')
+        # inflammation_data = [
+        #     {
+        #         "name": "Кинуренин / Триптофан (Kyn/Trp)",
+        #         "value": smart_round(metabolite_data['Kynurenine / Trp'], 3),
+        #         "norm": "0.015 - 0.048",
+        #         "description": "Отражает активность кинуренинового пути обмена триптофана, тесно связанного с воспалением, состоянием иммунной системы и оксидативным стрессом."
+        #     },
+        #     {
+        #         "name": "Триптофан / Кинуренин (Trp/Kyn)",
+        #         "value": smart_round(1 / metabolite_data['Kynurenine / Trp'], 2),
+        #         "norm": "15.00 - 48.80",
+        #         "description": "Является обратным показателем Kyn/Trp и отражает доступность триптофана относительно его воспалительного метаболита кинуренина. Он характеризует запас триптофана и интенсивность его потребления через кинурениновый путь при воспалении и иммунной активации."
+        #     },
+        #     {
+        #         "name": "Trp/(Kyn+QA)",
+        #         "value": smart_round(metabolite_data['Trp/(Kyn+QA)'], 2),
+        #         "norm": "13.29 - 38.78",
+        #         "description": "Это соотношение концентрации триптофана к сумме его метаболитов (кинуренина и хинолиновой кислоты). Он является важным маркером воспалительного и нейротоксического стресса, отражая баланс между доступным триптофаном и продуктами воспалительного катаболизма (психоэмоц. статус)."
+        #     },
+        #     {
+        #         "name": "Кинуренин / Хинолиновая кислота (Kyn/QА)",
+        #         "value": smart_round(metabolite_data['Kyn/Quin'], 2),
+        #         "norm": "0.98 - 7.90",
+        #         "description": "Отражает баланс между промежуточными метаболитами кинуренинового пути: относительно нейтральным по действию кинуренином и нейротоксичным метаболитом хинолиновой кислотой (QА). Этот показатель важен для оценки уровня воспаления, нейротоксичности и оксидативного стресса."
+        #     },
+        #     {
+        #         "name": "Серотонин / Триптофан (Ser/Trp)",
+        #         "value": smart_round(metabolite_data['Serotonin / Trp'], 2),
+        #         "norm": "< 0.03",
+        #         "description": "Отражает эффективность превращения аминокислоты триптофана в нейромедиатор серотонин (5-HT), тем самым характеризуя функциональное состояние серотонинергической системы и баланс эмоционального и психического статуса."
+        #     },
+        #     {
+        #         "name": "Триптамин / Индол-3-уксусная кислота (ТА/IAA)",
+        #         "value": smart_round(metabolite_data['Tryptamine / IAA'], 2),
+        #         "norm": "< 0.13",
+        #         "description": "Отражает баланс в микробном метаболизме триптофана в кишечнике и характеризует состояние кишечной микробиоты и кишечного барьера."
+        #     },
+        #     {
+        #         "name": "TMAO Synthesis = TMAO / (Betaine+C0+Choline)",
+        #         "value": smart_round(metabolite_data['TMAO Synthesis'], 4),
+        #         "norm": "0.0007 - 0.0713",
+        #         "description": "Отражает интенсивность образования триметиламин-N-оксида (TMAO) из его предшественников (бетаина, холина и карнитина), характеризуя активность кишечной микробиоты и риск воспаления и атеросклероза."
+        #     }
+        # ]
 
-        # Влияние факторов среды
-        oxidative_stress_score = get_group_score('Резистентность к стрессорам', 'Оксидативный стресс')
-        inflam_and_microbiotic_score = get_group_score('Резистентность к стрессорам', 'Воспаление и микробный стресс')
-        nitrogen_toxic_score = get_group_score('Резистентность к стрессорам', 'Азотистые токсины')
-        lipid_toxic_score = get_group_score('Резистентность к стрессорам', 'Липидные токсины / окс. стресс')
+        # methylation_data = [
+        #     {
+        #         "name": "Бетаин/Холин (Bet/Chl)",
+        #         "value": smart_round(metabolite_data['Betaine/choline'], 2),
+        #         "norm": "1.14 - 7.57",
+        #         "description": "Отражает активность обмена холина и степень его конверсии в бетаин, характеризуя функциональное состояние печени, эффективность процессов метилирования и риск развития жировой болезни печени (стеатоза)."
+        #     },
+        #     {
+        #         "name": "Диметилглицин / Холин (DMG/Chl)",
+        #         "value": smart_round(metabolite_data['DMG / Choline'], 3),
+        #         "norm": "0.005 - 0.060",
+        #         "description": "Отражает активность пути метилирования, эффективность обмена холина и функционирование печени."
+        #     },
+        #     {
+        #         "name": "Cумма концентраций метионина и таурина (∑(Met + Tau))",
+        #         "value": smart_round(metabolite_data['Methionine + Taurine'], 2),
+        #         "norm": "58.22 - 180.08",
+        #         "description": "Отражает совокупный запас метаболитов, участвующих в антиоксидантной защите, детоксикации, метилировании и регуляции клеточного метаболизма."
+        #     },
+        #     {
+        #         "name": "Met Oxidation = MetSO / Met",
+        #         "value": smart_round(metabolite_data['Met Oxidation'], 4),
+        #         "norm": "< 0.0319",
+        #         "description": "Отражает степень окисления метионина до его окисленного метаболита (метионин-сульфоксида), являясь прямым маркером оксидативного стресса и антиоксидантной защиты организма."
+        #     }
+        # ]
 
-        # Метаболическая адаптация и стрессоустойчивость
-        energy_exchange_score = get_group_score('Метаболическая адаптация и стрессоустойчивость', 'Энергетический обмен')
-        neuroadaptation_score = get_group_score('Метаболическая адаптация и стрессоустойчивость', 'Нейро-адаптация')
-        stress_aminoacid_score = get_group_score('Метаболическая адаптация и стрессоустойчивость', 'Стресс-аминокислоты')
-        metochondria_creatinine_score = get_group_score('Метаболическая адаптация и стрессоустойчивость', 'Митохондрии и креатин')
-        glutamate_exchange_score = get_group_score('Метаболическая адаптация и стрессоустойчивость', 'Глутамат-глутаминовая ось')
+        # energy_metabolism_data = [
+        #     {
+        #         "name": "Глутамин/Глутамат (Gln/Glu)",
+        #         "value": smart_round(metabolite_data['Glutaminase Activity'], 2),
+        #         "norm": "0.44 - 3.66",
+        #         "description": "Отражает баланс между аминокислотами, участвующими в азотном обмене, регуляции энергетического метаболизма и нейротрансмиттерной активности."
+        #     },
+        #     {
+        #         "name": "Пролин / Цитруллин (Pro/Cit)",
+        #         "value": smart_round(metabolite_data['Ratio of Pro to Cit'], 2),
+        #         "norm": "1.87 - 9.09",
+        #         "description": "Отражает баланс аминокислотного обмена, связанного с циклом мочевины, синтезом аргинина и состоянием энергетического и сосудистого метаболизма организма."
+        #     },
+        #     {
+        #         "name": "Цитруллин / Орнитин (Cit/Orn)",
+        #         "value": smart_round(metabolite_data['Cit Synthesis'], 2),
+        #         "norm": "0.18 - 0.97",
+        #         "description": "Отражает эффективность процесса синтеза цитруллина из орнитина в рамках цикла мочевины, а также функциональное состояние печени, сосудистого здоровья и обмена азота."
+        #     },
+        #     {
+        #         "name": "BCAA",
+        #         "value": smart_round(metabolite_data['BCAA'], 2),
+        #         "norm": "299.69 - 531.01",
+        #         "description": "Отражает общий уровень трёх аминокислот: валина (Val), лейцина (Leu) и изолейцина (Ile). Эти аминокислоты важны для оценки энергетического метаболизма, мышечного и печёночного обмена, риска развития метаболического синдрома, диабета и сердечно-сосудистых заболеваний."
+        #     },
+        #     {
+        #         "name": "Индекс Фишера (BCAA/AAAs)",
+        #         "value": smart_round(metabolite_data['BCAA/AAA'], 2),
+        #         "norm": "1.84 - 4.31",
+        #         "description": "Индекс Фишера, отношение аминокислот с разветвлённой цепью к ароматическим аминокислотам - отражает баланс между группами аминокислот и используется для оценки функционального состояния печени, метаболического статуса и риска печёночной энцефалопатии."
+        #     },
+        #     {
+        #         "name": "Фенилаланин / Тирозин (Phe/Tyr)",
+        #         "value": smart_round(metabolite_data['Phe/Tyr'], 2),
+        #         "norm": "0.42 - 1.58",
+        #         "description": "Отражает активность фермента фенилаланин-гидроксилазы, участвующего в превращении фенилаланина в тирозин, и является маркером состояния функции печени и процессов метаболизма аминокислот."
+        #     },
+        #     {
+        #         "name": "Глицин / Серин (Gly/Ser)",
+        #         "value": smart_round(metabolite_data['Glycine/Serine'], 2),
+        #         "norm": "0.59 - 2.72",
+        #         "description": "Отражает баланс между двумя важными аминокислотами, участвующими в процессах метилирования, антиоксидантной защиты, регуляции воспаления и клеточного метаболизма."
+        #     },
+        #     {
+        #         "name": "GSG Index = (Glu/(Ser+Gly))",
+        #         "value": smart_round(metabolite_data['GSG Index'], 4),
+        #         "norm": "0.0844 - 0.66",
+        #         "description": "Отражает баланс между возбуждающей нейромедиаторной активностью и антиоксидантной, противовоспалительной защитой организма."
+        #     }
+        # ]
 
-        # Статус микробиоты
-        tryptophan_metabolism_score = get_group_score('Статус микробиоты', 'Метаболизм триптофана')
-        inflam_immune_score = get_group_score('Статус микробиоты', 'Воспаление и иммунитет')
-
-        # Воспаление и иммунитет
-        ido_path_tryptophan_score = get_group_score('Воспаление и иммунитет', 'IDO-путь / триптофан')
-        neuromediators_score = get_group_score('Воспаление и иммунитет', 'Нейромедиаторы')
-        indols_phenols_score = get_group_score('Воспаление и иммунитет', 'Индолы и фенолы')
-        general_stress_immune_score = get_group_score('Воспаление и иммунитет', 'Общий стресс / иммунитет')
-        complex_index = get_group_score('Воспаление и иммунитет', 'Комплексный индекс')
-
-        # Метаболическая детоксикация
-        amiac_detox_score = get_group_score('Метаболическая детоксикация', 'Аммиачная детоксикация')
-
-        # Здоровье митохондрий
-        energy_exchange_carnitine_score = get_group_score('Здоровье митохондрий', 'Энергетический обмен (карнитиновый цикл)')
-        antoxidant_system = get_group_score('Здоровье митохондрий', 'Антиоксидантная защита')
-
-        # Витаминный статус
-        vitamine_b2_score = get_group_score('Витаминный статус', 'Витамин B2 (рибофлавин)')
-        vitamine_b5_score = get_group_score('Витаминный статус', 'Витамин B5 (пантотенат)')
-        vitamine_b6_score = get_group_score('Витаминный статус', 'Витамин B6')
-        vitamine_b9_b12_score = get_group_score('Витаминный статус', 'Витамин B9 / B12')
-        vitamine_b3_nad_score = get_group_score('Витаминный статус', 'Витамин B3 / NAD+')
-        serum_aminoacids_score = get_group_score('Витаминный статус', 'Серосодержащие АК')
-        neurotroph_reserv_score = get_group_score('Витаминный статус', 'Нейротрофный резерв')
+        # mitochondrial_data = [
+        #     {
+        #         "name": "Cоотношение гидрокси- ацилкарнитинов к общим ацилкарнитинам (AC-OHs/ACs)",
+        #         "value": smart_round(metabolite_data['Ratio of AC-OHs to ACs'], 4),
+        #         "norm": "0.0004 - 0.0013",
+        #         "description": "Отражает эффективность β-окисления жирных кислот в митохондриях и характеризует митохондриальную функцию и энергетический обмен организма."
+        #     },
+        #     {
+        #         "name": "Cоотношение среднецепочечных к длинноцепочечным ацилкарнитинам (ССК/СДК)",
+        #         "value": smart_round(metabolite_data['Ratio of Medium-Chain to Long-Chain ACs'], 2),
+        #         "norm": "0.75 - 1.79",
+        #         "description": "Отражает эффективность β-окисления жирных кислот разной длины цепи в митохондриях, а также способность организма эффективно использовать жирные кислоты в качестве источника энергии."
+        #     },
+        #     {
+        #         "name": "Cумма длинноцепочечных ацилкарнитинов (СДК)",
+        #         "value": smart_round(metabolite_data['СДК'], 2),
+        #         "norm": "0.28 - 0.45",
+        #         "description": "Отражает общий уровень длинноцепочечных ацилкарнитинов (С14–С18), которые являются промежуточными метаболитами β-окисления жирных кислот в митохондриях."
+        #     },
+        #     {
+        #         "name": "Cумма среднецепочечных ацилкарнитинов (ССК)",
+        #         "value": smart_round(metabolite_data['ССК'], 2),
+        #         "norm": "0.31 - 0.62",
+        #         "description": "Отражает общий уровень среднецепочечных ацилкарнитинов (С6–С12), которые являются промежуточными метаболитами β-окисления жирных кислот средней длины в митохондриях."
+        #     },
+        #     {
+        #         "name": "Cумма короткоцепочечных ацилкарнитинов (СКК)",
+        #         "value": smart_round(metabolite_data['СКК'], 2),
+        #         "norm": "4.37 - 12.93",
+        #         "description": "Отражает общий уровень короткоцепочечных ацилкарнитинов (С2–С5), которые являются промежуточными метаболитами β-окисления короткоцепочечных жирных кислот и аминокислотного обмена в митохондриях."
+        #     },
+        #     {
+        #         "name": "C0/(C16+C18)",
+        #         "value": smart_round(metabolite_data['C0/(C16+C18)'], 2),
+        #         "norm": "171.58 - 603.84",
+        #         "description": "Отражает баланс между свободным карнитином и длинноцепочечными ацилкарнитинами, характеризуя способность митохондрий эффективно транспортировать и окислять длинноцепочечные жирные кислоты."
+        #     },
+        #     {
+        #         "name": "(C16+C18-1)/C2",
+        #         # вопрос
+        #         "value": smart_round(metabolite_data['CPT-2 Deficiency (NBS)'], 4),
+        #         "norm": "0.0041 - 0.0182",
+        #         "description": "Отражает баланс между накоплением длинноцепочечных жирных кислот и эффективностью финальной стадии их окисления до ацетилкарнитина (C2), характеризуя общую эффективность митохондриального β-окисления жирных кислот."
+        #     },
+        #     {
+        #         "name": "С2/С0",
+        #         "value": smart_round(metabolite_data['С2/С0'], 2),
+        #         "norm": "0.07 - 0.39",
+        #         "description": "Отражает баланс между ацетилированной формой карнитина (ацетилкарнитином), образующейся в результате энергетического обмена, и свободным карнитином, необходимым для транспорта жирных кислот в митохондрии."
+        #     }
+        # ]
         
-        
-        liver_score = int(round(risk_scores.loc[risk_scores["Группа риска"] == "Состояние функции печени", "Риск-скор"].values[0], 0))
-        oncology_score = int(round(risk_scores.loc[risk_scores["Группа риска"] == "Оценка пролиферативных процессов", "Риск-скор"].values[0], 0))
-        cardiovascular_score = int(round(risk_scores.loc[risk_scores["Группа риска"] == "Состояние сердечно-сосудистой системы", "Риск-скор"].values[0], 0))
-        pulmonary_score = int(round(risk_scores.loc[risk_scores["Группа риска"] == "Состояние дыхательной системы", "Риск-скор"].values[0], 0))
-        arthritis_score = int(round(risk_scores.loc[risk_scores["Группа риска"] == "Состояние иммуного метаболического баланса", "Риск-скор"].values[0], 0))
-        
-        vascular_data = [
-                {
-                    "name": "Аргинин/ADMA",
-                    "value": smart_round(metabolite_data['Arg/ADMA'], 2),
-                    "norm": '33.93 - 290.07',
-                    "description": "Отражает баланс между доступным для синтеза оксида азота (NO) аргинином и ингибитором синтеза NO – асимметричным диметиларгинином (ADMA).",
-                },
-                {
-                    "name": "(Аргинин + Гомоаргинин) / ADMA",
-                    "value": smart_round(metabolite_data['(Arg+HomoArg)/ADMA'], 2),
-                    "norm": '37.49 - 298.4',
-                    "description": "Отражает общий баланс сосудорасширяющих (вазопротективных) и сосудосуживающих (вазопатогенных) факторов, связанных с синтезом оксида азота (NO) и эндотелиальной функцией.",
-                },
-                {
-                    "name": "GABR = Аргинин / (Орнитин + Цитруллин)",
-                    "value": smart_round(metabolite_data['GABR'], 2),
-                    "norm": '0.29 - 1.53',
-                    "description": "Отражает активность и баланс обменных процессов в цикле мочевины и доступность аргинина как субстрата для синтеза оксида азота (NO).",
-                },
-                {
-                    "name": "ADMA / (Аденозин + Аргинин)",
-                    "value": smart_round(metabolite_data['ADMA/(Adenosin+Arginine)'], 3),
-                    "norm": '0.001 - 0.011',
-                    "description": "Отражает баланс между сосудосуживающими и воспалительными влияниями (связанными с ADMA) и сосудорасширяющими, защитными эффектами, обусловленными аденозином и аргинином.",
-                },
-                {
-                    "name": "ADMA / Аргинин",
-                    "value":  smart_round(1 / metabolite_data['Arg/ADMA'], 3),
-                    "norm": '0.001 - 0.011',
-                    "description": "Отражает степень метилирования аргинина, приводящего к образованию асимметричного диметиларгинина (ADMA), в сравнении с доступностью аргинина.",
-                },
-                {
-                    "name": "SDMA / Аргинин",
-                    "value":  smart_round(metabolite_data['Symmetrical Arg Methylation'], 3),
-                    "norm": '0.001 - 0.011',
-                    "description": "Отражает степень метилирования аргинина, приводящего к образованию симметричного диметиларгинина (SDMA), в сравнении с доступностью аргинина.",
-                },
-                {
-                    "name": "Сумма диметилированных производных аргинина (ADMA+SDMA)",
-                    "value":  smart_round(metabolite_data['Sum of Dimethylated Arg'], 2),
-                    "norm": '0.79 - 1.83',
-                    "description": "Отражает общий уровень метилированных производных аргинина, связанных с сосудистым воспалением, эндотелиальной дисфункцией и состоянием почечной фильтрации.",
-                },
-            ]
-        
-        inflammation_data = [
-            {
-                "name": "Кинуренин / Триптофан (Kyn/Trp)",
-                "value": smart_round(metabolite_data['Kynurenine / Trp'], 3),
-                "norm": "0.015 - 0.048",
-                "description": "Отражает активность кинуренинового пути обмена триптофана, тесно связанного с воспалением, состоянием иммунной системы и оксидативным стрессом."
-            },
-            {
-                "name": "Триптофан / Кинуренин (Trp/Kyn)",
-                "value": smart_round(1 / metabolite_data['Kynurenine / Trp'], 2),
-                "norm": "15.00 - 48.80",
-                "description": "Является обратным показателем Kyn/Trp и отражает доступность триптофана относительно его воспалительного метаболита кинуренина. Он характеризует запас триптофана и интенсивность его потребления через кинурениновый путь при воспалении и иммунной активации."
-            },
-            {
-                "name": "Trp/(Kyn+QA)",
-                "value": smart_round(metabolite_data['Trp/(Kyn+QA)'], 2),
-                "norm": "13.29 - 38.78",
-                "description": "Это соотношение концентрации триптофана к сумме его метаболитов (кинуренина и хинолиновой кислоты). Он является важным маркером воспалительного и нейротоксического стресса, отражая баланс между доступным триптофаном и продуктами воспалительного катаболизма (психоэмоц. статус)."
-            },
-            {
-                "name": "Кинуренин / Хинолиновая кислота (Kyn/QА)",
-                "value": smart_round(metabolite_data['Kyn/Quin'], 2),
-                "norm": "0.98 - 7.90",
-                "description": "Отражает баланс между промежуточными метаболитами кинуренинового пути: относительно нейтральным по действию кинуренином и нейротоксичным метаболитом хинолиновой кислотой (QА). Этот показатель важен для оценки уровня воспаления, нейротоксичности и оксидативного стресса."
-            },
-            {
-                "name": "Серотонин / Триптофан (Ser/Trp)",
-                "value": smart_round(metabolite_data['Serotonin / Trp'], 2),
-                "norm": "< 0.03",
-                "description": "Отражает эффективность превращения аминокислоты триптофана в нейромедиатор серотонин (5-HT), тем самым характеризуя функциональное состояние серотонинергической системы и баланс эмоционального и психического статуса."
-            },
-            {
-                "name": "Триптамин / Индол-3-уксусная кислота (ТА/IAA)",
-                "value": smart_round(metabolite_data['Tryptamine / IAA'], 2),
-                "norm": "< 0.13",
-                "description": "Отражает баланс в микробном метаболизме триптофана в кишечнике и характеризует состояние кишечной микробиоты и кишечного барьера."
-            },
-            {
-                "name": "TMAO Synthesis = TMAO / (Betaine+C0+Choline)",
-                "value": smart_round(metabolite_data['TMAO Synthesis'], 4),
-                "norm": "0.0007 - 0.0713",
-                "description": "Отражает интенсивность образования триметиламин-N-оксида (TMAO) из его предшественников (бетаина, холина и карнитина), характеризуя активность кишечной микробиоты и риск воспаления и атеросклероза."
-            }
-        ]
-
-        methylation_data = [
-            {
-                "name": "Бетаин/Холин (Bet/Chl)",
-                "value": smart_round(metabolite_data['Betaine/choline'], 2),
-                "norm": "1.14 - 7.57",
-                "description": "Отражает активность обмена холина и степень его конверсии в бетаин, характеризуя функциональное состояние печени, эффективность процессов метилирования и риск развития жировой болезни печени (стеатоза)."
-            },
-            {
-                "name": "Диметилглицин / Холин (DMG/Chl)",
-                "value": smart_round(metabolite_data['DMG / Choline'], 3),
-                "norm": "0.005 - 0.060",
-                "description": "Отражает активность пути метилирования, эффективность обмена холина и функционирование печени."
-            },
-            {
-                "name": "Cумма концентраций метионина и таурина (∑(Met + Tau))",
-                "value": smart_round(metabolite_data['Methionine + Taurine'], 2),
-                "norm": "58.22 - 180.08",
-                "description": "Отражает совокупный запас метаболитов, участвующих в антиоксидантной защите, детоксикации, метилировании и регуляции клеточного метаболизма."
-            },
-            {
-                "name": "Met Oxidation = MetSO / Met",
-                "value": smart_round(metabolite_data['Met Oxidation'], 4),
-                "norm": "< 0.0319",
-                "description": "Отражает степень окисления метионина до его окисленного метаболита (метионин-сульфоксида), являясь прямым маркером оксидативного стресса и антиоксидантной защиты организма."
-            }
-        ]
-
-        energy_metabolism_data = [
-            {
-                "name": "Глутамин/Глутамат (Gln/Glu)",
-                "value": smart_round(metabolite_data['Glutaminase Activity'], 2),
-                "norm": "0.44 - 3.66",
-                "description": "Отражает баланс между аминокислотами, участвующими в азотном обмене, регуляции энергетического метаболизма и нейротрансмиттерной активности."
-            },
-            {
-                "name": "Пролин / Цитруллин (Pro/Cit)",
-                "value": smart_round(metabolite_data['Ratio of Pro to Cit'], 2),
-                "norm": "1.87 - 9.09",
-                "description": "Отражает баланс аминокислотного обмена, связанного с циклом мочевины, синтезом аргинина и состоянием энергетического и сосудистого метаболизма организма."
-            },
-            {
-                "name": "Цитруллин / Орнитин (Cit/Orn)",
-                "value": smart_round(metabolite_data['Cit Synthesis'], 2),
-                "norm": "0.18 - 0.97",
-                "description": "Отражает эффективность процесса синтеза цитруллина из орнитина в рамках цикла мочевины, а также функциональное состояние печени, сосудистого здоровья и обмена азота."
-            },
-            {
-                "name": "BCAA",
-                "value": smart_round(metabolite_data['BCAA'], 2),
-                "norm": "299.69 - 531.01",
-                "description": "Отражает общий уровень трёх аминокислот: валина (Val), лейцина (Leu) и изолейцина (Ile). Эти аминокислоты важны для оценки энергетического метаболизма, мышечного и печёночного обмена, риска развития метаболического синдрома, диабета и сердечно-сосудистых заболеваний."
-            },
-            {
-                "name": "Индекс Фишера (BCAA/AAAs)",
-                "value": smart_round(metabolite_data['BCAA/AAA'], 2),
-                "norm": "1.84 - 4.31",
-                "description": "Индекс Фишера, отношение аминокислот с разветвлённой цепью к ароматическим аминокислотам - отражает баланс между группами аминокислот и используется для оценки функционального состояния печени, метаболического статуса и риска печёночной энцефалопатии."
-            },
-            {
-                "name": "Фенилаланин / Тирозин (Phe/Tyr)",
-                "value": smart_round(metabolite_data['Phe/Tyr'], 2),
-                "norm": "0.42 - 1.58",
-                "description": "Отражает активность фермента фенилаланин-гидроксилазы, участвующего в превращении фенилаланина в тирозин, и является маркером состояния функции печени и процессов метаболизма аминокислот."
-            },
-            {
-                "name": "Глицин / Серин (Gly/Ser)",
-                "value": smart_round(metabolite_data['Glycine/Serine'], 2),
-                "norm": "0.59 - 2.72",
-                "description": "Отражает баланс между двумя важными аминокислотами, участвующими в процессах метилирования, антиоксидантной защиты, регуляции воспаления и клеточного метаболизма."
-            },
-            {
-                "name": "GSG Index = (Glu/(Ser+Gly))",
-                "value": smart_round(metabolite_data['GSG Index'], 4),
-                "norm": "0.0844 - 0.66",
-                "description": "Отражает баланс между возбуждающей нейромедиаторной активностью и антиоксидантной, противовоспалительной защитой организма."
-            }
-        ]
-
-        mitochondrial_data = [
-            {
-                "name": "Cоотношение гидрокси- ацилкарнитинов к общим ацилкарнитинам (AC-OHs/ACs)",
-                "value": smart_round(metabolite_data['Ratio of AC-OHs to ACs'], 4),
-                "norm": "0.0004 - 0.0013",
-                "description": "Отражает эффективность β-окисления жирных кислот в митохондриях и характеризует митохондриальную функцию и энергетический обмен организма."
-            },
-            {
-                "name": "Cоотношение среднецепочечных к длинноцепочечным ацилкарнитинам (ССК/СДК)",
-                "value": smart_round(metabolite_data['Ratio of Medium-Chain to Long-Chain ACs'], 2),
-                "norm": "0.75 - 1.79",
-                "description": "Отражает эффективность β-окисления жирных кислот разной длины цепи в митохондриях, а также способность организма эффективно использовать жирные кислоты в качестве источника энергии."
-            },
-            {
-                "name": "Cумма длинноцепочечных ацилкарнитинов (СДК)",
-                "value": smart_round(metabolite_data['СДК'], 2),
-                "norm": "0.28 - 0.45",
-                "description": "Отражает общий уровень длинноцепочечных ацилкарнитинов (С14–С18), которые являются промежуточными метаболитами β-окисления жирных кислот в митохондриях."
-            },
-            {
-                "name": "Cумма среднецепочечных ацилкарнитинов (ССК)",
-                "value": smart_round(metabolite_data['ССК'], 2),
-                "norm": "0.31 - 0.62",
-                "description": "Отражает общий уровень среднецепочечных ацилкарнитинов (С6–С12), которые являются промежуточными метаболитами β-окисления жирных кислот средней длины в митохондриях."
-            },
-            {
-                "name": "Cумма короткоцепочечных ацилкарнитинов (СКК)",
-                "value": smart_round(metabolite_data['СКК'], 2),
-                "norm": "4.37 - 12.93",
-                "description": "Отражает общий уровень короткоцепочечных ацилкарнитинов (С2–С5), которые являются промежуточными метаболитами β-окисления короткоцепочечных жирных кислот и аминокислотного обмена в митохондриях."
-            },
-            {
-                "name": "C0/(C16+C18)",
-                "value": smart_round(metabolite_data['C0/(C16+C18)'], 2),
-                "norm": "171.58 - 603.84",
-                "description": "Отражает баланс между свободным карнитином и длинноцепочечными ацилкарнитинами, характеризуя способность митохондрий эффективно транспортировать и окислять длинноцепочечные жирные кислоты."
-            },
-            {
-                "name": "(C16+C18-1)/C2",
-                # вопрос
-                "value": smart_round(metabolite_data['CPT-2 Deficiency (NBS)'], 4),
-                "norm": "0.0041 - 0.0182",
-                "description": "Отражает баланс между накоплением длинноцепочечных жирных кислот и эффективностью финальной стадии их окисления до ацетилкарнитина (C2), характеризуя общую эффективность митохондриального β-окисления жирных кислот."
-            },
-            {
-                "name": "С2/С0",
-                "value": smart_round(metabolite_data['С2/С0'], 2),
-                "norm": "0.07 - 0.39",
-                "description": "Отражает баланс между ацетилированной формой карнитина (ацетилкарнитином), образующейся в результате энергетического обмена, и свободным карнитином, необходимым для транспорта жирных кислот в митохондрии."
-            }
-        ]
-        
-        mytochondrial_data_2 = [
-            {
-                "name": "Cоотношение короткоцепочечных к длинноцепочечным ацилкарнитинам (СКК/СДК)",
-                "value": smart_round(metabolite_data['Ratio of Short-Chain to Long-Chain ACs'], 2),
-                "norm": "10.72 - 36.56",
-                "description": "Отражает баланс между короткоцепочечными и длинноцепочечными ацилкарнитинами, характеризуя соотношение активности окисления короткоцепочечных жирных кислот и аминокислот к активности окисления длинноцепочечных жирных кислот."
-            },
-            {
-                "name": "Cоотношение короткоцепочечных к среднецепочечным ацилкарнитинам (СКК/ССК)",
-                "value": smart_round(metabolite_data['Ratio of Short-Chain to Medium-Chain ACs'], 2),
-                "norm": "7.44 - 29.81",
-                "description": "Отражает баланс между короткоцепочечными и среднецепочечными ацилкарнитинами и характеризует эффективность митохондриального окисления жирных кислот разной длины цепи, а также баланс аминокислотного обмена."
-            },
-            {
-                "name": "Общая сумма ацилкарнитинов (∑AСs)",
-                "value": smart_round(metabolite_data['Sum of ACs'], 2),
-                "norm": "5.20 - 13.77",
-                "description": "Отражает общий уровень ацилкарнитинов различной длины цепи (коротко-, средне-, длинноцепочечные), являясь интегральным маркером состояния митохондриального β-окисления жирных кислот и аминокислотного обмена."
-            },
-            {
-                "name": "Сумма ацилкарнитинов и свободного карнитина (∑AСs) + С0)",
-                "value": smart_round(metabolite_data['Sum of ACs + С0'], 2),
-                "norm": "28.39 - 59.97",
-                "description": "Отражает общий пул карнитина в организме, включая как свободную форму карнитина (С0), так и все связанные формы (ацилкарнитины различной длины цепи). Является интегральным маркером состояния карнитинового обмена, митохондриальной функции и энергетического метаболизма."
-            },
-            {
-                "name": "Отношение общей суммы ацилкарнитинов к свободному карнитину (∑ACs/C0)",
-                "value":  smart_round(metabolite_data['Sum of ACs/C0'], 2),
-                "norm": "0.10 - 0.45",
-                "description": "Отражает баланс между связанными формами карнитина (ацилкарнитины) и свободным карнитином (С0), являясь важным интегральным индикатором митохондриальной функции, карнитинового обмена и общего энергетического статуса организма."
-            }]
+        # mytochondrial_data_2 = [
+        #     {
+        #         "name": "Cоотношение короткоцепочечных к длинноцепочечным ацилкарнитинам (СКК/СДК)",
+        #         "value": smart_round(metabolite_data['Ratio of Short-Chain to Long-Chain ACs'], 2),
+        #         "norm": "10.72 - 36.56",
+        #         "description": "Отражает баланс между короткоцепочечными и длинноцепочечными ацилкарнитинами, характеризуя соотношение активности окисления короткоцепочечных жирных кислот и аминокислот к активности окисления длинноцепочечных жирных кислот."
+        #     },
+        #     {
+        #         "name": "Cоотношение короткоцепочечных к среднецепочечным ацилкарнитинам (СКК/ССК)",
+        #         "value": smart_round(metabolite_data['Ratio of Short-Chain to Medium-Chain ACs'], 2),
+        #         "norm": "7.44 - 29.81",
+        #         "description": "Отражает баланс между короткоцепочечными и среднецепочечными ацилкарнитинами и характеризует эффективность митохондриального окисления жирных кислот разной длины цепи, а также баланс аминокислотного обмена."
+        #     },
+        #     {
+        #         "name": "Общая сумма ацилкарнитинов (∑AСs)",
+        #         "value": smart_round(metabolite_data['Sum of ACs'], 2),
+        #         "norm": "5.20 - 13.77",
+        #         "description": "Отражает общий уровень ацилкарнитинов различной длины цепи (коротко-, средне-, длинноцепочечные), являясь интегральным маркером состояния митохондриального β-окисления жирных кислот и аминокислотного обмена."
+        #     },
+        #     {
+        #         "name": "Сумма ацилкарнитинов и свободного карнитина (∑AСs) + С0)",
+        #         "value": smart_round(metabolite_data['Sum of ACs + С0'], 2),
+        #         "norm": "28.39 - 59.97",
+        #         "description": "Отражает общий пул карнитина в организме, включая как свободную форму карнитина (С0), так и все связанные формы (ацилкарнитины различной длины цепи). Является интегральным маркером состояния карнитинового обмена, митохондриальной функции и энергетического метаболизма."
+        #     },
+        #     {
+        #         "name": "Отношение общей суммы ацилкарнитинов к свободному карнитину (∑ACs/C0)",
+        #         "value":  smart_round(metabolite_data['Sum of ACs/C0'], 2),
+        #         "norm": "0.10 - 0.45",
+        #         "description": "Отражает баланс между связанными формами карнитина (ацилкарнитины) и свободным карнитином (С0), являясь важным интегральным индикатором митохондриальной функции, карнитинового обмена и общего энергетического статуса организма."
+        #     }]
         
         fig_phenylalanine_metabolism = plot_metabolite_z_scores(
         metabolite_concentrations={
@@ -1464,2596 +2187,238 @@ def main():
 ),
             # Plot risk_scores table
             html.Div([
-                html.Div([
-                    html.Div([
-                        html.P('1. Метаболическая детоксикация', style={'margin': '0px', 'margin-bottom': '1px', 'font-weight': 'bold', 'color': '#404547'}),
-                        html.Div([
-                            html.Div([
-                                html.Div([], style={
-                                    'width': f"{risk_scores.loc[risk_scores['Группа риска'] == 'Метаболическая детоксикация', 'Риск-скор'].values[0] * 10}%",
-                                    'background-color': get_color_under_normal_dist(
-                                        100-(risk_scores.loc[risk_scores['Группа риска'] == 'Метаболическая детоксикация', 'Риск-скор'].values[0] * 10)
-                                    ),
-                                    'border-radius': '2px',
-                                    'height': '13px',
-                                    'line-height': 'normal',
-                                    'display': 'inline-block',
-                                    'vertical-align': 'center',
-                                }),
-                            ], style={'display': 'flex', 'align-self': 'center','width': '70px', 'height': '13px','line-height': 'normal', 'border-radius': '2px','background-color':  'lightgrey', 'margin-left':'5px', 'margin-right':'5px'}),
-                            html.B(
-                                f"{risk_scores.loc[risk_scores['Группа риска'] == 'Метаболическая детоксикация', 'Риск-скор'].values[0]} из 10",
-                                style={'margin': '0px', 'color': '#404547'}
-                            )
-                        ], style ={'display': 'flex', 'flex-direction': 'row', 'flex-wrap': 'nowrap'})
-                    ],  style={
-                        'color': 'black',
-                        'font-family': 'Calibri',
-                        'font-size': '16px',
-                        'margin': '0px',
-                        'display': 'flex',
-                        'justify-content': 'space-between',
-                        'margin-bottom': '0px',
-                        'margin-top': '10px'
-                    }),
-                    
-                    html.Div([], style={
-                        'width': "100%",
-                        'background-color': "#2563eb",
-                        'height': '2px',
-                        'line-height': 'normal',
-                        'display': 'inline-block',
-                        'vertical-align': 'center',
-                        'margin-bottom':'2px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 - amiac_detox_score}%',
-                                'background-color': get_color_under_normal_dist(amiac_detox_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center',
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px', 'margin-right': '5px'}),
-                        html.Div([
-                            html.P('Аммиачная детоксикация', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 - oxidative_stress_score}%',
-                                'background-color': get_color_under_normal_dist(oxidative_stress_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center',
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px', 'margin-right': '5px'}),
-                        html.Div([
-                            html.P('Оксидативная нагрузка', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  nitrogen_toxic_score}%',
-                                'background-color': get_color_under_normal_dist(nitrogen_toxic_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px', 'margin-right': '5px'}),
-                        html.Div([
-                            html.P('Азотистые токсины', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.P('3. Воспаление и иммунитет', style={'margin': '0px', 'margin-bottom': '1px', 'color': '#404547'}),
-                        html.Div([
-                            html.Div([
-                                html.Div([], style={
-                                    'width': f"{risk_scores.loc[risk_scores['Группа риска'] == 'Воспаление и иммунитет', 'Риск-скор'].values[0] * 10}%",
-                                    'background-color': get_color_under_normal_dist(
-                                        100-(risk_scores.loc[risk_scores['Группа риска'] == 'Воспаление и иммунитет', 'Риск-скор'].values[0] * 10)
-                                    ),
-                                    'border-radius': '2px',
-                                    'height': '13px',
-                                    'line-height': 'normal',
-                                    'display': 'inline-block',
-                                    'vertical-align': 'center',
-                                }),
-                            ], style={'display': 'flex', 'align-self': 'center','width': '70px', 'height': '13px','line-height': 'normal', 'border-radius': '2px','background-color':  'lightgrey', 'margin-left':'5px', 'margin-right':'5px'}),
-                            html.B(
-                                f"{risk_scores.loc[risk_scores['Группа риска'] == 'Воспаление и иммунитет', 'Риск-скор'].values[0]} из 10",
-                                style={'margin': '0px', 'color': '#404547'}
-                            )
-                        ], style ={'display': 'flex', 'flex-direction': 'row', 'flex-wrap': 'nowrap'})
-                    ],  style={
-                        'color': 'black',
-                        'font-family': 'Calibri',
-                        'font-weight': 'bold',
-                        'font-size': '16px',
-                        'margin': '0px',
-                        'display': 'flex',
-                        'justify-content': 'space-between',
-                        'margin-bottom': '0px',
-                        'margin-top': '30px'
-                    }),
-                    
-                    html.Div([], style={
-                        'width': "100%",
-                        'background-color': "#2563eb",
-                        'height': '2px',
-                        'line-height': 'normal',
-                        'display': 'inline-block',
-                        'vertical-align': 'center',
-                        'margin-bottom':'2px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  ido_path_tryptophan_score}%',
-                                'background-color': get_color_under_normal_dist(ido_path_tryptophan_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px', 'margin-right': '5px'}),
-                        html.Div([
-                            html.P('IDO-путь / триптофан', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  neuromediators_score}%',
-                                'background-color': get_color_under_normal_dist(neuromediators_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px', 'margin-right': '5px'}),
-                        html.Div([
-                            html.P('Нейромедиаторы', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 - indols_phenols_score}%',
-                                'background-color': get_color_under_normal_dist(indols_phenols_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px', 'margin-right': '5px'}),
-                        html.Div([
-                            html.P('Индолы и фенолы', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 - general_stress_immune_score}%',
-                                'background-color': get_color_under_normal_dist(general_stress_immune_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px', 'margin-right': '5px'}),
-                        html.Div([
-                            html.P('Общий стресс / иммунитет', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  complex_index}%',
-                                'background-color': get_color_under_normal_dist(complex_index),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px', 'margin-right': '5px'}),
-                        html.Div([
-                            html.P('Комплексный индекс', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                ], style={'width': '48%', 'height': 'fit-content'}),
-                
-            # колонка 222222222222222222222222222222222
-            
-            html.Div([
-                    html.Div([
-                        html.P('2. Здоровье митохондрий', style={'margin': '0px', 'margin-bottom': '1px','font-weight': 'bold', 'color': '#404547'}),
-                        html.Div([
-                            html.Div([
-                                html.Div([], style={
-                                    'width': f"{risk_scores.loc[risk_scores['Группа риска'] == 'Здоровье митохондрий', 'Риск-скор'].values[0] * 10}%",
-                                    'background-color': get_color_under_normal_dist(
-                                        100-(risk_scores.loc[risk_scores['Группа риска'] == 'Здоровье митохондрий', 'Риск-скор'].values[0] * 10)
-                                    ),
-                                    'border-radius': '2px',
-                                    'height': '13px',
-                                    'line-height': 'normal',
-                                    'display': 'inline-block',
-                                    'vertical-align': 'center',
-                                }),
-                            ], style={'display': 'flex', 'align-self': 'center','width': '70px', 'height': '13px','line-height': 'normal', 'border-radius': '2px','background-color':  'lightgrey', 'margin-left':'5px', 'margin-right':'5px'}),
-                            html.B(
-                                f"{risk_scores.loc[risk_scores['Группа риска'] == 'Здоровье митохондрий', 'Риск-скор'].values[0]} из 10",
-                                style={'margin': '0px', 'color': '#404547'}
-                            )
-                        ], style ={'display': 'flex', 'flex-direction': 'row', 'flex-wrap': 'nowrap'})
-                    ],  style={
-                        'color': 'black',
-                        'font-family': 'Calibri',
-                        'font-size': '16px',
-                        'margin': '0px',
-                        'display': 'flex',
-                        'justify-content': 'space-between',
-                        'margin-bottom': '0px',
-                        'margin-top': '10px'
-                    }),
-                    
-                    html.Div([], style={
-                        'width': "100%",
-                        'background-color': "#2563eb",
-                        'height': '2px',
-                        'line-height': 'normal',
-                        'display': 'inline-block',
-                        'vertical-align': 'center',
-                        'margin-bottom':'2px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 - energy_exchange_carnitine_score}%',
-                                'background-color': get_color_under_normal_dist(energy_exchange_carnitine_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px', 'margin-right': '5px'}),
-                        html.Div([
-                            html.P('Энергетический обмен', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  mitochondrial_score}%',
-                                'background-color': get_color_under_normal_dist(mitochondrial_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px', 'margin-right': '5px'}),
-                        html.Div([
-                            html.P('β-окисление / жирные кислоты', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  antoxidant_system}%',
-                                'background-color': get_color_under_normal_dist(antoxidant_system),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px', 'margin-right': '5px'}),
-                        html.Div([
-                            html.P('Антиоксидантная защита', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -   complex_index}%',
-                                'background-color': get_color_under_normal_dist(complex_index),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px', 'margin-right': '5px'}),
-                        html.Div([
-                            html.P('Митохондриальная нейросвязь', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                     html.Div([
-                         
-                        html.Div([
-                        html.P('4.', style={'margin': '0px', 'margin-bottom': '1px', 'font-weight': 'bold', 'margin-right': '5px', 'color': '#404547'} ),
-                        html.P('Метаболическая адаптация и стрессоустойчивость', style={'margin': '0px', 'margin-bottom': '1px', 'width':'200px', 'font-weight': 'bold', 'color': '#404547'}),
-                        ], style={'display': 'flex', 'justify-content': 'left', 'width': 'auto', 'height': '18px'}),
-                        
-                        html.Div([
-                            html.Div([
-                                html.Div([], style={
-                                    'width': f"{risk_scores.loc[risk_scores['Группа риска'] == 'Метаболическая адаптация и стрессоустойчивость', 'Риск-скор'].values[0] * 10}%",
-                                    'background-color': get_color_under_normal_dist(
-                                        100-(risk_scores.loc[risk_scores['Группа риска'] == 'Метаболическая адаптация и стрессоустойчивость', 'Риск-скор'].values[0] * 10)
-                                    ),
-                                    'border-radius': '2px',
-                                    'height': '13px',
-                                    'line-height': 'normal',
-                                    'display': 'inline-block',
-                                    'vertical-align': 'center',
-                                }),
-                            ], style={'display': 'flex', 'align-self': 'center','width': '70px', 'height': '13px','line-height': 'normal', 'border-radius': '2px','background-color':  'lightgrey', 'margin-left':'5px', 'margin-right':'5px'}),
-                            html.B(
-                                f"{risk_scores.loc[risk_scores['Группа риска'] == 'Метаболическая адаптация и стрессоустойчивость', 'Риск-скор'].values[0]} из 10",
-                                style={'margin': '0px', 'color': '#404547'}
-                            )
-                        ], style ={'display': 'flex', 'flex-direction': 'row', 'flex-wrap': 'nowrap', 'align-items': 'center'})
-                    ],  style={
-                        'color': 'black',
-                        'font-family': 'Calibri',
-                        'font-size': '16px',
-                        'margin': '0px',
-                        'display': 'flex',
-                        'justify-content': 'space-between',
-                        'margin-bottom': '15px',
-                        'margin-top': '10px'
-                    }),
-                    
-                    
-                    html.Div([], style={
-                        'width': "100%",
-                        'background-color': "#2563eb",
-                        'height': '2px',
-                        'line-height': 'normal',
-                        'display': 'inline-block',
-                        'vertical-align': 'center',
-                        'margin-bottom':'2px'
-                    }),
-                    
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 - energy_exchange_score}%',
-                                'background-color': get_color_under_normal_dist(energy_exchange_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px', 'margin-right': '5px'}),
-                        html.Div([
-                            html.P('Энергетический обмен', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  neuroadaptation_score}%',
-                                'background-color': get_color_under_normal_dist(neuroadaptation_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px', 'margin-right': '5px'}),
-                        html.Div([
-                            html.P('Нейро-адаптация', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  stress_aminoacid_score}%',
-                                'background-color': get_color_under_normal_dist(stress_aminoacid_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px', 'margin-right': '5px'}),
-                        html.Div([
-                            html.P('Стресс-аминокислоты', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  metochondria_creatinine_score}%',
-                                'background-color': get_color_under_normal_dist(metochondria_creatinine_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px', 'margin-right': '5px'}),
-                        html.Div([
-                            html.P('Митохондрии и креатин', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  glutamate_exchange_score}%',
-                                'background-color': get_color_under_normal_dist(glutamate_exchange_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px', 'margin-right': '5px'}),
-                        html.Div([
-                            html.P('Глутамат-глутаминовая ось', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                ], style={'width': '48%', 'height': 'fit-content'}),
-            
+                html.Div(render_category_params('1', 'Метаболическая детоксикация', risk_scores, ref_params), style={'width': '50%'}),
+                html.Div(render_category_params('2', 'Здоровье митохондрий', risk_scores, ref_params), style={'width': '50%'}),
             ], style={
+                'width': '100%',
+                'gap': '20px',
+                'margin-top': '10px',
                 'display': 'flex',
                 'justify-content': 'space-between',
-                'height': 'fit-content',
-                'margin-top': '5px'}),
+                'height': 'fit-content'}),
             
             # Plot risk_scores table
             html.Div([
-                html.Div([
-                    
-                    html.Div([
-                        html.P('5. Витаминный статус', style={'margin': '0px', 'margin-bottom': '1px', 'font-weight': 'bold', 'color': '#404547'}),
-                        html.Div([
-                            html.Div([
-                                html.Div([], style={
-                                    'width': f"{risk_scores.loc[risk_scores['Группа риска'] == 'Витаминный статус', 'Риск-скор'].values[0] * 10}%",
-                                    'background-color': get_color_under_normal_dist(
-                                        100-(risk_scores.loc[risk_scores['Группа риска'] == 'Витаминный статус', 'Риск-скор'].values[0] * 10)
-                                    ),
-                                    'border-radius': '2px',
-                                    'height': '13px',
-                                    'line-height': 'normal',
-                                    'display': 'inline-block',
-                                    'vertical-align': 'center',
-                                }),
-                            ], style={'display': 'flex', 'align-self': 'center','width': '70px', 'height': '13px','line-height': 'normal', 'border-radius': '2px','background-color':  'lightgrey', 'margin-left':'5px', 'margin-right':'5px'}),
-                            html.B(
-                                f"{risk_scores.loc[risk_scores['Группа риска'] == 'Витаминный статус', 'Риск-скор'].values[0]} из 10",
-                                style={'margin': '0px', 'color': '#404547'}
-                            )
-                        ], style ={'display': 'flex', 'flex-direction': 'row', 'flex-wrap': 'nowrap'})
-                    ],  style={
-                        'color': 'black',
-                        'font-family': 'Calibri',
-                        'font-size': '16px',
-                        'margin': '0px',
-                        'display': 'flex',
-                        'justify-content': 'space-between',
-                        'margin-bottom': '0px',
-                        'margin-top': '10px'
-                    }),
-                    
-                    html.Div([], style={
-                        'width': "100%",
-                        'background-color': "#2563eb",
-                        'height': '2px',
-                        'line-height': 'normal',
-                        'display': 'inline-block',
-                        'vertical-align': 'center',
-                        'margin-bottom':'2px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  vitamine_b2_score}%',
-                                'background-color': get_color_under_normal_dist(vitamine_b2_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px', 'margin-right': '5px'}),
-                        html.Div([
-                            html.P('Витамин B2 (рибофлавин)', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  vitamine_b5_score}%',
-                                'background-color': get_color_under_normal_dist(vitamine_b5_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px', 'margin-right': '5px'}),
-                        html.Div([
-                            html.P('Витамин B5 (пантотенат)', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  vitamine_b6_score}%',
-                                'background-color': get_color_under_normal_dist(vitamine_b6_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px', 'margin-right': '5px'}),
-                        html.Div([
-                            html.P('Витамин B6', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  vitamine_b9_b12_score}%',
-                                'background-color': get_color_under_normal_dist(vitamine_b9_b12_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px', 'margin-right': '5px'}),
-                        html.Div([
-                            html.P('Витамин B9 / B12', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  vitamine_b3_nad_score}%',
-                                'background-color': get_color_under_normal_dist(vitamine_b3_nad_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px', 'margin-right': '5px'}),
-                        html.Div([
-                            html.P('Витамин B3 / NAD+', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  serum_aminoacids_score}%',
-                                'background-color': get_color_under_normal_dist(serum_aminoacids_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px', 'margin-right': '5px'}),
-                        html.Div([
-                            html.P('Серосодержащие аминокислоты', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 - energy_exchange_score}%',
-                                'background-color': get_color_under_normal_dist(energy_exchange_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px', 'margin-right': '5px'}),
-                        html.Div([
-                            html.P('Энергетический баланс', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  neurotroph_reserv_score}%',
-                                'background-color': get_color_under_normal_dist(neurotroph_reserv_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px', 'margin-right': '5px'}),
-                        html.Div([
-                            html.P('Нейротрофный резерв', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    
-                ], style={'width': '48%', 'height': 'fit-content'}),
-                
-            # колонка 222222222222222222222222222222222
-            
-            html.Div([
-                    html.Div([
-                        html.P('6. Статус микробиоты', style={'margin': '0px', 'margin-bottom': '1px', 'font-weight': 'bold', 'color': '#404547'}),
-                        html.Div([
-                            html.Div([
-                                html.Div([], style={
-                                    'width': f"{risk_scores.loc[risk_scores['Группа риска'] == 'Статус микробиоты', 'Риск-скор'].values[0] * 10}%",
-                                    'background-color': get_color_under_normal_dist(
-                                        100-(risk_scores.loc[risk_scores['Группа риска'] == 'Статус микробиоты', 'Риск-скор'].values[0] * 10)
-                                    ),
-                                    'border-radius': '2px',
-                                    'height': '13px',
-                                    'line-height': 'normal',
-                                    'display': 'inline-block',
-                                    'vertical-align': 'center',
-                                }),
-                            ], style={'display': 'flex', 'align-self': 'center','width': '70px', 'height': '13px','line-height': 'normal', 'border-radius': '2px','background-color':  'lightgrey', 'margin-left':'5px', 'margin-right':'5px'}),
-                            html.B(
-                                f"{risk_scores.loc[risk_scores['Группа риска'] == 'Статус микробиоты', 'Риск-скор'].values[0]} из 10",
-                                style={'margin': '0px', 'color': '#404547'}
-                            )
-                        ], style ={'display': 'flex', 'flex-direction': 'row', 'flex-wrap': 'nowrap'})
-                    ],  style={
-                        'color': 'black',
-                        'font-family': 'Calibri',
-                        'font-size': '16px',
-                        'margin': '0px',
-                        'display': 'flex',
-                        'justify-content': 'space-between',
-                        'margin-bottom': '0px',
-                        'margin-top': '10px',
-                    }),
-                    
-                    html.Div([], style={
-                        'width': "100%",
-                        'background-color': "#2563eb",
-                        'height': '2px',
-                        'line-height': 'normal',
-                        'display': 'inline-block',
-                        'vertical-align': 'center',
-                        'margin-bottom':'2px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 - tryptophan_metabolism_score}%',
-                                'background-color': get_color_under_normal_dist(tryptophan_metabolism_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px', 'margin-right': '5px'}),
-                        html.Div([
-                            html.P('Метаболизм триптофана', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  inflam_immune_score}%',
-                                'background-color': get_color_under_normal_dist(inflam_immune_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px', 'margin-right': '5px'}),
-                        html.Div([
-                            html.P('Воспаление и иммунитет', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '10px'
-                    }),
-                    
-                html.Div([
-                        html.P('7. Резистентность к стрессорам', style={'margin': '0px', 'margin-bottom': '1px', 'font-weight': 'bold', 'color': '#404547'}),
-                        html.Div([
-                            html.Div([
-                                html.Div([], style={
-                                    'width': f"{risk_scores.loc[risk_scores['Группа риска'] == 'Резистентность к стрессорам', 'Риск-скор'].values[0] * 10}%",
-                                    'background-color': get_color_under_normal_dist(
-                                        100-(risk_scores.loc[risk_scores['Группа риска'] == 'Резистентность к стрессорам', 'Риск-скор'].values[0] * 10)
-                                    ),
-                                    'border-radius': '2px',
-                                    'height': '13px',
-                                    'line-height': 'normal',
-                                    'display': 'inline-block',
-                                    'vertical-align': 'center',
-                                }),
-                            ], style={'display': 'flex', 'align-self': 'center','width': '70px', 'height': '13px','line-height': 'normal', 'border-radius': '2px','background-color':  'lightgrey', 'margin-left':'5px', 'margin-right':'5px'}),
-                            html.B(
-                                f"{risk_scores.loc[risk_scores['Группа риска'] == 'Резистентность к стрессорам', 'Риск-скор'].values[0]} из 10",
-                                style={'margin': '0px', 'color': '#404547'}
-                            )
-                        ], style ={'display': 'flex', 'flex-direction': 'row', 'flex-wrap': 'nowrap'})
-                    ], style={
-                        'color': 'black',
-                        'font-family': 'Calibri',
-                        'font-size': '16px',
-                        'margin': '0px',
-                        'display': 'flex',
-                        'justify-content': 'space-between',
-                        'margin-bottom': '0px',
-                        'margin-top': '12px'
-                    }),
-                    
-                    
-                    html.Div([], style={
-                        'width': "100%",
-                        'background-color': "#2563eb",
-                        'height': '2px',
-                        'line-height': 'normal',
-                        'display': 'inline-block',
-                        'vertical-align': 'center',
-                        'margin-bottom':'2px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 - oxidative_stress_score}%',
-                                'background-color': get_color_under_normal_dist(oxidative_stress_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px', 'margin-right': '5px'}),
-                        html.Div([
-                            html.P('Оксидативный стресс', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  inflam_and_microbiotic_score}%',
-                                'background-color': get_color_under_normal_dist(inflam_and_microbiotic_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px', 'margin-right': '5px'}),
-                        html.Div([
-                            html.P('Воспаление и микробный стресс', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    # html.Div([
-                    #     html.Div([
-                    #         html.Div([], style={
-                    #             'width': f'{100 -  aromatic_toxic_score}%',
-                    #             'background-color': get_color_under_normal_dist(aromatic_toxic_score),
-                    #             'border-radius': '5px',
-                    #             'height': '10px',
-                    #             'line-height': 'normal',
-                    #             'display': 'inline-block',
-                    #             'vertical-align': 'center'
-                    #         }),
-                    #     ], style={'width': '23%', 'height': '18px', 'line-height': '18px', 'margin-right': '5px'}),
-                    #     html.Div([
-                    #         html.P('Ароматические токсины', style={
-                    #             'margin': '0px',
-                    #             'font-size': '14px',
-                    #             'font-family': 'Calibri',
-                    #             'height': '18px',
-                    #             'margin-left': '3px'
-                    #         })
-                    #     ], style={'width': '75%'}),
-                    # ], style={
-                    #     'display': 'flex',
-                    #     'justify-content': 'left',
-                    #     'width': '100%',
-                    #     'height': '18px'
-                    # }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -  nitrogen_toxic_score}%',
-                                'background-color': get_color_under_normal_dist(nitrogen_toxic_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px', 'margin-right': '5px'}),
-                        html.Div([
-                            html.P('Азотистые токсины', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([], style={
-                                'width': f'{100 -   lipid_toxic_score}%',
-                                'background-color': get_color_under_normal_dist(lipid_toxic_score),
-                                'border-radius': '5px',
-                                'height': '10px',
-                                'line-height': 'normal',
-                                'display': 'inline-block',
-                                'vertical-align': 'center'
-                            }),
-                        ], style={'width': '23%', 'height': '18px', 'line-height': '18px', 'margin-right': '5px'}),
-                        html.Div([
-                            html.P('Липидные токсины и β-окисление', style={
-                                'margin': '0px',
-                                'font-size': '14px',
-                                'font-family': 'Calibri',
-                                'height': '18px',
-                                'margin-left': '3px'
-                            })
-                        ], style={'width': '75%'}),
-                    ], style={
-                        'display': 'flex',
-                        'justify-content': 'left',
-                        'width': '100%',
-                        'height': '18px'
-                    }),
-                
-                
-                                            
-                    
-                ], style={'width': '48%', 'height': 'fit-content'}),
-            
-            
-            
-            
+                html.Div(render_category_params('3', 'Воспаление и иммунитет', risk_scores, ref_params), style={'width': '50%'}),
+                html.Div(render_category_params('4', 'Метаболическая адаптация и стрессоустойчивость', risk_scores, ref_params), style={'width': '50%'}),
             ], style={
+                'width': '100%',
+                'gap': '20px',
+                'margin-top': '10px',
                 'display': 'flex',
                 'justify-content': 'space-between',
-                'height': 'fit-content',
-                'margin-top': '5px'}),
+                'height': 'fit-content'}),
             
-            
-            
-            # Подвал
-            html.P('Результаты данного отчета не являются диагнозом и должны быть интерпретированы лечащим врачом на основании клинико-лабораторных данных и других диагностических исследований.',
-                   style={'page-break-after': 'always','color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"left",'font-style':'italic','margin-top':'10px'}),
-            
+            # Plot risk_scores table
             html.Div([
+                html.Div(
+                    render_category_params('5', 'Витаминный статус', risk_scores, ref_params),
+                    style={'width': '50%'}
+                ),
                 html.Div([
-                    html.B(f"Дата: {date}",style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
-                    html.Div([
-                        html.B(f'Пациент: {name}',style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
-                    ],style={'margin-top':'2px'}),
-                ], style={'width':'33.3%'}),
-                html.Div([
-                    html.B("MetaboScan-Test01",style={'margin':'0px','font-size':'18px','font-family':'Calibri','color':'#FFFFFF'}),
-                ], style={'width':'33.3%','text-align':'center'}),
-                html.Div([
-                    html.Img(src=app.get_asset_url('logo.jpg'),style={'height':'54px','float':'right'}),
-                ], style={'width':'33.3%'}),
-            ], style={'display':'flex', 'justify-content':'space-between','width':'100%','height':'54px','color':'#2563eb'}),
+                    render_category_params('6', 'Статус микробиоты', risk_scores, ref_params),
+                    html.Div(style={'height': '10px'}),
+                    render_category_params('7', 'Резистентность к стрессорам', risk_scores, ref_params),
+                ], style={
+                    'width': '50%',
+                    'display': 'flex',
+                    'flex-direction': 'column',
+                }),
+            ], style={
+                'width': '100%',
+                'gap': '20px',
+                'margin-top': '10px',
+                'display': 'flex',
+                'height': 'fit-content'
+            }),
 
-
- html.Div([
-            # ADD info icon
+            # Подвал
+            render_page_footer(page_number=1),
             
+            render_page_header(date=date, name=name),
+
+
+        html.Div([
             html.Img(src=app.get_asset_url('info_icon.png'), style={'width':'20px','height':'20px','margin-right':'15px'}),
-            
             html.Div('Данные по оценке состояния организма получены из экспериментальных данных на образцах из биобанка Центра биофармацевтического анализа и метаболомных исследований Сеченовского университета.',
                     style={'color':'#3d1502','font-family':'Calibri','font-size':'13px','text-align':"left", 'margin': '0px !important'}),
             ], style={'display': 'flex','margin-top':'10px','margin-bottom':'10px', 'flex-direction': 'row','align-items': 'center', 'width':'fit-content', "borderRadius": "0.5rem", 'padding': '5px 7px 5px 15px', 'background-color': '#fee4cf'}),
- 
-html.Div(
-    style={
-        "width": "800px",
-        "margin": "0 auto",
-"marginTop": "10px",
-        "fontFamily": "Calibri, Arial, sans-serif",
-        "display": "flex",
-        "flexWrap": "wrap",
-        "gap": "1rem"
-    },
-    children=[
-        # First Card (50%)
-        html.Div(
-            style={
-                "flex": "0 0 calc(50% - 0.5rem)",
-                "backgroundColor": "white",
-                "border": "1px solid #e5e7eb",
-                "borderRadius": "0.5rem",
-                "padding": "0.25rem 1rem 0.75rem 1rem",
-                "boxSizing": "border-box"
-            },
-            children=[
-                html.Div(
-                    style={
-                        "display": "flex",
-                        "flexWrap": "nowrap",
-                        "gap": "0.75rem",
-                        "alignItems": "flex-start"
-                    },
-                    children=[
-                        # Left Section
-                        html.Div(
-                            style={
-                                "flex": "0 0 30%",
-                                "display": "flex",
-                                "flexDirection": "column",
-                                "alignItems": "center"
-                            },
-                            children=[
-                                html.H2(
-                                    style={
-                                        "fontSize": "0.9rem",
-                                        "fontWeight": "bold",
-                                        "color": "#111827",
-                                        "lineHeight": "1.25",
-                                        "marginBottom": "0.75rem",
-                                        "marginLeft": "0.5rem",
-                                        "alignSelf": "flex-start"
-                                    },
-                                    children=[
-                                        "Состояние",
-                                        html.Br(),
-                                        "сердечно-сосудистой",
-                                        html.Br(),
-                                        "системы"
-                                    ]
-                                ),
-                                # Score Circle
-                                html.Div(
-                                    style={
-                                        "position": "relative",
-                                        "width": "70px",
-                                        "height": "70px",
-                                        "marginBottom": "0.25rem"
-                                    },
-                                    children=[
-                                        dcc.Graph(
-                                            figure={
-                                                "data": [
-                                                    {
-                                                        "type": "pie",
-                                                        "values": [cardiovascular_score, 10-cardiovascular_score],
-                                                        "hole": 0.8,
-                                                        "marker": {
-                                                            "colors": [
-                                                                get_color_under_normal_dist(100 - cardiovascular_score * 10),  # Dynamic color
-                                                                "#e5e7eb"  # Background color
-                                                            ]
-                                                        },
-                                                        "rotation": 90,
-                                                        "direction": "clockwise",
-                                                        "showlegend": False,
-                                                        "textinfo": "none",
-                                                        "hoverinfo": "none"
-                                                    }
-                                                ],
-                                                "layout": {
-                                                    "width": 70,
-                                                    "height": 70,
-                                                    "margin": {"l": 0, "r": 0, "b": 0, "t": 0},
-                                                    "paper_bgcolor": "rgba(0,0,0,0)",
-                                                    "plot_bgcolor": "rgba(0,0,0,0)"
-                                                }
-                                            },
-                                            config={"staticPlot": True},
-                                            style={"position": "absolute", "zIndex": 1}
-                                        ),
-                                        html.Div(
-                                            style={
-                                                "position": "absolute",
-                                                "top": "50%",
-                                                "left": "50%",
-                                                "transform": "translate(-50%, -50%)",
-                                                "textAlign": "center",
-                                                "zIndex": 2,
-                                                "width": "100%"
-                                            },
-                                            children=[
-                                                html.Div(
-                                                    f"{cardiovascular_score}",
-                                                    style={
-                                                        "fontSize": "1.4rem",
-                                                        "fontWeight": "bold",
-                                                        "color": "#111827",
-                                                        "lineHeight": "1"
-                                                    }
-                                                ),
-                                                html.Div(
-                                                    "/10",
-                                                    style={
-                                                        "fontSize": "0.7rem",
-                                                        "color": "#6b7280",
-                                                        "lineHeight": "1"
-                                                    }
-                                                )
-                                            ]
-                                        )
-                                    ]
-                                ),
-                                html.Div(
-                                    get_status_level(100 - cardiovascular_score * 10),
-                                    style={
-                                        "color": get_color_under_normal_dist(100 - cardiovascular_score * 10),
-                                        "fontWeight": "600",
-                                        "fontSize": "0.9rem",
-                                        "textAlign": "center",
-                                        "width": "100%",
-                                        "margin": "0",
-                                        "padding": "0",
-                                        "lineHeight": "1"
-                                    }
-                                )
-                            ]
-                        ),
-                        # Right Section
-                        html.Div(
-                            style={
-                                "flex": "1",
-                                "paddingTop": "0.5rem"
-                            },
-                            children=[
-                                html.H3(
-                                    style={
-                                        "fontSize": "0.8rem",
-                                        "fontWeight": "600",
-                                        "color": "#111827",
-                                        "marginBottom": "0.5rem"
-                                    },
-                                    children="Отражает метаболическую нагрузку на сердце и сосуды"
-                                ),
-                                html.P(
-                                    style={
-                                        "color": "#374151",
-                                        "fontSize": "0.75rem",
-                                        "lineHeight": "1.4",
-                                        "marginBottom": "0.75rem"
-                                    },
-                                    children=[
-                                        "Оценка данного параметра основана на анализе реальных образцов ",
-                                        "плазмы крови пациентов без признаков ССЗ и пациентов с ",
-                                        "различными формами сердечно-сосудистых нарушений."
-                                    ]
-                                ),
-                                # Metrics
-                                html.Div(
-                                    style={
-                                        "display": "flex",
-                                        "gap": "0.75rem",
-                                        "flexWrap": "wrap",
-                                        "marginTop": "0.25rem"
-                                    },
-                                    children=[
-                                        html.Div(
-                                            [
-                                                html.Span("Acc: "),
-                                                html.Span("93,7%", style={"fontWeight": "bold"})
-                                            ],
-                                            style={"fontSize": "0.75rem", "color": "#111827"}
-                                        ),
-                                        html.Div(
-                                            [
-                                                html.Span("Se: "),
-                                                html.Span("94,4%", style={"fontWeight": "bold"})
-                                            ],
-                                            style={"fontSize": "0.75rem", "color": "#111827"}
-                                        ),
-                                        html.Div(
-                                            [
-                                                html.Span("Sp: "),
-                                                html.Span("89,7%", style={"fontWeight": "bold"})
-                                            ],
-                                            style={"fontSize": "0.75rem", "color": "#111827"}
-                                        ),
-                                        html.Div(
-                                            [
-                                                html.Span("+PV: "),
-                                                html.Span("98,2%", style={"fontWeight": "bold"})
-                                            ],
-                                            style={"fontSize": "0.75rem", "color": "#111827"}
-                                        ),
-                                        html.Div(
-                                            [
-                                                html.Span("-PV: "),
-                                                html.Span("73,2%", style={"fontWeight": "bold"})
-                                            ],
-                                            style={"fontSize": "0.75rem", "color": "#111827"}
-                                        )
-                                    ]
-                                )
-                            ]
-                        )
-                    ]
-                )
-            ]
-        ),
-        # Second Card (50%)
-        html.Div(
-            style={
-                "flex": "0 0 calc(50% - 0.5rem)",
-                "backgroundColor": "white",
-                "border": "1px solid #e5e7eb",
-                "borderRadius": "0.5rem",
-                "padding": "0.25rem 1rem 0.75rem 1rem",
-                "boxSizing": "border-box"
-            },
-            children=[
-                html.Div(
-                    style={
-                        "display": "flex",
-                        "flexWrap": "nowrap",
-                        "gap": "1rem",
-                        "alignItems": "flex-start"
-                    },
-                    children=[
-                        # Left Section
-                        html.Div(
-                            style={
-                                "flex": "0 0 30%",
-                                "display": "flex",
-                                "flexDirection": "column",
-                                "alignItems": "center"
-                            },
-                            children=[
-                                html.H2(
-                                    style={
-                                        "fontSize": "0.9rem",
-                                        "fontWeight": "bold",
-                                        "color": "#111827",
-                                        "lineHeight": "1.25",
-                                        "marginBottom": "0.75rem",
-                                        "marginLeft": "0.25rem",
-                                        "alignSelf": "flex-start"
-                                    },
-                                    children=[
-                                        "Оценка",
-                                        html.Br(),
-                                        "пролиферативных",
-                                        html.Br(),
-                                        "процессов"
-                                    ]
-                                ),
-                                # Score Circle
-                                html.Div(
-                                    style={
-                                        "position": "relative",
-                                        "width": "70px",
-                                        "height": "70px",
-                                        "marginBottom": "0.25rem"
-                                    },
-                                    children=[
-                                        dcc.Graph(
-                                                figure={
-                                                    "data": [
-                                                        {
-                                                            "type": "pie",
-                                                            "values": [oncology_score, 10-oncology_score],
-                                                            "hole": 0.8,
-                                                            "marker": {
-                                                                "colors": [
-                                                                    get_color_under_normal_dist(100 - oncology_score * 10),  # Dynamic color
-                                                                    "#e5e7eb"  # Background color
-                                                                ]
-                                                            },
-                                                            "rotation": 90,
-                                                            "direction": "clockwise",
-                                                            "showlegend": False,
-                                                            "textinfo": "none",
-                                                            "hoverinfo": "none"
-                                                        }
-                                                    ],
-                                                    "layout": {
-                                                        "width": 70,
-                                                        "height": 70,
-                                                        "margin": {"l": 0, "r": 0, "b": 0, "t": 0},
-                                                        "paper_bgcolor": "rgba(0,0,0,0)",
-                                                        "plot_bgcolor": "rgba(0,0,0,0)"
-                                                    }
-                                                },
-                                                config={"staticPlot": True},
-                                                style={"position": "absolute", "zIndex": 1}
-                                            ),
-                                            html.Div(
-                                                style={
-                                                    "position": "absolute",
-                                                    "top": "50%",
-                                                    "left": "50%",
-                                                    "transform": "translate(-50%, -50%)",
-                                                    "textAlign": "center",
-                                                    "zIndex": 2,
-                                                    "width": "100%"
-                                                },
-                                                children=[
-                                                    html.Div(
-                                                        f"{oncology_score}",
-                                                        style={
-                                                            "fontSize": "1.4rem",
-                                                            "fontWeight": "bold",
-                                                            "color": "#111827",
-                                                            "lineHeight": "1"
-                                                        }
-                                                    ),
-                                                    html.Div(
-                                                        "/10",
-                                                        style={
-                                                            "fontSize": "0.7rem",
-                                                            "color": "#6b7280",
-                                                            "lineHeight": "1"
-                                                        }
-                                                    )
-                                                ]
-                                            )
-                                        ]
-                                    ),
-                                html.Div(
-                                    get_status_level(100 - oncology_score * 10),
-                                    style={
-                                        "color": get_color_under_normal_dist(100 - oncology_score * 10),
-                                        "fontWeight": "600",
-                                        "fontSize": "0.9rem",
-                                        "textAlign": "center",
-                                        "width": "100%",
-                                        "margin": "0",
-                                        "padding": "0",
-                                        "lineHeight": "1"
-                                    }
-                                )
-                            ]
-                        ),
-                        # Right Section
-                        html.Div(
-                            style={
-                                "flex": "1",
-                                "paddingTop": "0.5rem"
-                            },
-                            children=[
-                                html.H3(
-                                    style={
-                                        "fontSize": "0.8rem",
-                                        "fontWeight": "600",
-                                        "color": "#111827",
-                                        "marginBottom": "0.5rem"
-                                    },
-                                    children="Характеризует метаболическую сбалансированность процессов клеточного обновления, деления и апоптоза."
-                                ),
-                                html.P(
-                                    style={
-                                        "color": "#374151",
-                                        "fontSize": "0.75rem",
-                                        "lineHeight": "1.4",
-                                        "marginBottom": "0.75rem"
-                                    },
-                                    children=[
-                                        "Оценка данного параметра основана на анализе плазмы крови пациентов без признаков ",
-                                        "онкологических заболеваний и пациентов с различными формами опухолевых процессов, а ",
-                                        "именно рак легкого, рак простаты, рак прямой кишки, рак молочной железы и гематологические злокачественные заболевания: лимфомы и множественная миелома."
-                                    ]
-                                ),
-                                # Metrics
-                                html.Div(
-                                    style={
-                                        "display": "flex",
-                                        "gap": "0.75rem",
-                                        "flexWrap": "wrap",
-                                        "marginTop": "0.25rem"
-                                    },
-                                    children=[
-                                        html.Div(
-                                            [
-                                                html.Span("Acc: "),
-                                                html.Span("92,1%", style={"fontWeight": "bold"})
-                                            ],
-                                            style={"fontSize": "0.75rem", "color": "#111827"}
-                                        ),
-                                        html.Div(
-                                            [
-                                                html.Span("Se: "),
-                                                html.Span("90,5%", style={"fontWeight": "bold"})
-                                            ],
-                                            style={"fontSize": "0.75rem", "color": "#111827"}
-                                        ),
-                                        html.Div(
-                                            [
-                                                html.Span("Sp: "),
-                                                html.Span("89,2%", style={"fontWeight": "bold"})
-                                            ],
-                                            style={"fontSize": "0.75rem", "color": "#111827"}
-                                        ),
-                                        html.Div(
-                                            [
-                                                html.Span("+PV: "),
-                                                html.Span("91,8%", style={"fontWeight": "bold"})
-                                            ],
-                                            style={"fontSize": "0.75rem", "color": "#111827"}
-                                        ),
-                                        html.Div(
-                                            [
-                                                html.Span("-PV: "),
-                                                html.Span("86,1%", style={"fontWeight": "bold"})
-                                            ],
-                                            style={"fontSize": "0.75rem", "color": "#111827"}
-                                        )
-                                    ]
-                                )
-                            ]
-                        )
-                    ]
-                )
-            ]
-        )
-    ]
-),html.Div(
-    style={
-        "width": "800px",
-        "margin": "0 auto",
-"marginTop": "15px",
-        "fontFamily": "Calibri, Arial, sans-serif",
-        "display": "flex",
-        "flexWrap": "wrap",
-        "gap": "1rem"
-    },
-    children=[
-        # First Card (50%)
-        html.Div(
-            style={
-                "flex": "0 0 calc(50% - 0.5rem)",
-                "backgroundColor": "white",
-                "border": "1px solid #e5e7eb",
-                "borderRadius": "0.5rem",
-                "padding": "0.25rem 1rem 0.75rem 1rem",
-                "boxSizing": "border-box"
-            },
-            children=[
-                html.Div(
-                    style={
-                        "display": "flex",
-                        "flexWrap": "nowrap",
-                        "gap": "0.75rem",
-                        "alignItems": "flex-start"
-                    },
-                    children=[
-                        # Left Section
-                        html.Div(
-                            style={
-                                "flex": "0 0 30%",
-                                "display": "flex",
-                                "flexDirection": "column",
-                                "alignItems": "center"
-                            },
-                            children=[
-                                html.H2(
-                                    style={
-                                        "fontSize": "0.9rem",
-                                        "fontWeight": "bold",
-                                        "color": "#111827",
-                                        "lineHeight": "1.25",
-                                        "marginBottom": "0.75rem",
-                                        "marginLeft": "0.5rem",
-                                        "alignSelf": "flex-start"
-                                    },
-                                    children=[
-                                        "Состояние",
-                                        html.Br(),
-                                        "функции печени",
-                                    ]
-                                ),
-                                
-
-                                html.Div(
-                                        style={
-                                            "position": "relative",
-                                            "width": "70px",
-                                            "height": "70px",
-                                            "marginBottom": "0.25rem"
-                                        },
-                                        children=[
-                                            dcc.Graph(
-                                                figure={
-                                                    "data": [
-                                                        {
-                                                            "type": "pie",
-                                                            "values": [liver_score, 10-liver_score],
-                                                            "hole": 0.8,
-                                                            "marker": {
-                                                                "colors": [
-                                                                    get_color_under_normal_dist(100 - liver_score * 10),  # Dynamic color
-                                                                    "#e5e7eb"  # Background color
-                                                                ]
-                                                            },
-                                                            "rotation": 90,
-                                                            "direction": "clockwise",
-                                                            "showlegend": False,
-                                                            "textinfo": "none",
-                                                            "hoverinfo": "none"
-                                                        }
-                                                    ],
-                                                    "layout": {
-                                                        "width": 70,
-                                                        "height": 70,
-                                                        "margin": {"l": 0, "r": 0, "b": 0, "t": 0},
-                                                        "paper_bgcolor": "rgba(0,0,0,0)",
-                                                        "plot_bgcolor": "rgba(0,0,0,0)"
-                                                    }
-                                                },
-                                                config={"staticPlot": True},
-                                                style={"position": "absolute", "zIndex": 1}
-                                            ),
-                                            html.Div(
-                                                style={
-                                                    "position": "absolute",
-                                                    "top": "50%",
-                                                    "left": "50%",
-                                                    "transform": "translate(-50%, -50%)",
-                                                    "textAlign": "center",
-                                                    "zIndex": 2,
-                                                    "width": "100%"
-                                                },
-                                                children=[
-                                                    html.Div(
-                                                        f"{liver_score}",
-                                                        style={
-                                                            "fontSize": "1.4rem",
-                                                            "fontWeight": "bold",
-                                                            "color": "#111827",
-                                                            "lineHeight": "1"
-                                                        }
-                                                    ),
-                                                    html.Div(
-                                                        "/10",
-                                                        style={
-                                                            "fontSize": "0.7rem",
-                                                            "color": "#6b7280",
-                                                            "lineHeight": "1"
-                                                        }
-                                                    )
-                                                ]
-                                            )
-                                        ]
-                                    ),
-                                html.Div(
-                                    get_status_level(100 - liver_score * 10),
-                                    style={
-                                        "color": get_color_under_normal_dist(100 - liver_score * 10),
-                                        "fontWeight": "600",
-                                        "fontSize": "0.9rem",
-                                        "textAlign": "center",
-                                        "width": "100%",
-                                        "margin": "0",
-                                        "padding": "0",
-                                        "lineHeight": "1"
-                                    }
-                                )
-                            ]
-                        ),
-                        # Right Section
-                        html.Div(
-                            style={
-                                "flex": "1",
-                                "paddingTop": "0.5rem"
-                            },
-                            children=[
-                                html.H3(
-                                    style={
-                                        "fontSize": "0.8rem",
-                                        "fontWeight": "600",
-                                        "color": "#111827",
-                                        "marginBottom": "0.5rem"
-                                    },
-                                    children="Оценивает вовлеченность печени в обменные и детоксикационные процессы организма"
-                                ),
-                                html.P(
-                                    style={
-                                        "color": "#374151",
-                                        "fontSize": "0.75rem",
-                                        "lineHeight": "1.4",
-                                        "marginBottom": "0.75rem"
-                                    },
-                                    children=[
-                                        "Оценка данного параметра основана на анализе плазмы крови пациентов без признаков ",
-                                        "заболеваний печени и пациентов с различными нарушениями гепатобилиарной функции, ",
-                                        "включая неалкогольную жировую болезнь печени (НАЖБП), хронический гепатит, алкогольное ",
-                                        "поражение печени и цирроз."
-                                    ]
-                                ),
-                                # Metrics
-                                html.Div(
-                                    style={
-                                        "display": "flex",
-                                        "gap": "0.75rem",
-                                        "flexWrap": "wrap",
-                                        "marginTop": "0.25rem"
-                                    },
-                                    children=[
-                                        html.Div(
-                                            [
-                                                html.Span("Acc: "),
-                                                html.Span("91,8%", style={"fontWeight": "bold"})
-                                            ],
-                                            style={"fontSize": "0.75rem", "color": "#111827"}
-                                        ),
-                                        html.Div(
-                                            [
-                                                html.Span("Se: "),
-                                                html.Span("90,7%", style={"fontWeight": "bold"})
-                                            ],
-                                            style={"fontSize": "0.75rem", "color": "#111827"}
-                                        ),
-                                        html.Div(
-                                            [
-                                                html.Span("Sp: "),
-                                                html.Span("87,9%", style={"fontWeight": "bold"})
-                                            ],
-                                            style={"fontSize": "0.75rem", "color": "#111827"}
-                                        ),
-                                        html.Div(
-                                            [
-                                                html.Span("+PV: "),
-                                                html.Span("92,1%", style={"fontWeight": "bold"})
-                                            ],
-                                            style={"fontSize": "0.75rem", "color": "#111827"}
-                                        ),
-                                        html.Div(
-                                            [
-                                                html.Span("-PV: "),
-                                                html.Span("85,4%", style={"fontWeight": "bold"})
-                                            ],
-                                            style={"fontSize": "0.75rem", "color": "#111827"}
-                                        )
-                                    ]
-                                )
-                            ]
-                        )
-                    ]
-                )
-            ]
-        ),
-        # Second Card (50%)
-        html.Div(
-            style={
-                "flex": "0 0 calc(50% - 0.5rem)",
-                "backgroundColor": "white",
-                "border": "1px solid #e5e7eb",
-                "borderRadius": "0.5rem",
-                "padding": "0.25rem 1rem 0.75rem 1rem",
-                "boxSizing": "border-box"
-            },
-            children=[
-                html.Div(
-                    style={
-                        "display": "flex",
-                        "flexWrap": "nowrap",
-                        "gap": "1rem",
-                        "alignItems": "flex-start"
-                    },
-                    children=[
-                        # Left Section
-                        html.Div(
-                            style={
-                                "flex": "0 0 30%",
-                                "display": "flex",
-                                "flexDirection": "column",
-                                "alignItems": "center"
-                            },
-                            children=[
-                                html.H2(
-                                    style={
-                                        "fontSize": "0.9rem",
-                                        "fontWeight": "bold",
-                                        "color": "#111827",
-                                        "lineHeight": "1.25",
-                                        "marginBottom": "0.75rem",
-                                        "marginLeft": "0.25rem",
-                                        "alignSelf": "flex-start"
-                                    },
-                                    children=[
-                                        "Состояние",
-                                        html.Br(),
-                                        "дыхательной",
-                                        html.Br(),
-                                        "системы"
-                                    ]
-                                ),
-                                # Score Circle
-                               html.Div(
-                                        style={
-                                            "position": "relative",
-                                            "width": "70px",
-                                            "height": "70px",
-                                            "marginBottom": "0.25rem"
-                                        },
-                                        children=[
-                                            dcc.Graph(
-                                                figure={
-                                                    "data": [
-                                                        {
-                                                            "type": "pie",
-                                                            "values": [pulmonary_score, 10-pulmonary_score],
-                                                            "hole": 0.8,
-                                                            "marker": {
-                                                                "colors": [
-                                                                    get_color_under_normal_dist(100 - pulmonary_score * 10),  # Dynamic color
-                                                                    "#e5e7eb"  # Background color
-                                                                ]
-                                                            },
-                                                            "rotation": 90,
-                                                            "direction": "clockwise",
-                                                            "showlegend": False,
-                                                            "textinfo": "none",
-                                                            "hoverinfo": "none"
-                                                        }
-                                                    ],
-                                                    "layout": {
-                                                        "width": 70,
-                                                        "height": 70,
-                                                        "margin": {"l": 0, "r": 0, "b": 0, "t": 0},
-                                                        "paper_bgcolor": "rgba(0,0,0,0)",
-                                                        "plot_bgcolor": "rgba(0,0,0,0)"
-                                                    }
-                                                },
-                                                config={"staticPlot": True},
-                                                style={"position": "absolute", "zIndex": 1}
-                                            ),
-                                            html.Div(
-                                                style={
-                                                    "position": "absolute",
-                                                    "top": "50%",
-                                                    "left": "50%",
-                                                    "transform": "translate(-50%, -50%)",
-                                                    "textAlign": "center",
-                                                    "zIndex": 2,
-                                                    "width": "100%"
-                                                },
-                                                children=[
-                                                    html.Div(
-                                                        f"{pulmonary_score}",
-                                                        style={
-                                                            "fontSize": "1.4rem",
-                                                            "fontWeight": "bold",
-                                                            "color": "#111827",
-                                                            "lineHeight": "1"
-                                                        }
-                                                    ),
-                                                    html.Div(
-                                                        "/10",
-                                                        style={
-                                                            "fontSize": "0.7rem",
-                                                            "color": "#6b7280",
-                                                            "lineHeight": "1"
-                                                        }
-                                                    )
-                                                ]
-                                            )
-                                        ]
-                                    ),
-                                html.Div(
-                                    get_status_level(100 - pulmonary_score * 10),
-                                    style={
-                                        "color": get_color_under_normal_dist(100 - pulmonary_score * 10),
-                                        "fontWeight": "600",
-                                        "fontSize": "0.9rem",
-                                        "textAlign": "center",
-                                        "width": "100%",
-                                        "margin": "0",
-                                        "padding": "0",
-                                        "lineHeight": "1"
-                                    }
-                                )
-                            ]
-                        ),
-                        # Right Section
-                        html.Div(
-                            style={
-                                "flex": "1",
-                                "paddingTop": "0.5rem"
-                            },
-                            children=[
-                                html.H3(
-                                    style={
-                                        "fontSize": "0.8rem",
-                                        "fontWeight": "600",
-                                        "color": "#111827",
-                                        "marginBottom": "0.5rem"
-                                    },
-                                    children="Показывает метаболическую адаптацию дыхательной системы к физиологическим нагрузкам и внешним факторам"
-                                ),
-                                html.P(
-                                    style={
-                                        "color": "#374151",
-                                        "fontSize": "0.75rem",
-                                        "lineHeight": "1.4",
-                                        "marginBottom": "0.75rem"
-                                    },
-                                    children=[
-                                        "Оценка данного параметра основана на анализе плазмы крови пациентов без признаков легочной дисфункции и пациентов с хроническими заболеваниями ",
-                                        "дыхательных путей, включая бронхиальную астму, хроническую обструктивную болезнь ",
-                                        "легких (ХОБЛ), постковидный синдром и легочный фиброз."
-                                    ]
-                                ),
-                                # Metrics
-                                html.Div(
-                                    style={
-                                        "display": "flex",
-                                        "gap": "0.75rem",
-                                        "flexWrap": "wrap",
-                                        "marginTop": "0.25rem"
-                                    },
-                                    children=[
-                                        html.Div(
-                                            [
-                                                html.Span("Acc: "),
-                                                html.Span("90,4%", style={"fontWeight": "bold"})
-                                            ],
-                                            style={"fontSize": "0.75rem", "color": "#111827"}
-                                        ),
-                                        html.Div(
-                                            [
-                                                html.Span("Se: "),
-                                                html.Span("88,9%", style={"fontWeight": "bold"})
-                                            ],
-                                            style={"fontSize": "0.75rem", "color": "#111827"}
-                                        ),
-                                        html.Div(
-                                            [
-                                                html.Span("Sp: "),
-                                                html.Span("86,2%", style={"fontWeight": "bold"})
-                                            ],
-                                            style={"fontSize": "0.75rem", "color": "#111827"}
-                                        ),
-                                        html.Div(
-                                            [
-                                                html.Span("+PV: "),
-                                                html.Span("89,7%", style={"fontWeight": "bold"})
-                                            ],
-                                            style={"fontSize": "0.75rem", "color": "#111827"}
-                                        ),
-                                        html.Div(
-                                            [
-                                                html.Span("-PV: "),
-                                                html.Span("84,5%", style={"fontWeight": "bold"})
-                                            ],
-                                            style={"fontSize": "0.75rem", "color": "#111827"}
-                                        )
-                                    ]
-                                )
-                            ]
-                        )
-                    ]
-                )
-            ]
-        )
-    ]
-),
-html.Div(
-    style={
-        "width": "800px",
-        "margin": "0 auto",
-        "marginTop": "15px",
-        "fontFamily": "Calibri, Arial, sans-serif",
-        "display": "flex",
-        "flexWrap": "wrap",
-        "gap": "1rem"
-    },
-    children=[
-#         # First Card (50%)
-#         html.Div(
-#             style={
-#                 "flex": "0 0 calc(50% - 0.5rem)",
-#                 "backgroundColor": "white",
-#                 "border": "1px solid #e5e7eb",
-#                 "borderRadius": "0.5rem",
-#                 "padding": "0.25rem 1rem 0.75rem 1rem",
-#                 "boxSizing": "border-box"
-#             },
-#             children=[
-#                 html.Div(
-#                     style={
-#                         "display": "flex",
-#                         "flexWrap": "nowrap",
-#                         "gap": "0.75rem",
-#                         "alignItems": "flex-start"
-#                     },
-#                     children=[
-#                         # Left Section
-#                         html.Div(
-#                             style={
-#                                 "flex": "0 0 30%",
-#                                 "display": "flex",
-#                                 "flexDirection": "column",
-#                                 "alignItems": "center"
-#                             },
-#                             children=[
-#                                 html.H2(
-#                                     style={
-#                                         "fontSize": "0.9rem",
-#                                         "fontWeight": "bold",
-#                                         "color": "#111827",
-#                                         "lineHeight": "1.25",
-#                                         "marginBottom": "0.75rem",
-#                                         "marginLeft": "0.5rem",
-#                                         "alignSelf": "flex-start"
-#                                     },
-#                                     children=[
-#                                         "Состояние",
-#                                         html.Br(),
-#                                         "углеводного",
-#                                         html.Br(),
-#                                         "обмена"
-#                                     ]
-#                                 ),
-#                                 # Score Circle
-#                                 html.Div(
-#                                         style={
-#                                             "position": "relative",
-#                                             "width": "70px",
-#                                             "height": "70px",
-#                                             "marginBottom": "0.25rem"
-#                                         },
-#                                         children=[
-#                                             dcc.Graph(
-#                                                 figure={
-#                                                     "data": [
-#                                                         {
-#                                                             "type": "pie",
-#                                                             "values": [arthritis_score, 10-arthritis_score],
-#                                                             "hole": 0.8,
-#                                                             "marker": {
-#                                                                 "colors": [
-#                                                                     get_color_under_normal_dist(100 - arthritis_score * 10),  # Dynamic color
-#                                                                     "#e5e7eb"  # Background color
-#                                                                 ]
-#                                                             },
-#                                                             "rotation": 90,
-#                                                             "direction": "clockwise",
-#                                                             "showlegend": False,
-#                                                             "textinfo": "none",
-#                                                             "hoverinfo": "none"
-#                                                         }
-#                                                     ],
-#                                                     "layout": {
-#                                                         "width": 70,
-#                                                         "height": 70,
-#                                                         "margin": {"l": 0, "r": 0, "b": 0, "t": 0},
-#                                                         "paper_bgcolor": "rgba(0,0,0,0)",
-#                                                         "plot_bgcolor": "rgba(0,0,0,0)"
-#                                                     }
-#                                                 },
-#                                                 config={"staticPlot": True},
-#                                                 style={"position": "absolute", "zIndex": 1}
-#                                             ),
-#                                             html.Div(
-#                                                 style={
-#                                                     "position": "absolute",
-#                                                     "top": "50%",
-#                                                     "left": "50%",
-#                                                     "transform": "translate(-50%, -50%)",
-#                                                     "textAlign": "center",
-#                                                     "zIndex": 2,
-#                                                     "width": "100%"
-#                                                 },
-#                                                 children=[
-#                                                     html.Div(
-#                                                         f"{arthritis_score}",
-#                                                         style={
-#                                                             "fontSize": "1.4rem",
-#                                                             "fontWeight": "bold",
-#                                                             "color": "#111827",
-#                                                             "lineHeight": "1"
-#                                                         }
-#                                                     ),
-#                                                     html.Div(
-#                                                         "/10",
-#                                                         style={
-#                                                             "fontSize": "0.7rem",
-#                                                             "color": "#6b7280",
-#                                                             "lineHeight": "1"
-#                                                         }
-#                                                     )
-#                                                 ]
-#                                             )
-#                                         ]
-#                                     ),
-#                                 html.Div(
-#                                     'НЕ ПОДЕЛЮЧЕНА',
-#                                     style={
-#                                         "color": get_color_under_normal_dist(100 - arthritis_score * 10),
-#                                         "fontWeight": "600",
-#                                         "fontSize": "0.9rem",
-#                                         "textAlign": "center",
-#                                         "width": "100%",
-#                                         "margin": "0",
-#                                         "padding": "0",
-#                                         "lineHeight": "1"
-#                                     }
-#                                 )
-#                             ]
-#                         ),
-#                         # Right Section
-#                         html.Div(
-#                             style={
-#                                 "flex": "1",
-#                                 "paddingTop": "0.5rem"
-#                             },
-#                             children=[
-#                                 html.H3(
-#                                     style={
-#                                         "fontSize": "0.8rem",
-#                                         "fontWeight": "600",
-#                                         "color": "#111827",
-#                                         "marginBottom": "0.5rem"
-#                                     },
-#                                     children="Отражает регуляцию глюкозного обмена и метаболическую адаптацию организма к колебаниям уровня сахара"
-#                                 ),
-#                                 html.P(
-#                                     style={
-#                                         "color": "#374151",
-#                                         "fontSize": "0.75rem",
-#                                         "lineHeight": "1.4",
-#                                         "marginBottom": "0.75rem"
-#                                     },
-#                                     children=[
-#                                         "Оценка данного параметра основана на анализе плазмы крови пациентов без признаков нарушений углеводного обмена и пациентов с подтвержденными нарушениями ",
-#                                         "толерантности к глюкозе, инсулинорезистентностью и сахарным диабетом 2 типа."
-#                                     ]
-#                                 ),
-#                                 # Metrics
-#                                 html.Div(
-#                                     style={
-#                                         "display": "flex",
-#                                         "gap": "0.75rem",
-#                                         "flexWrap": "wrap",
-#                                         "marginTop": "0.25rem"
-#                                     },
-#                                     children=[
-#                                         html.Div(
-#                                             [
-#                                                 html.Span("Acc: "),
-#                                                 html.Span("92,5%", style={"fontWeight": "bold"})
-#                                             ],
-#                                             style={"fontSize": "0.75rem", "color": "#111827"}
-#                                         ),
-#                                         html.Div(
-#                                             [
-#                                                 html.Span("Se: "),
-#                                                 html.Span("90,1%", style={"fontWeight": "bold"})
-#                                             ],
-#                                             style={"fontSize": "0.75rem", "color": "#111827"}
-#                                         ),
-#                                         html.Div(
-#                                             [
-#                                                 html.Span("Sp: "),
-#                                                 html.Span("88,3%", style={"fontWeight": "bold"})
-#                                             ],
-#                                             style={"fontSize": "0.75rem", "color": "#111827"}
-#                                         ),
-#                                         html.Div(
-#                                             [
-#                                                 html.Span("+PV: "),
-#                                                 html.Span("91,4%", style={"fontWeight": "bold"})
-#                                             ],
-#                                             style={"fontSize": "0.75rem", "color": "#111827"}
-#                                         ),
-#                                         html.Div(
-#                                             [
-#                                                 html.Span("-PV: "),
-#                                                 html.Span("86,7%", style={"fontWeight": "bold"})
-#                                             ],
-#                                             style={"fontSize": "0.75rem", "color": "#111827"}
-#                                         )
-#                                     ]
-#                                 )
-#                             ]
-#                         )
-#                     ]
-#                 )
-#             ]
-#         ),
-        # Second Card (50%)
-        html.Div(
-            style={
-                "flex": "0 0 calc(50% - 0.5rem)",
-                "backgroundColor": "white",
-                "border": "1px solid #e5e7eb",
-                "borderRadius": "0.5rem",
-                "padding": "0.25rem 1rem 0.75rem 1rem",
-                "boxSizing": "border-box"
-            },
-            children=[
-                html.Div(
-                    style={
-                        "display": "flex",
-                        "flexWrap": "nowrap",
-                        "gap": "1rem",
-                        "alignItems": "flex-start"
-                    },
-                    children=[
-                        # Left Section
-                        html.Div(
-                            style={
-                                "flex": "0 0 30%",
-                                "display": "flex",
-                                "flexDirection": "column",
-                                "alignItems": "center"
-                            },
-                            children=[
-                                html.H2(
-                                    style={
-                                        "fontSize": "0.9rem",
-                                        "fontWeight": "bold",
-                                        "color": "#111827",
-                                        "lineHeight": "1.25",
-                                        "marginBottom": "0.75rem",
-                                        "marginLeft": "0.25rem",
-                                        "alignSelf": "flex-start"
-                                    },
-                                    children=[
-                                        "Состояние",
-                                        html.Br(),
-                                        "иммунного",
-                                        html.Br(),
-                                        "метаболического",
-                                        html.Br(),
-                                        "баланса"
-                                    ]
-                                ),
-                                # Score Circle
-                                 html.Div(
-                                        style={
-                                            "position": "relative",
-                                            "width": "70px",
-                                            "height": "70px",
-                                            "marginBottom": "0.25rem"
-                                        },
-                                        children=[
-                                            dcc.Graph(
-                                                figure={
-                                                    "data": [
-                                                        {
-                                                            "type": "pie",
-                                                            "values": [arthritis_score, 10-arthritis_score],
-                                                            "hole": 0.8,
-                                                            "marker": {
-                                                                "colors": [
-                                                                    get_color_under_normal_dist(100 - arthritis_score * 10),  # Dynamic color
-                                                                    "#e5e7eb"  # Background color
-                                                                ]
-                                                            },
-                                                            "rotation": 90,
-                                                            "direction": "clockwise",
-                                                            "showlegend": False,
-                                                            "textinfo": "none",
-                                                            "hoverinfo": "none"
-                                                        }
-                                                    ],
-                                                    "layout": {
-                                                        "width": 70,
-                                                        "height": 70,
-                                                        "margin": {"l": 0, "r": 0, "b": 0, "t": 0},
-                                                        "paper_bgcolor": "rgba(0,0,0,0)",
-                                                        "plot_bgcolor": "rgba(0,0,0,0)"
-                                                    }
-                                                },
-                                                config={"staticPlot": True},
-                                                style={"position": "absolute", "zIndex": 1}
-                                            ),
-                                            html.Div(
-                                                style={
-                                                    "position": "absolute",
-                                                    "top": "50%",
-                                                    "left": "50%",
-                                                    "transform": "translate(-50%, -50%)",
-                                                    "textAlign": "center",
-                                                    "zIndex": 2,
-                                                    "width": "100%"
-                                                },
-                                                children=[
-                                                    html.Div(
-                                                        f"{arthritis_score}",
-                                                        style={
-                                                            "fontSize": "1.4rem",
-                                                            "fontWeight": "bold",
-                                                            "color": "#111827",
-                                                            "lineHeight": "1"
-                                                        }
-                                                    ),
-                                                    html.Div(
-                                                        "/10",
-                                                        style={
-                                                            "fontSize": "0.7rem",
-                                                            "color": "#6b7280",
-                                                            "lineHeight": "1"
-                                                        }
-                                                    )
-                                                ]
-                                            )
-                                        ]
-                                    ),
-                                html.Div(
-                                    get_status_level(100 - arthritis_score * 10),
-                                    style={
-                                        "color": get_color_under_normal_dist(100 - arthritis_score * 10),
-                                        "fontWeight": "600",
-                                        "fontSize": "0.9rem",
-                                        "textAlign": "center",
-                                        "width": "100%",
-                                        "margin": "0",
-                                        "padding": "0",
-                                        "lineHeight": "1"
-                                    }
-                                )
-                            ]
-                        ),
-                        # Right Section
-                        html.Div(
-                            style={
-                                "flex": "1",
-                                "paddingTop": "0.5rem"
-                            },
-                            children=[
-                                html.H3(
-                                    style={
-                                        "fontSize": "0.8rem",
-                                        "fontWeight": "600",
-                                        "color": "#111827",
-                                        "marginBottom": "0.5rem"
-                                    },
-                                    children="Отражает метаболические отклонения, связанные с хронической активацией иммунной системы и воспалением"
-                                ),
-                                html.P(
-                                    style={
-                                        "color": "#374151",
-                                        "fontSize": "0.75rem",
-                                        "lineHeight": "1.4",
-                                        "marginBottom": "0.75rem"
-                                    },
-                                    children=[
-                                        "Оценка данного параметра основана на анализе плазмы крови пациентов без признаков аутоиммунных ",
-                                        "расстройств и пациентов с установленным диагнозом ревматоидного ",
-                                        "артрита различной степени активности."
-                                    ]
-                                ),
-                                # Metrics
-                                html.Div(
-                                    style={
-                                        "display": "flex",
-                                        "gap": "0.75rem",
-                                        "flexWrap": "wrap",
-                                        "marginTop": "0.25rem"
-                                    },
-                                    children=[
-                                        html.Div(
-                                            [
-                                                html.Span("Acc: "),
-                                                html.Span("93,7%", style={"fontWeight": "bold"})
-                                            ],
-                                            style={"fontSize": "0.75rem", "color": "#111827"}
-                                        ),
-                                        html.Div(
-                                            [
-                                                html.Span("Se: "),
-                                                html.Span("94,4%", style={"fontWeight": "bold"})
-                                            ],
-                                            style={"fontSize": "0.75rem", "color": "#111827"}
-                                        ),
-                                        html.Div(
-                                            [
-                                                html.Span("Sp: "),
-                                                html.Span("89,7%", style={"fontWeight": "bold"})
-                                            ],
-                                            style={"fontSize": "0.75rem", "color": "#111827"}
-                                        ),
-                                        html.Div(
-                                            [
-                                                html.Span("+PV: "),
-                                                html.Span("98,2%", style={"fontWeight": "bold"})
-                                            ],
-                                            style={"fontSize": "0.75rem", "color": "#111827"}
-                                        ),
-                                        html.Div(
-                                            [
-                                                html.Span("-PV: "),
-                                                html.Span("73,2%", style={"fontWeight": "bold"})
-                                            ],
-                                            style={"fontSize": "0.75rem", "color": "#111827"}
-                                        )
-                                    ]
-                                )
-                            ]
-                        )
-                    ]
-                )
-            ]
-        )
-    ]
-),
+            
+            # Main container with all score cards
+            html.Div(
+                style={
+                    "width": "100%",
+                    "margin": "0 auto",
+                    "marginTop": "10px",
+                    "fontFamily": "Calibri, Arial, sans-serif",
+                    "display": "flex",
+                    "flexWrap": "wrap",
+                    "gap": "1rem"
+                },
+                children=[
+                    # First row of cards
+                    html.Div(
+                        style={"width": "100%", "display": "flex", "gap": "1rem"},
+                        children=[
+                            # Cardiovascular Score Card
+                            render_ml_score_card(
+                                title="Состояние сердечно-сосудистой системы",
+                                subtitle="Отражает метаболическую нагрузку на сердце и сосуды",
+                                description='''Оценка данного параметра основана на
+                                                анализе реальных образцов плазмы крови
+                                                пациентов без признаков ССЗ и пациентов с
+                                                различными формами сердечно-сосудистых
+                                                нарушений.
+                                                ''',
+                                metrics={
+                                    "Acc": "93,7%",
+                                    "Se": "94,4%",
+                                    "Sp": "89,7%",
+                                    "+PV": "98,2%",
+                                    "-PV": "73,2%"
+                                },
+                                risk_scores=risk_scores
+                            ),
+                            
+                            # Oncology Score Card
+                            render_ml_score_card(
+                                title="Оценка пролиферативных процессов",
+                                subtitle='''Характеризует метаболическую
+                                            сбалансированность процессов
+                                            клеточного обновления, деления и
+                                            апоптоза''',
+                                description='''Оценка данного параметра основана на
+                                                анализе плазмы крови пациентов без
+                                                признаков онкологических заболеваний и
+                                                пациентов с различными формами
+                                                опухолевых процессов, а именно рак
+                                                легкого, рак простаты, рак прямой кишки,
+                                                рак молочной железы и гематологические
+                                                злокачественные заболевания: лимфомы
+                                                и множественная миелома.
+                                                ''',
+                                metrics={
+                                    "Acc": "92,1%",
+                                    "Se": "90,5%",
+                                    "Sp": "89,2%",
+                                    "+PV": "91,8%",
+                                    "-PV": "86,1%"
+                                },
+                                risk_scores=risk_scores
+                            )
+                        ]
+                    ),
+                    
+                    # Second row of cards
+                    html.Div(
+                        style={"width": "100%", "display": "flex", "gap": "1rem", "marginTop": "10px"},
+                        children=[
+                            # Liver Score Card
+                            render_ml_score_card(
+                                title="Состояние функции печени",
+                                subtitle='''Оценивает вовлеченность печени в
+                                            обменные и детоксикационные процессы
+                                            организма
+                                            ''',
+                                description='''Оценка данного параметра основана на
+                                                анализе плазмы крови пациентов без
+                                                признаков заболеваний печени и пациентов с
+                                                различными нарушениями гепатобилиарной
+                                                функции, включая неалкогольную жировую
+                                                болезнь печени (НАЖБП), хронический
+                                                гепатит, алкогольное поражение печени и
+                                                цирроз.
+                                                ''',
+                                metrics={
+                                    "Acc": "91,8%",
+                                    "Se": "90,7%",
+                                    "Sp": "87,9%",
+                                    "+PV": "92,1%",
+                                    "-PV": "85,4%"
+                                },
+                                risk_scores=risk_scores
+                            ),
+                            
+                            # Pulmonary Score Card
+                            render_ml_score_card(
+                                title="Состояние дыхательной системы",
+                                subtitle='''Показывает метаболическую адаптацию
+                                            дыхательной системы к
+                                            физиологическим нагрузкам и внешним
+                                            факторам''',
+                                description='''Оценка данного параметра основана на
+                                                анализе плазмы крови пациентов без
+                                                признаков легочной дисфункции и
+                                                пациентов с хроническими заболеваниями
+                                                дыхательных путей, включая бронхиальную
+                                                астму, хроническую обструктивную болезнь
+                                                легких (ХОБЛ), постковидный синдром и
+                                                легочный фиброз.
+                                                ''',
+                                metrics={
+                                    "Acc": "90,4%",
+                                    "Se": "88,9%",
+                                    "Sp": "86,2%",
+                                    "+PV": "89,7%",
+                                    "-PV": "84,5%"
+                                },
+                                risk_scores=risk_scores
+                            )
+                        ]
+                    ),
+                    
+                    # Third row (single card)
+                    html.Div(
+                        style={"width": "100%", "display": "flex", "gap": "1rem", "marginTop": "10px"},
+                        children=[
+                            # Immune Score Card
+                            render_ml_score_card(
+                                title="Состояние иммунного метаболического баланса",
+                                subtitle='''Отражает метаболические отклонения,
+                                            связанные с хронической активацией
+                                            иммунной системы и воспалением''',
+                                description='''Оценка данного параметра основана на
+                                                анализе плазмы крови пациентов без
+                                                признаков аутоиммунных расстройств и
+                                                пациентов с установленным диагнозом
+                                                ревматоидного артрита различной степени
+                                                активности.''',
+                                metrics={
+                                    "Acc": "93,7%",
+                                    "Se": "94,4%",
+                                    "Sp": "89,7%",
+                                    "+PV": "98,2%",
+                                    "-PV": "73,2%"
+                                },
+                                risk_scores=risk_scores
+                            ),
+                            
+                            # Empty div to maintain layout
+                            render_ml_score_card(
+                                title="Состояние иммунного метаболического баланса",
+                                subtitle='''Отражает метаболические отклонения,
+                                            связанные с хронической активацией
+                                            иммунной системы и воспалением''',
+                                description='''Оценка данного параметра основана на
+                                                анализе плазмы крови пациентов без
+                                                признаков аутоиммунных расстройств и
+                                                пациентов с установленным диагнозом
+                                                ревматоидного артрита различной степени
+                                                активности.''',
+                                metrics={
+                                    "Acc": "93,7%",
+                                    "Se": "94,4%",
+                                    "Sp": "89,7%",
+                                    "+PV": "98,2%",
+                                    "-PV": "73,2%"
+                                },
+                                risk_scores=risk_scores
+                            ),
+                        ]
+                    )
+                ]
+            ),
+            
             html.Div([
                     html.Div([
                         html.Table([
@@ -4096,4316 +2461,1850 @@ html.Div(
                     'padding': '3px  15px',
                     'background-color': "#dbeafe"
                 }),
-            html.P('Результаты данного отчета не являются диагнозом и должны быть интерпретированы лечащим врачом на основании клинико-лабораторных данных и других диагностических исследований.',
-                   style={'page-break-after': 'always','color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"left",'font-style':'italic','margin-top':'20px'}),
+            render_page_footer(page_number=2),
             # Страница 1.1
             
             # 2 страница
-            html.Div([],style={'height':'8mm','width':'100%'}),
+            
+render_page_header(date=date, name=name),   
+                
+                
+                render_category_header(order_number='1', title='Аминокислоты'),
+                
                 html.Div([
-                    html.Div([
-                        html.B(f"Дата: {date}",style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
-                        html.Div([
-                            html.B(f'Пациент: {name}',style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
-                        ],style={'margin-top':'2px'}),
-                    ], style={'width':'33.3%'}),
-                    html.Div([
-                        html.B("MetaboScan-Test01",style={'margin':'0px','font-size':'18px','font-family':'Calibri','color':'#FFFFFF'}),
-                    ], style={'width':'33.3%','text-align':'center'}),
-                    html.Div([
-                        html.Img(src=app.get_asset_url('logo.jpg'),style={'height':'54px','float':'right'}),
-                    ], style={'width':'33.3%'}),
-                ], style={'display':'flex', 'justify-content':'space-between','width':'100%','height':'54px','color':'#2563eb'}),    
-                html.Div([
-                html.H3(children='1. Аминокислоты', style={'textAlign':'left','margin':'0px','line-height':'normal','display':'inline-block','vertical-align':'center'}),]
-                    , style={'width':'100%','background-color':'#2563eb','border-radius':'5px 5px 0px 0px', 'color':'white','font-family':'Calibri','margin':'0px','height':'35px','line-height':'35px','text-align':'center','margin-top':'5px'}),
-                html.Div([
-                    html.Div([
-                    html.Div([
-                        html.Div([html.B('Метаболизм фенилаланина',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'40px','margin':'0px','font-size':'16px','font-family':'Calibri','color':'#2563eb','line-height':'40px'}),
+                    
+                        # Metabolism of Phenylalanine
+                        render_metabolite_category_header(title="Метаболизм фенилаланина"),
+                    
+                    
+                        # Phenylalanine (Phe)
+                        render_metabolite_row(
+                            concentration=metabolite_data["Phenylalanine"],
+                            ref_stats_entry=ref_stats["Phenylalanine"],
+                            subtitle="Незаменимая глюко-, кетогенная аминокислота"
+                        ),
                         
-                    
-                        html.Div([html.Div('Результат',style={'display':'inline-block', 'fontSize': '14px', 'color': '#4D5052', 'fontWeight': '500'})],style={'width':'7%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center'}),
-                       html.Div([
-                            html.Div([
-                                html.Span('20%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                                html.Span('40%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                                html.Span('60%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                                html.Span('80%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                            ], style={
-                                'width': '100%',
-                                'display': 'flex',
-                                'justify-content': 'space-between',
-                                'font-family': 'Calibri',
-                                'color': '#4D5052',
-                                'font-size': '13px',
-                                'padding': '4px 8px',
-                            })
-                        ], style={
-                            'width': '27%',
-                            'margin': '0px'
-                        }),
-                        html.Div([html.Div('Норма, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'14px','font-family':'Calibri','color':'#4D5052','text-align':'center'}),
-                    ], style={'width':'100%','display':'flex','alignItems':'center','justify-content':'space-between','height':'40px',}), 
-                    ], style={'margin':'0px','margin-left':'20px'}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Фенилаланин (Phe)',style={'height':'20px'}),html.P('Незаменимая глюко-, кетогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px','background-color':'#FFFFFF'}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Тирозин (Tyr)',style={'height':'20px'}),html.P('Заменимая глюко-, кетогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px',}),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([
-                                    html.B('Лейцин + Изолейцин (Leu+Ile)', style={'height': '20px'}),
-                                    html.P('Незаменимая глюко-, кетогенная аминокислота', 
-                                        style={'height': '20px', 'font-size': '12px', 'font-family': 'Calibri', 
-                                                'color': '#2563eb', 'margin': '0px', 'margin-left': '5px', 
-                                                'line-height': '0.9em'})
-                                ], style={'width': '39%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': 'black', 'margin-top': '5px'}),
-                                
-                                html.Div([
-                                    html.Div([
-                                        html.Div([
-                                           
-                                            html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]), 
-                                                style={'text-align': 'right', 'width': '50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})
-                                        ], style={'width': '100%', 'display': 'flex', 'justify-content': 'center','margin-top':'0px'})
-                                    ], style={'height': '20px', 'line-height': 'normal', 'display': 'inline-block', 
-                                            'vertical-align': 'center', 'width': '100%'})
-                                ], style={'width': '8%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 
-                                        'line-height': '53px'}),
-                                
-                            html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                
-                                html.Div([
-                                    html.P(ref_stats["Methylhistidine"]["norm"], 
-                                        style={'height': '20px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center', 'margin': '0'})
-                                ], style={'width': '21%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': 'black', 'text-align': 'center', 
-                                        'line-height': '53px'}),
-                            ], style={'width': '99.2%', 'display': 'flex', 'justify-content': 'space-between',
-                                    'height': '53px', 'margin-left': '5px'}),
-                        ], style={'margin': '0px', 'margin-left': '20px'}),
-                    ], style={'margin': '0px', 'background-color': '#FFFFFF'}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Валин (Val)',style={'height':'20px'}),html.P('Незаменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px',}),
-                    
-                    html.Div([
-                    html.Div([
-                        html.Div([html.B('Метаболизм гистидина',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'40px','margin':'0px','font-size':'16px','font-family':'Calibri','color':'#2563eb','line-height':'40px'}),
-                        html.Div([html.Div('Результат',style={'display':'inline-block', 'fontSize': '14px', 'color': '#4D5052', 'fontWeight': '500'})],style={'width':'7%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center'}),
-                       html.Div([
-                            html.Div([
-                                html.Span('20%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                                html.Span('40%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                                html.Span('60%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                                html.Span('80%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                            ], style={
-                                'width': '100%',
-                                'display': 'flex',
-                                'justify-content': 'space-between',
-                                'font-family': 'Calibri',
-                                'color': '#4D5052',
-                                'font-size': '13px',
-                                'padding': '4px 8px',
-                            })
-                        ], style={
-                            'width': '27%',
-                            'margin': '0px'
-                        }),
-                        html.Div([html.Div('Норма, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'14px','font-family':'Calibri','color':'#4D5052','text-align':'center'}),
-                    ], style={'width':'100%','display':'flex','alignItems':'center','justify-content':'space-between','height':'40px',}), 
-                    ], style={'margin':'0px','margin-left':'20px'}),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Гистидин (His)',style={'height':'20px'}),html.P('Незаменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px','background-color':'#FFFFFF'}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Метилгистидин (MH)',style={'height':'20px'}),html.P('Метаболит карнозина',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px',}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Треонин (Thr)',style={'height':'20px'}),html.P('Незаменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px','background-color':'#FFFFFF'}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Карнозин (Car)',style={'height':'20px'}),html.P('Дипептид, состоящий из аланина и гистидина',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress_left.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px',}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Глицин (Gly)',style={'height':'20px'}),html.P('Заменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px','background-color':'#FFFFFF'}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Диметилглицин (DMG)',style={'height':'20px'}),html.P('Промежуточный продукт синтеза глицина',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px',}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Серин (Ser)',style={'height':'20px'}),html.P('Заменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px','background-color':'#FFFFFF'}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Лизин (Lys)',style={'height':'20px'}),html.P('Незаменимая кетогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px',}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Глутаминовая кислота (Glu)',style={'height':'20px'}),html.P('Заменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px','background-color':'#FFFFFF'}),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Глутамин (Gln)',style={'height':'20px'}),html.P('Заменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px','background-color':'#FFFFFF'}),
-                    
-                                        html.Div([
-                    html.Div([
-                        html.Div([html.B('Метаболизм метионина',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'40px','margin':'0px','font-size':'16px','font-family':'Calibri','color':'#2563eb','line-height':'40px'}),
-                        html.Div([html.Div('Результат',style={'display':'inline-block', 'fontSize': '14px', 'color': '#4D5052', 'fontWeight': '500'})],style={'width':'7%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center'}),
-                       html.Div([
-                            html.Div([
-                                html.Span('20%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                                html.Span('40%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                                html.Span('60%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                                html.Span('80%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                            ], style={
-                                'width': '100%',
-                                'display': 'flex',
-                                'justify-content': 'space-between',
-                                'font-family': 'Calibri',
-                                'color': '#4D5052',
-                                'font-size': '13px',
-                                'padding': '4px 8px',
-                            })
-                        ], style={
-                            'width': '27%',
-                            'margin': '0px'
-                        }),
-                        html.Div([html.Div('Норма, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'14px','font-family':'Calibri','color':'#4D5052','text-align':'center'}),
-                    ], style={'width':'100%','display':'flex','alignItems':'center','justify-content':'space-between','height':'40px',}), 
-                    ], style={'margin':'0px','margin-left':'20px'}),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Метионин (Met)',style={'height':'20px'}),html.P('Незаменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px','background-color':'#FFFFFF'}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Метионин сульфоксид (MetSO)',style={'height':'20px'}),html.P('Продукт окисления метионина',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress_left.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px',}),
-                    
-                ], style={'margin':'0px'}),
-                html.Div([
-                    html.Div([
-                        html.P('Результаты данного отчета не являются диагнозом и должны быть интерпретированы лечащим врачом на основании клинико-лабораторных данных и других диагностических исследований.',
-                            style={'color':'black', 'font-family':'Calibri', 'font-size':'14px', 
-                                    'margin':'0px', 'text-align':"left", 'font-style':'italic',
-                                    'margin-top':'5px', 'width':'85%'}),
-                        html.P('|1',
-                            style={'color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"right",'font-style':'italic','margin-top':'5px','width':'10%','margin-top':'15px'}),
-                    ], style={'display':'flex', 'justify-content':'space-between', 'width':'100%', 
-                            'position': 'absolute', 'left': '0', 'padding': '0'})
-                ], style={'position': 'relative', 'height': '60px', 'width': '100%', 'margin-top': '55px'}),
+                        # Tyrosine (Tyr)
+                        render_metabolite_row(
+                            concentration=metabolite_data["Tyrosin"],
+                            ref_stats_entry=ref_stats["Tyrosin"],
+                            subtitle="Заменимая глюко-, кетогенная аминокислота"
+                        ),
+                        
+                        # Leucine + Isoleucine (Leu+Ile)
+                        render_metabolite_row(
+                            concentration=metabolite_data["Summ Leu-Ile"],
+                            ref_stats_entry=ref_stats["Summ Leu-Ile"],
+                            subtitle="Незаменимая глюко-, кетогенная аминокислота"
+                        ),
+                        
+                        # Valine (Val)
+                        render_metabolite_row(
+                            concentration=metabolite_data["Valine"],
+                            ref_stats_entry=ref_stats["Valine"],
+                            subtitle="Незаменимая глюкогенная аминокислота"
+                        ),
+                        
+                        # Histidine metabolism header
+                        render_metabolite_category_header(title="Метаболизм гистидина"),
+                        
+                        # Histidine (His)
+                        render_metabolite_row(
+                            concentration=metabolite_data["Histidine"],
+                            ref_stats_entry=ref_stats["Histidine"],
+                            subtitle="Незаменимая глюкогенная аминокислота"
+                        ),
+                        
+                        # Methylhistidine (MH)
+                        render_metabolite_row(
+                            concentration=metabolite_data["Methylhistidine"],
+                            ref_stats_entry=ref_stats["Methylhistidine"],
+                            subtitle="Метаболит карнозина"
+                        ),
+                        
+                        # Threonine (Thr)
+                        render_metabolite_row(
+                            concentration=metabolite_data["Threonine"],
+                            ref_stats_entry=ref_stats["Threonine"],
+                            subtitle="Незаменимая глюкогенная аминокислота"
+                        ),
+                        
+                        # Carnosine (Car)
+                        render_metabolite_row(
+                            concentration=metabolite_data["Carnosine"],
+                            ref_stats_entry=ref_stats["Carnosine"],
+                            subtitle="Дипептид, состоящий из аланина и гистидина"
+                        ),
+                        
+                        # Glycine (Gly)
+                        render_metabolite_row(
+                            concentration=metabolite_data["Glycine"],
+                            ref_stats_entry=ref_stats["Glycine"],
+                            subtitle="Заменимая глюкогенная аминокислота"
+                        ),
+                        
+                        # Dimethylglycine (DMG)
+                        render_metabolite_row(
+                            concentration=metabolite_data["DMG"],
+                            ref_stats_entry=ref_stats["DMG"],
+                            subtitle="Промежуточный продукт синтеза глицина"
+                        ),
+                        
+                        # Serine (Ser)
+                        render_metabolite_row(
+                            concentration=metabolite_data["Serine"],
+                            ref_stats_entry=ref_stats["Serine"],
+                            subtitle="Заменимая глюкогенная аминокислота"
+                        ),
+                        
+                        # Lysine (Lys)
+                        render_metabolite_row(
+                            concentration=metabolite_data["Lysine"],
+                            ref_stats_entry=ref_stats["Lysine"],
+                            subtitle="Незаменимая кетогенная аминокислота"
+                        ),
+                        
+                        # Glutamic acid (Glu)
+                        render_metabolite_row(
+                            concentration=metabolite_data["Glutamic acid"],
+                            ref_stats_entry=ref_stats["Glutamic acid"],
+                            subtitle="Заменимая глюкогенная аминокислота"
+                        ),
+                        
+                        # Glutamine (Gln)
+                        render_metabolite_row(
+                            concentration=metabolite_data["Glutamine"],
+                            ref_stats_entry=ref_stats["Glutamine"],
+                            subtitle="Заменимая глюкогенная аминокислота"
+                        ),
+                        
+                        # Methionine metabolism header
+                        render_metabolite_category_header(title="Метаболизм метионина"),
+                        
+                        # Methionine (Met)
+                        render_metabolite_row(
+                            concentration=metabolite_data["Methionine"],
+                            ref_stats_entry=ref_stats["Methionine"],
+                            subtitle="Незаменимая глюкогенная аминокислота"
+                        ),
+                        
+                        # Methionine sulfoxide (MetSO)
+                        render_metabolite_row(
+                            concentration=metabolite_data["Methionine-Sulfoxide"],
+                            ref_stats_entry=ref_stats["Methionine-Sulfoxide"],
+                            subtitle="Продукт окисления метионина"
+                        ),
+                        
+                    ], style={'margin':'0px'}),
+                
+                render_page_footer(page_number=3),
             
             
             
             # 3 страница
             html.Div([
-                html.Div([],style={'height':'8mm','width':'100%'}),
-                html.Div([
-                    html.Div([
-                        html.B(f"Дата: {date}",style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
-                        html.Div([
-                            html.B(f'Пациент: {name}',style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
-                        ],style={'margin-top':'2px'}),
-                    ], style={'width':'33.3%'}),
-                    html.Div([
-                        html.B("MetaboScan-Test01",style={'margin':'0px','font-size':'18px','font-family':'Calibri','color':'#FFFFFF'}),
-                    ], style={'width':'33.3%','text-align':'center'}),
-                    html.Div([
-                        html.Img(src=app.get_asset_url('logo.jpg'),style={'height':'53px','float':'right'}),
-                    ], style={'width':'33.3%'}),
-                ], style={'display':'flex', 'justify-content':'space-between','width':'100%','height':'53px','color':'#2563eb'}),    
+                
+render_page_header(date=date, name=name), 
                 
                 html.Div([
                     
-                    html.Div([
-                    html.Div([
-                        html.Div([html.B('Метаболизм метионина',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'40px','margin':'0px','font-size':'16px','font-family':'Calibri','color':'#2563eb','line-height':'40px'}),
-                        html.Div([html.Div('Результат',style={'display':'inline-block', 'fontSize': '14px', 'color': '#4D5052', 'fontWeight': '500'})],style={'width':'7%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center'}),
-                       html.Div([
-                            html.Div([
-                                html.Span('20%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                                html.Span('40%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                                html.Span('60%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                                html.Span('80%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                            ], style={
-                                'width': '100%',
-                                'display': 'flex',
-                                'justify-content': 'space-between',
-                                'font-family': 'Calibri',
-                                'color': '#4D5052',
-                                'font-size': '13px',
-                                'padding': '4px 8px',
-                            })
-                        ], style={
-                            'width': '27%',
-                            'margin': '0px'
-                        }),
-                        html.Div([html.Div('Норма, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'14px','font-family':'Calibri','color':'#4D5052','text-align':'center'}),
-                    ], style={'width':'100%','display':'flex','alignItems':'center','justify-content':'space-between','height':'40px',}), 
-                    ], style={'margin':'0px','margin-left':'20px'}),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Таурин (Tau)',style={'height':'20px'}),html.P('Заменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px',}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Бетаин (Bet)',style={'height':'20px'}),html.P('Продукт метаболизма холина',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px','background-color':'#FFFFFF'}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Холин (Chl)',style={'height':'20px'}),html.P('Компонент мембран клеток, источник ацетилхолина',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px',}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Триметиламин-N-оксид (TMAO)',style={'height':'20px'}),html.P('Продукт метаболизма холина, бетаина и др. бактериями ЖКТ',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px','background-color':'#FFFFFF'}),
-                    
-                    html.Div([
-                html.H3(children='2. Метаболизм триптофана', style={'textAlign':'center','margin':'0px','line-height':'normal','display':'inline-block','vertical-align':'center'}),]
-                    , style={'width':'100%','background-color':'#2563eb','border-radius':'5px 5px 0px 0px', 'color':'white','font-family':'Calibri','margin':'0px','height':'35px','line-height':'35px','text-align':'center','margin-top':'5px'}),
-                    html.Div([
-                    html.Div([
-                        html.Div([html.B('Кинурениновый путь',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'16px','font-family':'Calibri','color':'#2563eb','line-height':'40px'}),
-                        html.Div([html.Div('Результат',style={'display':'inline-block', 'fontSize': '14px', 'color': '#4D5052', 'fontWeight': '500'})],style={'width':'7%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center'}),
-                       html.Div([
-                            html.Div([
-                                html.Span('20%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                                html.Span('40%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                                html.Span('60%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                                html.Span('80%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                            ], style={
-                                'width': '100%',
-                                'display': 'flex',
-                                'justify-content': 'space-between',
-                                'font-family': 'Calibri',
-                                'color': '#4D5052',
-                                'font-size': '13px',
-                                'padding': '4px 8px',
-                            })
-                        ], style={
-                            'width': '27%',
-                            'margin': '0px'
-                        }),
-                        html.Div([html.Div('Норма, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'14px','font-family':'Calibri','color':'#4D5052','text-align':'center'}),
-                    ], style={'width':'100%','display':'flex','alignItems':'center','justify-content':'space-between','height':'40px',}), 
-                    ], style={'margin':'0px','margin-left':'20px'}),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Триптофан (Trp)',style={'height':'20px'}),html.P('Незаменимая глюко-, кетогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px','background-color':'#FFFFFF'}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Кинуренин (Kyn)',style={'height':'20px'}),html.P('Продукт метаболизма триптофана по кинурениновому пути',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px'}),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Антраниловая кислота (Ant)',style={'height':'20px'}),html.P('Продукт метаболизма кинуренина',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px'}),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Хинолиновая кислота (QA)',style={'height':'20px'}),html.P('Продукт метаболизма 3-гидроксиантраниловой кислоты',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px'}),
-                                html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Ксантуреновая кислота (Xnt)',style={'height':'20px'}),html.P('Продукт метаболизма кинуренина',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress_left.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px','background-color':'#FFFFFF'}),
-                                
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Кинуреновая кислота (Kyna)',style={'height':'20px'}),html.P('Продукт метаболизма кинуренина',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px',}),
-                   
-                    html.Div([
-                    html.Div([
-                        html.Div([html.B('Серотониновый путь',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'40px','margin':'0px','font-size':'16px','font-family':'Calibri','color':'#2563eb','line-height':'40px'}),
-                        html.Div([html.Div('Результат',style={'display':'inline-block', 'fontSize': '14px', 'color': '#4D5052', 'fontWeight': '500'})],style={'width':'7%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center'}),
-                       html.Div([
-                            html.Div([
-                                html.Span('20%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                                html.Span('40%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                                html.Span('60%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                                html.Span('80%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                            ], style={
-                                'width': '100%',
-                                'display': 'flex',
-                                'justify-content': 'space-between',
-                                'font-family': 'Calibri',
-                                'color': '#4D5052',
-                                'font-size': '13px',
-                                'padding': '4px 8px',
-                            })
-                        ], style={
-                            'width': '27%',
-                            'margin': '0px'
-                        }),
-                        html.Div([html.Div('Норма, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'14px','font-family':'Calibri','color':'#4D5052','text-align':'center'}),
-                    ], style={'width':'100%','display':'flex','alignItems':'center','justify-content':'space-between','height':'40px',}), 
-                    ], style={'margin':'0px','margin-left':'20px'}),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Серотонин (Ser)',style={'height':'20px'}),html.P('Нейромедиатор',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px','background-color':'#FFFFFF'}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('5-Гидроксииндолуксусная кислота (5-HIAA)',style={'height':'20px'}),html.P('Метаболит серотонина',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress_left.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px',}),
-                   
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('5-Гидрокситриптофан (5-HTP)',style={'height':'20px'}),html.P('Прекурсор серотонина',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px',}),
-                    
-                    html.Div([
-                    html.Div([
-                        html.Div([html.B('Индоловый путь',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'40px','margin':'0px','font-size':'16px','font-family':'Calibri','color':'#2563eb','line-height':'40px'}),
-                        html.Div([html.Div('Результат',style={'display':'inline-block', 'fontSize': '14px', 'color': '#4D5052', 'fontWeight': '500'})],style={'width':'7%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center'}),
-                       html.Div([
-                            html.Div([
-                                html.Span('20%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                                html.Span('40%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                                html.Span('60%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                                html.Span('80%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                            ], style={
-                                'width': '100%',
-                                'display': 'flex',
-                                'justify-content': 'space-between',
-                                'font-family': 'Calibri',
-                                'color': '#4D5052',
-                                'font-size': '13px',
-                                'padding': '4px 8px',
-                            })
-                        ], style={
-                            'width': '27%',
-                            'margin': '0px'
-                        }),
-                        html.Div([html.Div('Норма, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'14px','font-family':'Calibri','color':'#4D5052','text-align':'center'}),
-                    ], style={'width':'100%','display':'flex','alignItems':'center','justify-content':'space-between','height':'40px',}), 
-                    ], style={'margin':'0px','margin-left':'20px'}),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('3-Индолуксусная кислота (IAA)',style={'height':'20px'}),html.P('Продукт катаболизма триптофана кишечной микробиотой',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px','background-color':'#FFFFFF'}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('3-Индолмолочная кислота (ILA)',style={'height':'20px'}),html.P('Продукт катаболизма триптофана кишечной микробиотой',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px'}),
-                    
-                ], style={'margin':'0px'}),
-            ]),
-            html.Div([
-                html.P('Результаты данного отчета не являются диагнозом и должны быть интерпретированы лечащим врачом на основании клинико-лабораторных данных и других диагностических исследований.',
-                style={'color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"left",'font-style':'italic','margin-top':'5px','width':'85%'}),
-                html.P('|2',
-                    style={'color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"right",'font-style':'italic','margin-top':'5px','width':'10%','margin-top':'15px'}),
-            ], style={'page-break-after': 'always','margin':'0px','display':'flex','justify-content':'space-between','width':'100%','margin-top':'50px'}),
-            
-            #4 страница
-            html.Div([
-                html.Div([],style={'height':'8mm','width':'100%'}),
-                html.Div([
-                    html.Div([
-                        html.B(f"Дата: {date}",style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
-                        html.Div([
-                            html.B(f'Пациент: {name}',style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
-                        ],style={'margin-top':'2px'}),
-                    ], style={'width':'33.3%'}),
-                    html.Div([
-                        html.B("MetaboScan-Test01",style={'margin':'0px','font-size':'18px','font-family':'Calibri','color':'#FFFFFF'}),
-                    ], style={'width':'33.3%','text-align':'center'}),
-                    html.Div([
-                        html.Img(src=app.get_asset_url('logo.jpg'),style={'height':'53px','float':'right'}),
-                    ], style={'width':'33.3%'}),
-                ], style={'display':'flex', 'justify-content':'space-between','width':'100%','height':'53px','color':'#2563eb'}),    
-                
-                html.Div([
-                    
-                    html.Div([
-                    html.Div([
-                        html.Div([html.B('Индоловый путь',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'40px','margin':'0px','font-size':'16px','font-family':'Calibri','color':'#2563eb','line-height':'40px'}),
-                        html.Div([html.Div('Результат',style={'display':'inline-block', 'fontSize': '14px', 'color': '#4D5052', 'fontWeight': '500'})],style={'width':'7%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center'}),
-                       html.Div([
-                            html.Div([
-                                html.Span('20%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                                html.Span('40%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                                html.Span('60%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                                html.Span('80%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                            ], style={
-                                'width': '100%',
-                                'display': 'flex',
-                                'justify-content': 'space-between',
-                                'font-family': 'Calibri',
-                                'color': '#4D5052',
-                                'font-size': '13px',
-                                'padding': '4px 8px',
-                            })
-                        ], style={
-                            'width': '27%',
-                            'margin': '0px'
-                        }),
-                        html.Div([html.Div('Норма, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'14px','font-family':'Calibri','color':'#4D5052','text-align':'center'}),
-                    ], style={'width':'100%','display':'flex','alignItems':'center','justify-content':'space-between','height':'40px',}), 
-                    ], style={'margin':'0px','margin-left':'20px'}),
+                    render_metabolite_category_header(title="Метаболизм метионина"),
                     
                     
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('3-Индолкарбоксальдегид (ICAA)',style={'height':'20px'}),html.P('Продукт катаболизма триптофана кишечной микробиотой',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px','background-color':'#FFFFFF'}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('3-Индолпропионовая кислота (IPA)',style={'height':'20px'}),html.P('Продукт катаболизма триптофана кишечной микробиотой',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px'}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('3-Индолмасляная кислота (IBA)',style={'height':'20px'}),html.P('Продукт катаболизма триптофана кишечной микробиотой',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress_left.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px','background-color':'#FFFFFF'}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Триптамин (TA)',style={'height':'20px'}),html.P('Продукт катаболизма триптофана кишечной микробиотой, прекурсор для нейромедиаторов',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress_left.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px'}),
-                    
-                    html.Div([
-                html.H3(children='3. Метаболизм аргинина', style={'textAlign':'center','margin':'0px','line-height':'normal','display':'inline-block','vertical-align':'center'}),]
-                    , style={'width':'100%','background-color':'#2563eb','border-radius':'5px 5px 0px 0px', 'color':'white','font-family':'Calibri','margin':'0px','height':'35px','line-height':'35px','text-align':'center','margin-top':'5px'}),
-                    html.Div([
-                    html.Div([
-                        html.Div([html.B('Метаболизм аргинина',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'16px','font-family':'Calibri','color':'#2563eb','line-height':'40px'}),
-                        html.Div([html.Div('Результат',style={'display':'inline-block', 'fontSize': '14px', 'color': '#4D5052', 'fontWeight': '500'})],style={'width':'7%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center'}),
-                       html.Div([
-                            html.Div([
-                                html.Span('20%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                                html.Span('40%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                                html.Span('60%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                                html.Span('80%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                            ], style={
-                                'width': '100%',
-                                'display': 'flex',
-                                'justify-content': 'space-between',
-                                'font-family': 'Calibri',
-                                'color': '#4D5052',
-                                'font-size': '13px',
-                                'padding': '4px 8px',
-                            })
-                        ], style={
-                            'width': '27%',
-                            'margin': '0px'
-                        }),
-                        html.Div([html.Div('Норма, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'14px','font-family':'Calibri','color':'#4D5052','text-align':'center'}),
-                    ], style={'width':'100%','display':'flex','alignItems':'center','justify-content':'space-between','height':'40px',}), 
-                    ], style={'margin':'0px','margin-left':'20px'}),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Пролин (Pro)',style={'height':'20px'}),html.P('Заменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px','background-color':'#FFFFFF'}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Гидроксипролин (Hyp)',style={'height':'20px'}),html.P('Источник коллагена',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px'}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Асимметричный диметиларгинин (ADMA)',style={'height':'20px'}),html.P('Эндогенный ингибитор синтазы оксида азота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px','background-color':'#FFFFFF'}),
-                    
-
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Монометиларгинин (MMA)',style={'height':'20px'}),html.P('Эндогенный ингибитор синтазы оксида азота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress_left.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px',}),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Симметричный диметиларгинин (SDMA)',style={'height':'20px'}),html.P('Продукт метаболизма аргинина, выводится с почками',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px',}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Гомоаргинин (HomoArg)',style={'height':'20px'}),html.P('Субстрат для синтазы оксида азота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px','background-color':'#FFFFFF'}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Аргинин (Arg)',style={'height':'20px'}),html.P('Незаменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px'}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Цитруллин (Cit)',style={'height':'20px'}),html.P('Метаболит цикла мочевины',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px','background-color':'#FFFFFF'}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Орнитин (Orn)',style={'height':'20px'}),html.P('Метаболит цикла мочевины',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px'}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Аспарагин (Asn)',style={'height':'20px'}),html.P('Заменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px','background-color':'#FFFFFF'}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Аспарагиновая кислота (Asp)',style={'height':'20px'}),html.P('Заменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px'}),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Креатинин (Cr)',style={'height':'20px'}),html.P('Продукт метаболизма аргинина',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    
-                ], style={'margin':'0px'}),
-            ]),
-            html.Div([
-                html.P('Результаты данного отчета не являются диагнозом и должны быть интерпретированы лечащим врачом на основании клинико-лабораторных данных и других диагностических исследований.',
-                style={'color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"left",'font-style':'italic','margin-top':'5px','width':'85%'}),
-                html.P('|3',
-                    style={'color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"right",'font-style':'italic','margin-top':'5px','width':'10%','margin-top':'15px'}),
-            ], style={'page-break-after': 'always','margin':'0px','display':'flex','justify-content':'space-between','width':'100%','margin-top':'95px'}),
-            
-            # 5 страница
-            html.Div([
-                html.Div([],style={'height':'8mm','width':'100%'}),
-                html.Div([
-                    html.Div([
-                        html.B(f"Дата: {date}",style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
-                        html.Div([
-                            html.B(f'Пациент: {name}',style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
-                        ],style={'margin-top':'2px'}),
-                    ], style={'width':'33.3%'}),
-                    html.Div([
-                        html.B("MetaboScan-Test01",style={'margin':'0px','font-size':'18px','font-family':'Calibri','color':'#FFFFFF'}),
-                    ], style={'width':'33.3%','text-align':'center'}),
-                    html.Div([
-                        html.Img(src=app.get_asset_url('logo.jpg'),style={'height':'53px','float':'right'}),
-                    ], style={'width':'33.3%'}),
-                ], style={'display':'flex', 'justify-content':'space-between','width':'100%','height':'53px','color':'#2563eb'}),    
-                
-                html.Div([
-
-                    html.Div([
-                html.H3(children='4. Метаболизм жирных кислот', style={'textAlign':'center','margin':'0px','line-height':'normal','display':'inline-block','vertical-align':'center'}),]
-                    , style={'width':'100%','background-color':'#2563eb','border-radius':'5px 5px 0px 0px', 'color':'white','font-family':'Calibri','margin':'0px','height':'35px','line-height':'35px','text-align':'center','margin-top':'5px'}),
-                    html.Div([
-                    html.Div([
-                        html.Div([html.B('Метаболизм ацилкарнитинов',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'16px','font-family':'Calibri','color':'#2563eb','line-height':'40px'}),
-                        html.Div([html.Div('Результат',style={'display':'inline-block', 'fontSize': '14px', 'color': '#4D5052', 'fontWeight': '500'})],style={'width':'7%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center'}),
-                       html.Div([
-                            html.Div([
-                                html.Span('20%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                                html.Span('40%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                                html.Span('60%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                                html.Span('80%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                            ], style={
-                                'width': '100%',
-                                'display': 'flex',
-                                'justify-content': 'space-between',
-                                'font-family': 'Calibri',
-                                'color': '#4D5052',
-                                'font-size': '13px',
-                                'padding': '4px 8px',
-                            })
-                        ], style={
-                            'width': '27%',
-                            'margin': '0px'
-                        }),
-                        html.Div([html.Div('Норма, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'14px','font-family':'Calibri','color':'#4D5052','text-align':'center'}),
-                    ], style={'width':'100%','display':'flex','alignItems':'center','justify-content':'space-between','height':'40px',}), 
-                    ], style={'margin':'0px','margin-left':'20px'}),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Аланин (Ala)',style={'height':'20px'}),html.P('Заменимая глюкогенная аминокислота',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px','background-color':'#FFFFFF'}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Карнитин (C0)',style={'height':'20px'}),html.P('Основа для ацилкарнитинов, транспорт жирных кислот',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'45px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'12px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'45px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'45px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '4px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '45px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'45px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'45px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'45px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px'}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Ацетилкарнитин (C2)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'45px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'12px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'45px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'45px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '4px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '45px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'45px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'45px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'45px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px','background-color':'#FFFFFF'}),
-                    
-                    html.Div([
-                    html.Div([
-                        html.Div([html.B('Короткоцепочечные ацилкарнитины',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'16px','font-family':'Calibri','color':'#2563eb','line-height':'40px'}),
-                        html.Div([html.Div('Результат',style={'display':'inline-block', 'fontSize': '14px', 'color': '#4D5052', 'fontWeight': '500'})],style={'width':'7%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center'}),
-                       html.Div([
-                            html.Div([
-                                html.Span('20%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                                html.Span('40%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                                html.Span('60%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                                html.Span('80%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                            ], style={
-                                'width': '100%',
-                                'display': 'flex',
-                                'justify-content': 'space-between',
-                                'font-family': 'Calibri',
-                                'color': '#4D5052',
-                                'font-size': '13px',
-                                'padding': '4px 8px',
-                            })
-                        ], style={
-                            'width': '27%',
-                            'margin': '0px'
-                        }),
-                        html.Div([html.Div('Норма, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'14px','font-family':'Calibri','color':'#4D5052','text-align':'center'}),
-                    ], style={'width':'100%','display':'flex','alignItems':'center','justify-content':'space-between','height':'40px',}), 
-                    ], style={'margin':'0px','margin-left':'20px'}),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Пропионилкарнитин (С3)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'45px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'12px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'45px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'45px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '4px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '45px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'45px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'45px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'45px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px','background-color':'#FFFFFF'}),
-
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Бутирилкарнитин (C4)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'45px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'12px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'45px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'45px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '4px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '45px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'45px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'45px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'45px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px'}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Изовалерилкарнитин (С5)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'45px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'12px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'45px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'45px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '4px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '45px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'45px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'45px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'45px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px','background-color':'#FFFFFF'}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Тиглилкарнитин (C5-1)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'45px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'12px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'45px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'45px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress_left.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '4px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '45px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'45px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'45px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'45px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px',}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Глутарилкарнитин (C5-DC)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'45px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'12px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'45px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'45px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress_left.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '4px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '45px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'45px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'45px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'45px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px','background-color':'#FFFFFF'}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Гидроксиизовалерилкарнитин (C5-OH)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'45px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'12px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'45px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'45px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress_left.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '4px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '45px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'45px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'45px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'45px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px'}),
-                    
-                    html.Div([
-                    html.Div([
-                        html.Div([html.B('Среднецепочечные ацилкарнитины',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'40px','margin':'0px','font-size':'16px','font-family':'Calibri','color':'#2563eb','line-height':'40px'}),
-                        html.Div([html.Div('Результат',style={'display':'inline-block', 'fontSize': '14px', 'color': '#4D5052', 'fontWeight': '500'})],style={'width':'7%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center'}),
-                       html.Div([
-                            html.Div([
-                                html.Span('20%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                                html.Span('40%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                                html.Span('60%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                                html.Span('80%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                            ], style={
-                                'width': '100%',
-                                'display': 'flex',
-                                'justify-content': 'space-between',
-                                'font-family': 'Calibri',
-                                'color': '#4D5052',
-                                'font-size': '13px',
-                                'padding': '4px 8px',
-                            })
-                        ], style={
-                            'width': '27%',
-                            'margin': '0px'
-                        }),
-                        html.Div([html.Div('Норма, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'14px','font-family':'Calibri','color':'#4D5052','text-align':'center'}),
-                    ], style={'width':'100%','display':'flex','alignItems':'center','justify-content':'space-between','height':'40px',}), 
-                    ], style={'margin':'0px','margin-left':'20px'}),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Гексаноилкарнитин (C6)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'45px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'12px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'45px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'45px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '4px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '45px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'45px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'45px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'45px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px','background-color':'#FFFFFF'}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Адипоилкарнитин (C6-DC)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'45px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'12px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'45px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'45px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress_left.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '4px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '45px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'45px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'45px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'45px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px',}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Октаноилкарнитин (C8)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'45px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'12px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'45px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'45px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '4px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '45px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'45px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'45px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'45px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px','background-color':'#FFFFFF'}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Октеноилкарнитин (C8-1)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'45px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'12px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'45px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'45px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '4px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '45px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'45px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'45px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'45px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px',}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Деканоилкарнитин (C10)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'45px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'12px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'45px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'45px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '4px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '45px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'45px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'45px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'45px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px','background-color':'#FFFFFF'}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Деценоилкарнитин (C10-1)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'45px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'12px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'45px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'45px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '4px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '45px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'45px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'45px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'45px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px',}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Декадиеноилкарнитин (C10-2)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'45px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'12px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'45px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'45px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress_left.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '4px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '45px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'45px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'45px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'45px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px','background-color':'#FFFFFF'}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Додеканоилкарнитин (C12)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'45px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'12px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'45px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'45px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '4px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '45px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'45px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'45px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'45px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px',}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Додеценоилкарнитин (C12-1)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'45px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'12px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'45px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'45px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress_left.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '4px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '45px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'45px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'45px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'45px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px','background-color':'#FFFFFF'}),
-                    
-                ], style={'margin':'0px'}),
-            ]),
-            html.Div([
-                html.P('Результаты данного отчета не являются диагнозом и должны быть интерпретированы лечащим врачом на основании клинико-лабораторных данных и других диагностических исследований.',
-                style={'color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"left",'font-style':'italic','margin-top':'5px','width':'85%'}),
-                html.P('|4',
-                    style={'color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"right",'font-style':'italic','margin-top':'5px','width':'10%','margin-top':'15px'}),
-            ], style={'page-break-after': 'always','margin':'0px','display':'flex','justify-content':'space-between','width':'100%','margin-top':'85px'}),
-            
-            # 6 страница
-            html.Div([
-                html.Div([],style={'height':'8mm','width':'100%'}),
-                html.Div([
-                    html.Div([
-                        html.B(f"Дата: {date}",style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
-                        html.Div([
-                            html.B(f'Пациент: {name}',style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
-                        ],style={'margin-top':'2px'}),
-                    ], style={'width':'33.3%'}),
-                    html.Div([
-                        html.B("MetaboScan-Test01",style={'margin':'0px','font-size':'18px','font-family':'Calibri','color':'#FFFFFF'}),
-                    ], style={'width':'33.3%','text-align':'center'}),
-                    html.Div([
-                        html.Img(src=app.get_asset_url('logo.jpg'),style={'height':'54px','float':'right'}),
-                    ], style={'width':'33.3%'}),
-                ], style={'display':'flex', 'justify-content':'space-between','width':'100%','height':'54px','color':'#2563eb'}),    
-                html.Div([
-                    
-                    html.Div([
-                    html.Div([
-                        html.Div([html.B('Длинноцепочечные ацилкарнитины',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'40px','margin':'0px','font-size':'16px','font-family':'Calibri','color':'#2563eb','line-height':'40px'}),
-                        html.Div([html.Div('Результат',style={'display':'inline-block', 'fontSize': '14px', 'color': '#4D5052', 'fontWeight': '500'})],style={'width':'7%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center'}),
-                       html.Div([
-                            html.Div([
-                                html.Span('20%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                                html.Span('40%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                                html.Span('60%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                                html.Span('80%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                            ], style={
-                                'width': '100%',
-                                'display': 'flex',
-                                'justify-content': 'space-between',
-                                'font-family': 'Calibri',
-                                'color': '#4D5052',
-                                'font-size': '13px',
-                                'padding': '4px 8px',
-                            })
-                        ], style={
-                            'width': '27%',
-                            'margin': '0px'
-                        }),
-                        html.Div([html.Div('Норма, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'14px','font-family':'Calibri','color':'#4D5052','text-align':'center'}),
-                    ], style={'width':'100%','display':'flex','alignItems':'center','justify-content':'space-between','height':'40px',}), 
-                    ], style={'margin':'0px','margin-left':'20px'}),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Тетрадеканоилкарнитин (C14)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px','background-color':'#FFFFFF'}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Тетрадеценоилкарнитин (С14-1)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px'}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Тетрадекадиеноилкарнитин (C14-2)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress_left.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px','background-color':'#FFFFFF'}),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Гидрокситетрадеканоилкарнитин (C14-OH)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress_left.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px'}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Пальмитоилкарнитин (C16)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px','background-color':'#FFFFFF'}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Гексадецениолкарнитин (C16-1)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px','background-color':'#FFFFFF'}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Гидроксигексадецениолкарнитин (C16-1-OH)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px',}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Гидроксигексадеканоилкарнитин (C16-OH)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px','background-color':'#FFFFFF'}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Стеароилкарнитин (С18)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px'}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Олеоилкарнитин (C18-1)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px','background-color':'#FFFFFF'}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Гидроксиоктадеценоилкарнитин (C18-1-OH)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress_left.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px'}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Линолеоилкарнитин (C18-2)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px','background-color':'#FFFFFF'}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Гидроксиоктадеканоилкарнитин (C18-OH)',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px'}),
-                    
-                    html.Div([
-                        html.H3(children='5. Метаболический баланс', style={'textAlign':'center','margin':'0px','line-height':'normal','display':'inline-block','vertical-align':'center'}),]
-                    , style={'width':'100%','background-color':'#2563eb','border-radius':'5px 5px 0px 0px', 'color':'white','font-family':'Calibri','margin':'0px','height':'35px','line-height':'35px','text-align':'center','margin-top':'5px'}),
-                    html.Div([
-                    html.Div([
-                        html.Div([html.B('Витамины и нейромедиаторы',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'16px','font-family':'Calibri','color':'#2563eb','line-height':'40px'}),
-                        html.Div([html.Div('Результат',style={'display':'inline-block', 'fontSize': '14px', 'color': '#4D5052', 'fontWeight': '500'})],style={'width':'7%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center'}),
-                       html.Div([
-                            html.Div([
-                                html.Span('20%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                                html.Span('40%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                                html.Span('60%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                                html.Span('80%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                            ], style={
-                                'width': '100%',
-                                'display': 'flex',
-                                'justify-content': 'space-between',
-                                'font-family': 'Calibri',
-                                'color': '#4D5052',
-                                'font-size': '13px',
-                                'padding': '4px 8px',
-                            })
-                        ], style={
-                            'width': '27%',
-                            'margin': '0px'
-                        }),
-                        html.Div([html.Div('Норма, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'14px','font-family':'Calibri','color':'#4D5052','text-align':'center'}),
-                    ], style={'width':'100%','display':'flex','alignItems':'center','justify-content':'space-between','height':'40px',}), 
-                    ], style={'margin':'0px','margin-left':'20px'}),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Пантотеновая кислота',style={'height':'20px'}),html.P('Витамин B5',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px','background-color':'#FFFFFF'}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Рибофлавин',style={'height':'20px'}),html.P('Витамин B2',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px'}),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Мелатонин',style={'height':'20px'}),html.P('Регулирует циркадные ритмы',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px'}),
-                    
-                    
-                ], style={'margin':'0px'}),
-            ]),
-            html.Div([
-                html.P('Результаты данного отчета не являются диагнозом и должны быть интерпретированы лечащим врачом на основании клинико-лабораторных данных и других диагностических исследований.',
-                style={'color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"left",'font-style':'italic','margin-top':'5px','width':'85%'}),
-                html.P('|5',
-                    style={'color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"right",'font-style':'italic','margin-top':'5px','width':'10%','margin-top':'15px'}),
-            ], style={'page-break-after': 'always','margin':'0px','display':'flex','justify-content':'space-between','width':'100%','margin-top':'95px'}),
-            
-            #7 страница
-            html.Div([
-                html.Div([],style={'height':'8mm','width':'100%'}),
-                html.Div([
-                    html.Div([
-                        html.B(f"Дата: {date}",style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
-                        html.Div([
-                            html.B(f'Пациент: {name}',style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
-                        ],style={'margin-top':'2px'}),
-                    ], style={'width':'33.3%'}),
-                    html.Div([
-                        html.B("MetaboScan-Test01",style={'margin':'0px','font-size':'18px','font-family':'Calibri','color':'#FFFFFF'}),
-                    ], style={'width':'33.3%','text-align':'center'}),
-                    html.Div([
-                        html.Img(src=app.get_asset_url('logo.jpg'),style={'height':'53px','float':'right'}),
-                    ], style={'width':'33.3%'}),
-                ], style={'display':'flex', 'justify-content':'space-between','width':'100%','height':'53px','color':'#2563eb'}),    
-                
-               html.Div([
-                    html.Div([
-                    html.Div([
-                        html.Div([html.B('Нуклеозиды',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#2563eb','line-height':'40px'}),
-                        html.Div([html.Div('Результат',style={'display':'inline-block', 'fontSize': '14px', 'color': '#4D5052', 'fontWeight': '500'})],style={'width':'7%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center'}),
-                       html.Div([
-                            html.Div([
-                                html.Span('20%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                                html.Span('40%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                                html.Span('60%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                                html.Span('80%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                            ], style={
-                                'width': '100%',
-                                'display': 'flex',
-                                'justify-content': 'space-between',
-                                'font-family': 'Calibri',
-                                'color': '#4D5052',
-                                'font-size': '13px',
-                                'padding': '4px 8px',
-                            })
-                        ], style={
-                            'width': '27%',
-                            'margin': '0px'
-                        }),
-                        html.Div([html.Div('Норма, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'14px','font-family':'Calibri','color':'#4D5052','text-align':'center'}),
-                    ], style={'width':'100%','display':'flex','alignItems':'center','justify-content':'space-between','height':'40px',}), 
-                    ], style={'margin':'0px','margin-left':'20px'}),
-                    
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Уридин',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px','background-color':'#FFFFFF'}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Аденозин',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px'}),
-                                html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Цитидин',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                         html.Div([
-                    html.Div([
-                        html.Div([html.B('Аллергия и стресс',style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'#2563eb','line-height':'40px'}),
-                        html.Div([html.Div('Результат',style={'display':'inline-block', 'fontSize': '14px', 'color': '#4D5052', 'fontWeight': '500'})],style={'width':'7%','height':'20px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center'}),
-                       html.Div([
-                            html.Div([
-                                html.Span('20%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                                html.Span('40%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                                html.Span('60%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                                html.Span('80%', style={'display': 'inline-block', 'width': '25%', 'text-align': 'center'}),
-                            ], style={
-                                'width': '100%',
-                                'display': 'flex',
-                                'justify-content': 'space-between',
-                                'font-family': 'Calibri',
-                                'color': '#4D5052',
-                                'font-size': '13px',
-                                'padding': '4px 8px',
-                            })
-                        ], style={
-                            'width': '27%',
-                            'margin': '0px'
-                        }),
-                        html.Div([html.Div('Норма, мкмоль/л')],style={'width':'21%','height':'20px','margin':'0px','font-size':'14px','font-family':'Calibri','color':'#4D5052','text-align':'center'}),
-                    ], style={'width':'100%','display':'flex','alignItems':'center','justify-content':'space-between','height':'40px',}), 
-                    ], style={'margin':'0px','margin-left':'20px'}),
-                    
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Кортизол',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px','background-color':'#FFFFFF'}),
-                    html.Div([
-                        html.Div([
-                            html.Div([
-                                html.Div([html.B('Гистамин',style={'height':'20px'}),html.P('',style={'height':'20px','font-size':'12px','font-family':'Calibri','color':'#2563eb','margin':'0px','margin-left':'5px','line-height':'0.9em'})],style={'width':'39%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','margin-top':'5px'}),
-                                html.Div([html.Div([html.Div([html.B(smart_round(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"]),style={'text-align':'center','width':'50%', 'background-color':f'{heighlight_out_of_range(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}', 'padding': '3px 8px', 'borderRadius': '12px'})],style={'width':'100%','display':'flex','justify-content':'center','margin-top':'0px'})],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','width':'100%'})],style={'width':'8%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':f'{color_text_ref(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}','line-height':'53px'}),
-                                                        # Progress bar with pointer
-                                html.Div([
-                                    # Progress bar
-                                    html.Img(src=app.get_asset_url('progress_left.png'), 
-                                            style={'width': '100%', 'height': '18px', 'line-height': 'normal', 
-                                                'display': 'inline-block', 'vertical-align': 'center'}),
-                                    # Pointer (arrow)
-                                    html.Img(src=app.get_asset_url('pointer.png'), 
-                                            style={
-                                                'position': 'absolute',
-                                                'height': '38px',
-                                                'width': '4px',
-                                                'left': f'{calculate_pointer_position(metabolite_data["Methylhistidine"], ref_stats_entry=ref_stats["Methylhistidine"])}%',
-                                                'top': '6px',
-                                                'transform': 'translateX(-50%)'
-                                            })
-                                ], style={'width': '27%', 'height': '53px', 'margin': '0px', 'font-size': '15px', 
-                                        'font-family': 'Calibri', 'color': '#2563eb', 'align-content': 'center',
-                                        'position': 'relative'}),
-                                html.Div([html.P(ref_stats["Methylhistidine"]["norm"],style={'height':'20px','line-height':'normal','display':'inline-block','vertical-align':'center','margin':'0'})],style={'width':'21%','height':'53px','margin':'0px','font-size':'15px','font-family':'Calibri','color':'black','text-align':'center','line-height':'53px'}),
-                            ], style={'width':'99.2%','display':'flex', 'justify-content':'space-between','height':'53px','margin-left':'5px'}),
-                        ], style={'margin':'0px','margin-left':'20px'}),
-                    ],style={'margin':'0px'}),
-                    
-                html.Div(
-    style={
-        'width': '100%',
-        'fontFamily': 'Calibri',
-        'padding': '5px'
-    },
-    children=[
-        # Main Card
-        html.Div(
-            style={
-                'backgroundColor': 'white',
-                'borderRadius': '5px',
-                'overflow': 'hidden'
-            },
-            children=[
-                # Section Header
-                html.Div([
-                    html.H3(
-                        children='8. Метилирование, обмен холина и метионина', 
-                        style={
-                            'textAlign': 'center',
-                            'margin': '0px',
-                            'lineHeight': 'normal',
-                            'display': 'inline-block',
-                            'verticalAlign': 'center',
-                            'fontWeight': '600',
-                            'fontSize': '19px'
-                        }
-                    )],
-                    style={
-                        'width': '100%',
-                        'backgroundColor': '#2563eb',
-                        'borderRadius': '5px 5px 0px 0px', 
-                        'color': 'white',
-                        'fontFamily': 'Calibri',
-                        'margin': '0px',
-                        'height': '35px',
-                        'lineHeight': '35px',
-                        'textAlign': 'center',
-                        'marginTop': '20px'
-                    }
-                ),
-                
-                # Table Content
-                html.Div(
-                    style={'padding': '10px 0px'},
-                    children=[
-                        # Table Headers
-                        html.Div(
-                            style={
-                                'display': 'grid',
-                                'gridTemplateColumns': 'repeat(13, minmax(0, 1fr))',
-                                'gap': '10px',
-                                'fontWeight': '500',
-                                'color': "#4D5052",
-                                'backgroundColor': '#f8f9fa',
-                                'padding': '8px',
-                                'borderRadius': '5px',
-                                'margin': '0px',
-                                'fontSize': '14px',
-                                'fontFamily': 'Calibri'
-                            },
-                            children=[
-                                html.Div("Показатель", style={'gridColumn': 'span 3'}),
-                                html.Div("Результат", style={'gridColumn': 'span 2', 'textAlign': 'center'}),
-                                html.Div("Статус", style={'gridColumn': 'span 1', 'textAlign': 'center'}),
-                                html.Div("Норма", style={'gridColumn': 'span 2', 'textAlign': 'center'}),
-                                html.Div("Что это отражает?", style={'gridColumn': 'span 5'}),
-                            ]
+                        # Taurine (Tau)
+                        render_metabolite_row(
+                            concentration=metabolite_data["Taurine"],
+                            ref_stats_entry=ref_stats["Taurine"],
+                            subtitle="Заменимая глюкогенная аминокислота"
                         ),
                         
-                        # Data Rows
-                        *[
-                            html.Div(
-                                style={
-                                    'display': 'grid',
-                                    'gridTemplateColumns': 'repeat(13, minmax(0, 1fr))',
-                                    'gap': '10px',
-                                    'padding': '8px 10px',
-                                    'alignItems': 'center',
-                                    'borderBottom': '1px solid #e9ecef',
-                                    'fontFamily': 'Calibri'
-                                },
-                                children=[
-                                    html.Div(
-                                        item["name"],
-                                        style={
-                                            'gridColumn': 'span 3',
-                                            'fontWeight': '600',
+                        # Betaine (Bet)
+                        render_metabolite_row(
+                            concentration=metabolite_data["Betaine"],
+                            ref_stats_entry=ref_stats["Betaine"],
+                            subtitle="Продукт метаболизма холина"
+                        ),
+                        
+                        # Choline (Chl)
+                        render_metabolite_row(
+                            concentration=metabolite_data["Choline"],
+                            ref_stats_entry=ref_stats["Choline"],
+                            subtitle="Компонент мембран клеток, источник ацетилхолина"
+                        ),
+                        
+                        # Trimethylamine N-oxide (TMAO)
+                        render_metabolite_row(
+                            concentration=metabolite_data["TMAO"],
+                            ref_stats_entry=ref_stats["TMAO"],
+                            subtitle="Продукт метаболизма холина, бетаина и др. бактериями ЖКТ"
+                        ),
+    
+    
+                    
+                    render_category_header(order_number='2', title='Метаболизм триптофана'),
+                    
+                    
+                    render_metabolite_category_header(title="Кинурениновый путь"),
+                    
+                    # Tryptophan (Trp)
+                    render_metabolite_row(
+                        concentration=metabolite_data["Tryptophan"],
+                        ref_stats_entry=ref_stats["Tryptophan"],
+                        subtitle="Незаменимая глюко-, кетогенная аминокислота",
+                    ),
+                    
+                    # Kynurenine (Kyn)
+                    render_metabolite_row(
+                        concentration=metabolite_data["Kynurenine"],
+                        ref_stats_entry=ref_stats["Kynurenine"],
+                        subtitle="Продукт метаболизма триптофана по кинурениновому пути"
+                    ),
+                    
+                    # Anthranilic acid (Ant)
+                    render_metabolite_row(
+                        concentration=metabolite_data["Antranillic acid"],
+                        ref_stats_entry=ref_stats["Antranillic acid"],
+                        subtitle="Продукт метаболизма кинуренина"
+                    ),
+                    
+                    # Quinolinic acid (QA)
+                    render_metabolite_row(
+                        concentration=metabolite_data["Quinolinic acid"],
+                        ref_stats_entry=ref_stats["Quinolinic acid"],
+                        subtitle="Продукт метаболизма 3-гидроксиантраниловой кислоты"
+                    ),
+                    
+                    # Xanthurenic acid (Xnt)
+                    render_metabolite_row(
+                        concentration=metabolite_data["Xanthurenic acid"],
+                        ref_stats_entry=ref_stats["Xanthurenic acid"],
+                        subtitle="Продукт метаболизма кинуренина"
+                    ),
+                                
+                    render_metabolite_row(
+                        concentration=metabolite_data["Kynurenic acid"],
+                        ref_stats_entry=ref_stats["Kynurenic acid"],
+                        subtitle="Продукт метаболизма триптофана по кинурениновому пути"
+                    ),
+                   
+                    render_metabolite_category_header(title="Серотониновый путь"),
+                    
+                    # Serotonin (Ser)
+                    render_metabolite_row(
+                        concentration=metabolite_data["Serotonin"],
+                        ref_stats_entry=ref_stats["Serotonin"],
+                        subtitle="Нейромедиатор"
+                    ),
+                    
+                    # 5-Hydroxyindoleacetic acid (5-HIAA)
+                    render_metabolite_row(
+                        concentration=metabolite_data["HIAA"],
+                        ref_stats_entry=ref_stats["HIAA"],
+                        subtitle="Метаболит серотонина"
+                    ),
+                    
+                    # 5-Hydroxytryptophan (5-HTP)
+                    render_metabolite_row(
+                        concentration=metabolite_data["5-hydroxytryptophan"],
+                        ref_stats_entry=ref_stats["5-hydroxytryptophan"],
+                        subtitle="Прекурсор серотонина"
+                    ),
+                    
+                    render_metabolite_category_header(title="Индоловый путь"),
+                    
+                    # 3-Indoleacetic acid (IAA)
+                    render_metabolite_row(
+                        concentration=metabolite_data["Indole-3-acetic acid"],
+                        ref_stats_entry=ref_stats["Indole-3-acetic acid"],
+                        subtitle="Продукт катаболизма триптофана кишечной микробиотой"
+                    ),
+                    
+                    # 3-Indolelactic acid (ILA)
+                    render_metabolite_row(
+                        concentration=metabolite_data["Indole-3-lactic acid"],
+                        ref_stats_entry=ref_stats["Indole-3-lactic acid"],
+                        subtitle="Продукт катаболизма триптофана кишечной микробиотой"
+                    ),
+                    
+                ], style={'margin':'0px'}),
+            ]),
+            render_page_footer(page_number=4),
+            #4 страница
+            html.Div([
+                
+render_page_header(date=date, name=name), 
+                
+                html.Div([
+                    
+                    html.Div([
+                        render_metabolite_category_header('Индоловый путь'),
+                        
+                        # ICAA
+                        render_metabolite_row(
+                            concentration=metabolite_data["Indole-3-carboxaldehyde"],
+                            ref_stats_entry=ref_stats["Indole-3-carboxaldehyde"],
+                            subtitle="Продукт катаболизма триптофана кишечной микробиотой"
+                        ),
+                        
+                        # IPA
+                        render_metabolite_row(
+                            concentration=metabolite_data["Indole-3-propionic acid"],
+                            ref_stats_entry=ref_stats["Indole-3-propionic acid"],
+                            subtitle="Продукт катаболизма триптофана кишечной микробиотой"
+                        ),
+                        
+                        # IBA
+                        render_metabolite_row(
+                            concentration=metabolite_data["Indole-3-butyric"],
+                            ref_stats_entry=ref_stats["Indole-3-butyric"],
+                            subtitle="Продукт катаболизма триптофана кишечной микробиотой"
+                        ),
+                        
+                        # TA
+                        render_metabolite_row(
+                            concentration=metabolite_data["Tryptamine"],
+                            ref_stats_entry=ref_stats["Tryptamine"],
+                            subtitle="Продукт катаболизма триптофана кишечной микробиотой, прекурсор для нейромедиаторов"
+                        ),
+                        
+                        # Arginine Metabolism Section
+                        render_category_header(order_number='3', title='Метаболизм аргинина'),
+                        
+                        render_metabolite_category_header('Метаболизм аргинина'),
+                        
+                        # Pro
+                        render_metabolite_row(
+                            concentration=metabolite_data["Proline"],
+                            ref_stats_entry=ref_stats["Proline"],
+                            subtitle="Заменимая глюкогенная аминокислота"
+                        ),
+                        
+                        # Hyp
+                        render_metabolite_row(
+                            concentration=metabolite_data["Hydroxyproline"],
+                            ref_stats_entry=ref_stats["Hydroxyproline"],
+                            subtitle="Источник коллагена"
+                        ),
+                        
+                        # ADMA
+                        render_metabolite_row(
+                            concentration=metabolite_data["DMG"],
+                            ref_stats_entry=ref_stats["DMG"],
+                            subtitle="Эндогенный ингибитор синтазы оксида азота"
+                        ),
+                        
+                        # MMA
+                        render_metabolite_row(
+                            concentration=metabolite_data["NMMA"],
+                            ref_stats_entry=ref_stats["NMMA"],
+                            subtitle="Эндогенный ингибитор синтазы оксида азота"
+                        ),
+                        
+                        # SDMA
+                        render_metabolite_row(
+                            concentration=metabolite_data["TotalDMA (SDMA)"],
+                            ref_stats_entry=ref_stats["TotalDMA (SDMA)"],
+                            subtitle="Продукт метаболизма аргинина, выводится с почками"
+                        ),
+                        
+                        # HomoArg
+                        render_metabolite_row(
+                            concentration=metabolite_data["Homoarginine"],
+                            ref_stats_entry=ref_stats["Homoarginine"],
+                            subtitle="Субстрат для синтазы оксида азота"
+                        ),
+                        
+                        # Arg
+                        render_metabolite_row(
+                            concentration=metabolite_data["Arginine"],
+                            ref_stats_entry=ref_stats["Arginine"],
+                            subtitle="Незаменимая глюкогенная аминокислота"
+                        ),
+                        
+                        # Cit
+                        render_metabolite_row(
+                            concentration=metabolite_data["Citrulline"],
+                            ref_stats_entry=ref_stats["Citrulline"],
+                            subtitle="Метаболит цикла мочевины"
+                        ),
+                        
+                        # Orn
+                        render_metabolite_row(
+                            concentration=metabolite_data["Ornitine"],
+                            ref_stats_entry=ref_stats["Ornitine"],
+                            subtitle="Метаболит цикла мочевины"
+                        ),
+                        
+                        # Asn
+                        render_metabolite_row(
+                            concentration=metabolite_data["Asparagine"],
+                            ref_stats_entry=ref_stats["Asparagine"],
+                            subtitle="Заменимая глюкогенная аминокислота"
+                        ),
+                        
+                        # Asp
+                        render_metabolite_row(
+                            concentration=metabolite_data["Aspartic acid"],
+                            ref_stats_entry=ref_stats["Aspartic acid"],
+                            subtitle="Заменимая глюкогенная аминокислота"
+                        ),
+                        
+                        # Cr
+                        render_metabolite_row(
+                            concentration=metabolite_data["Creatinine"],
+                            ref_stats_entry=ref_stats["Creatinine"],
+                            subtitle="Продукт метаболизма аргинина"
+                        )
+                    ])
+                    
+                ], style={'margin':'0px'}),
+            ]),
+           render_page_footer(page_number=5),
+            # 5 страница
+            html.Div([
+                
+            render_page_header(date=date, name=name), 
+                
+                html.Div([
+                    html.Div([
+                        # Metabolism of Carbohydrates
+                        render_category_header(order_number='4', title='Метаболизм жирных кислот'),
+                        
+                        # Acylcarnitine Metabolism (keeping Russian title)
+                        render_metabolite_category_header('Метаболизм ацилкарнитинов'),
+                        
+                        # Alanine
+                        render_metabolite_row(
+                            concentration=metabolite_data["Alanine"],
+                            ref_stats_entry=ref_stats["Alanine"],
+                            subtitle="Заменимая глюкогенная аминокислота"
+                        ),
+                        
+                        # Carnitine (C0)
+                        render_metabolite_row(
+                            concentration=metabolite_data["C0"],
+                            ref_stats_entry=ref_stats["C0"],
+                            subtitle="Основа для ацилкарнитинов, транспорт жирных кислот"
+                        ),
+                        
+                        # Acetylcarnitine (C2)
+                        render_metabolite_row(
+                            concentration=metabolite_data["C2"],
+                            ref_stats_entry=ref_stats["C2"],
+                            subtitle=""
+                        ),
+                        
+                        # Short-chain acylcarnitines (keeping Russian title)
+                        render_metabolite_category_header('Короткоцепочечные ацилкарнитины'),
+                        
+                        # Propionylcarnitine (C3)
+                        render_metabolite_row(
+                            concentration=metabolite_data["C3"],
+                            ref_stats_entry=ref_stats["C3"],
+                            subtitle=""
+                        ),
+                        
+                        # Butyrylcarnitine (C4)
+                        render_metabolite_row(
+                            concentration=metabolite_data["C4"],
+                            ref_stats_entry=ref_stats["C4"],
+                            subtitle=""
+                        ),
+                        
+                        # Isovalerylcarnitine (C5)
+                        render_metabolite_row(
+                            concentration=metabolite_data["C5"],
+                            ref_stats_entry=ref_stats["C5"],
+                            subtitle=""
+                        ),
+                        
+                        # Tiglylcarnitine (C5-1)
+                        render_metabolite_row(
+                            concentration=metabolite_data["C5-1"],
+                            ref_stats_entry=ref_stats["C5-1"],
+                            subtitle=""
+                        ),
+                        
+                        # Glutarylcarnitine (C5-DC)
+                        render_metabolite_row(
+                            concentration=metabolite_data["C5-DC"],
+                            ref_stats_entry=ref_stats["C5-DC"],
+                            subtitle=""
+                        ),
+                        
+                        # Hydroxyisovalerylcarnitine (C5-OH)
+                        render_metabolite_row(
+                            concentration=metabolite_data["C5-OH"],
+                            ref_stats_entry=ref_stats["C5-OH"],
+                            subtitle=""
+                        ),
+                        
+                        # Medium-chain acylcarnitines (keeping Russian title)
+                        render_metabolite_category_header('Среднецепочечные ацилкарнитины'),
+                        
+                        # Hexanoylcarnitine (C6)
+                        render_metabolite_row(
+                            concentration=metabolite_data["C6"],
+                            ref_stats_entry=ref_stats["C6"],
+                            subtitle=""
+                        ),
+                        
+                        # Adipoylcarnitine (C6-DC)
+                        render_metabolite_row(
+                            concentration=metabolite_data["C6-DC"],
+                            ref_stats_entry=ref_stats["C6-DC"],
+                            subtitle=""
+                        ),
+                        
+                        # Octanoylcarnitine (C8)
+                        render_metabolite_row(
+                            concentration=metabolite_data["C8"],
+                            ref_stats_entry=ref_stats["C8"],
+                            subtitle=""
+                        ),
+                        
+                        # Octenoylcarnitine (C8-1)
+                        render_metabolite_row(
+                            concentration=metabolite_data["C8-1"],
+                            ref_stats_entry=ref_stats["C8-1"],
+                            subtitle=""
+                        ),
+                        
+                        # Decanoylcarnitine (C10)
+                        render_metabolite_row(
+                            concentration=metabolite_data["C10"],
+                            ref_stats_entry=ref_stats["C10"],
+                            subtitle=""
+                        ),
+                        
+                        # Decenoylcarnitine (C10-1)
+                        render_metabolite_row(
+                            concentration=metabolite_data["C10-1"],
+                            ref_stats_entry=ref_stats["C10-1"],
+                            subtitle=""
+                        ),
+                        
+                        # Decadienoylcarnitine (C10-2)
+                        render_metabolite_row(
+                            concentration=metabolite_data["C10-2"],
+                            ref_stats_entry=ref_stats["C10-2"],
+                            subtitle=""
+                        ),
+                        
+                        # Dodecanoylcarnitine (C12)
+                        render_metabolite_row(
+                            concentration=metabolite_data["C12"],
+                            ref_stats_entry=ref_stats["C12"],
+                            subtitle=""
+                        ),
+                        
+                        # Dodecenoylcarnitine (C12-1)
+                        render_metabolite_row(
+                            concentration=metabolite_data["C12-1"],
+                            ref_stats_entry=ref_stats["C12-1"],
+                            subtitle=""
+                        )
+                    ]),
+                    
+                ], style={'margin':'0px'}),
+            ]),
+            render_page_footer(page_number=6),
+           # 6 страница
+            html.Div([
+                
+render_page_header(date=date, name=name),   
+                
+                html.Div([
+                    # Long-chain acylcarnitines (keeping Russian title)
+                    render_metabolite_category_header('Длинноцепочечные ацилкарнитины'),
+                    
+                    # Tetradecanoylcarnitine (C14)
+                    render_metabolite_row(
+                        concentration=metabolite_data["C14"],
+                        ref_stats_entry=ref_stats["C14"],
+                        subtitle=""
+                    ),
+                    
+                    # Tetradecenoylcarnitine (C14:1)
+                    render_metabolite_row(
+                        concentration=metabolite_data["C14-1"],
+                        ref_stats_entry=ref_stats["C14-1"],
+                        subtitle=""
+                    ),
+                    
+                    # Tetradecadienoylcarnitine (C14:2)
+                    render_metabolite_row(
+                        concentration=metabolite_data["C14-2"],
+                        ref_stats_entry=ref_stats["C14-2"],
+                        subtitle=""
+                    ),
+                    
+                    # Hydroxytetradecanoylcarnitine (C14-OH)
+                    render_metabolite_row(
+                        concentration=metabolite_data["C14-OH"],
+                        ref_stats_entry=ref_stats["C14-OH"],
+                        subtitle=""
+                    ),
+                    
+                    # Palmitoylcarnitine (C16)
+                    render_metabolite_row(
+                        concentration=metabolite_data["C16"],
+                        ref_stats_entry=ref_stats["C16"],
+                        subtitle=""
+                    ),
+                    
+                    # Hexadecenoylcarnitine (C16:1)
+                    render_metabolite_row(
+                        concentration=metabolite_data["C16-1"],
+                        ref_stats_entry=ref_stats["C16-1"],
+                        subtitle=""
+                    ),
+                    
+                    # Hydroxyhexadecenoylcarnitine (C16:1-OH)
+                    render_metabolite_row(
+                        concentration=metabolite_data["C16-1-OH"],
+                        ref_stats_entry=ref_stats["C16-1-OH"],
+                        subtitle=""
+                    ),
+                    
+                    # Hydroxyhexadecanoylcarnitine (C16-OH)
+                    render_metabolite_row(
+                        concentration=metabolite_data["C16-OH"],
+                        ref_stats_entry=ref_stats["C16-OH"],
+                        subtitle=""
+                    ),
+                    
+                    # Stearoylcarnitine (C18)
+                    render_metabolite_row(
+                        concentration=metabolite_data["C18"],
+                        ref_stats_entry=ref_stats["C18"],
+                        subtitle=""
+                    ),
+                    
+                    # Oleoylcarnitine (C18:1)
+                    render_metabolite_row(
+                        concentration=metabolite_data["C18-1"],
+                        ref_stats_entry=ref_stats["C18-1"],
+                        subtitle=""
+                    ),
+                    
+                    # Hydroxyoctadecenoylcarnitine (C18:1-OH)
+                    render_metabolite_row(
+                        concentration=metabolite_data["C18-1-OH"],
+                        ref_stats_entry=ref_stats["C18-1-OH"],
+                        subtitle=""
+                    ),
+                    
+                    # Linoleoylcarnitine (C18:2)
+                    render_metabolite_row(
+                        concentration=metabolite_data["C18-2"],
+                        ref_stats_entry=ref_stats["C18-2"],
+                        subtitle=""
+                    ),
+                    
+                    # Hydroxyoctadecanoylcarnitine (C18-OH)
+                    render_metabolite_row(
+                        concentration=metabolite_data["C18-OH"],
+                        ref_stats_entry=ref_stats["C18-OH"],
+                        subtitle=""
+                    ),
+                    
+                    # Metabolic balance section header (keeping Russian title)
+                    render_category_header(order_number='4', title='Метаболический баланс'),
+                    
+                    # Vitamins and neurotransmitters (keeping Russian title)
+                    render_metabolite_category_header('Витамины и нейромедиаторы'),
+                    
+                    # Pantothenic acid
+                    render_metabolite_row(
+                        concentration=metabolite_data["Pantothenic"],
+                        ref_stats_entry=ref_stats["Pantothenic"],
+                        subtitle="Витамин B5"
+                    ),
+                    
+                    # Riboflavin
+                    render_metabolite_row(
+                        concentration=metabolite_data["Riboflavin"],
+                        ref_stats_entry=ref_stats["Riboflavin"],
+                        subtitle="Витамин B2"
+                    ),
+                    
+                    # Melatonin
+                    render_metabolite_row(
+                        concentration=metabolite_data["Melatonin"],
+                        ref_stats_entry=ref_stats["Melatonin"],
+                        subtitle="Регулирует циркадные ритмы"
+                    ),
+                    
+                    # Nucleosides (keeping Russian title)
+                    render_metabolite_category_header('Нуклеозиды'),
+                    
+                    # Uridine
+                    render_metabolite_row(
+                        concentration=metabolite_data["Uridine"],
+                        ref_stats_entry=ref_stats["Uridine"],
+                        subtitle=""
+                    ),
+                    
+                    # Adenosine
+                    render_metabolite_row(
+                        concentration=metabolite_data["Adenosin"],
+                        ref_stats_entry=ref_stats["Adenosin"],
+                        subtitle=""
+                    ),
+                    
+                    # Cytidine
+                    render_metabolite_row(
+                        concentration=metabolite_data["Cytidine"],
+                        ref_stats_entry=ref_stats["Cytidine"],
+                        subtitle=""
+                    ),
+                    
+                    
+                    
+                ], style={'margin':'0px'}),
+            ]),
+
+            # Footer for page 7
+            render_page_footer(page_number=7),
+            # 7 страница
+            html.Div([
+                
+            render_page_header(date=date, name=name), 
+                            
+                html.Div([
+                    
+               # Allergy and stress (keeping Russian title)
+                    render_metabolite_category_header('Аллергия и стресс'),
+                    
+                    # Cortisol
+                    render_metabolite_row(
+                        concentration=metabolite_data["Cortisol"],
+                        ref_stats_entry=ref_stats["Cortisol"],
+                        subtitle=""
+                    ),
+                    
+                    # Histamine
+                    render_metabolite_row(
+                        concentration=metabolite_data["Histamine"],
+                        ref_stats_entry=ref_stats["Histamine"],
+                        subtitle=""
+                    ),
+                    
+#                 html.Div(
+#     style={
+#         'width': '100%',
+#         'fontFamily': 'Calibri',
+#         'padding': '5px'
+#     },
+#     children=[
+#         # Main Card
+#         html.Div(
+#             style={
+#                 'backgroundColor': 'white',
+#                 'borderRadius': '5px',
+#                 'overflow': 'hidden'
+#             },
+#             children=[
+#                 # Section Header
+#                 html.Div([
+#                     html.H3(
+#                         children='8. Метилирование, обмен холина и метионина', 
+#                         style={
+#                             'textAlign': 'center',
+#                             'margin': '0px',
+#                             'lineHeight': 'normal',
+#                             'display': 'inline-block',
+#                             'verticalAlign': 'center',
+#                             'fontWeight': '600',
+#                             'fontSize': '19px'
+#                         }
+#                     )],
+#                     style={
+#                         'width': '100%',
+#                         'backgroundColor': '#2563eb',
+#                         'borderRadius': '5px 5px 0px 0px', 
+#                         'color': 'white',
+#                         'fontFamily': 'Calibri',
+#                         'margin': '0px',
+#                         'height': '35px',
+#                         'lineHeight': '35px',
+#                         'textAlign': 'center',
+#                         'marginTop': '20px'
+#                     }
+#                 ),
+                
+#                 # Table Content
+#                 html.Div(
+#                     style={'padding': '10px 0px'},
+#                     children=[
+#                         # Table Headers
+#                         html.Div(
+#                             style={
+#                                 'display': 'grid',
+#                                 'gridTemplateColumns': 'repeat(13, minmax(0, 1fr))',
+#                                 'gap': '10px',
+#                                 'fontWeight': '500',
+#                                 'color': "#4D5052",
+#                                 'backgroundColor': '#f8f9fa',
+#                                 'padding': '8px',
+#                                 'borderRadius': '5px',
+#                                 'margin': '0px',
+#                                 'fontSize': '14px',
+#                                 'fontFamily': 'Calibri'
+#                             },
+#                             children=[
+#                                 html.Div("Показатель", style={'gridColumn': 'span 3'}),
+#                                 html.Div("Результат", style={'gridColumn': 'span 2', 'textAlign': 'center'}),
+#                                 html.Div("Статус", style={'gridColumn': 'span 1', 'textAlign': 'center'}),
+#                                 html.Div("Норма", style={'gridColumn': 'span 2', 'textAlign': 'center'}),
+#                                 html.Div("Что это отражает?", style={'gridColumn': 'span 5'}),
+#                             ]
+#                         ),
+                        
+#                         # Data Rows
+#                         *[
+#                             html.Div(
+#                                 style={
+#                                     'display': 'grid',
+#                                     'gridTemplateColumns': 'repeat(13, minmax(0, 1fr))',
+#                                     'gap': '10px',
+#                                     'padding': '8px 10px',
+#                                     'alignItems': 'center',
+#                                     'borderBottom': '1px solid #e9ecef',
+#                                     'fontFamily': 'Calibri'
+#                                 },
+#                                 children=[
+#                                     html.Div(
+#                                         item["name"],
+#                                         style={
+#                                             'gridColumn': 'span 3',
+#                                             'fontWeight': '600',
                                             
-                                            'fontSize': '14px',
-                                            'color': '#212529'
-                                        }
-                                    ),
-                                    html.Div(
-                                        style={
-                                            'gridColumn': 'span 2',
-                                            'display': 'flex',
-                                            'alignItems': 'center',
-                                            'justifyContent': 'center',
-                                            'gap': '4px'
-                                        },
-                                        children=[
-                                            html.Div(
-                                                f"{item['value']}",
-                                                style={
-                                                    'fontWeight': 'bold',
-                                                    'fontSize': '15px',
-                                                    'color': {
-                                                        'blue': '#2563eb',
-                                                        'red': '#dc3545',
-                                                        'green': '#212529'
-                                                        }[get_status_color(item["value"], item["norm"])]
-                                                }
-                                            ),
-                                            html.Div(
-                                                style={
-                                                    'width': '0',
-                                                    'height': '0',
-                                                    'borderLeft': '5px solid transparent',
-                                                    'borderRight': '5px solid transparent',
-                                                    'borderTop': '8px solid #2563eb' if get_status_color(item['value'], item['norm']) == 'blue' else 'none',
-                                                    'borderBottom': '8px solid #dc3545' if get_status_color(item['value'], item['norm']) == 'red' else 'none',
-                                                    'visibility': 'visible' if get_status_color(item['value'], item['norm']) in ['blue', 'red'] else 'collapse',
-                                                    'marginLeft': '4px' if get_status_color(item['value'], item['norm']) in ['red', 'blue'] else '0px'
-                                                }
-                                            )
-                                        ]
-                                    ),
+#                                             'fontSize': '14px',
+#                                             'color': '#212529'
+#                                         }
+#                                     ),
+#                                     html.Div(
+#                                         style={
+#                                             'gridColumn': 'span 2',
+#                                             'display': 'flex',
+#                                             'alignItems': 'center',
+#                                             'justifyContent': 'center',
+#                                             'gap': '4px'
+#                                         },
+#                                         children=[
+#                                             html.Div(
+#                                                 f"{item['value']}",
+#                                                 style={
+#                                                     'fontWeight': 'bold',
+#                                                     'fontSize': '15px',
+#                                                     'color': {
+#                                                         'blue': '#2563eb',
+#                                                         'red': '#dc3545',
+#                                                         'green': '#212529'
+#                                                         }[get_status_color(item["value"], item["norm"])]
+#                                                 }
+#                                             ),
+#                                             html.Div(
+#                                                 style={
+#                                                     'width': '0',
+#                                                     'height': '0',
+#                                                     'borderLeft': '5px solid transparent',
+#                                                     'borderRight': '5px solid transparent',
+#                                                     'borderTop': '8px solid #2563eb' if get_status_color(item['value'], item['norm']) == 'blue' else 'none',
+#                                                     'borderBottom': '8px solid #dc3545' if get_status_color(item['value'], item['norm']) == 'red' else 'none',
+#                                                     'visibility': 'visible' if get_status_color(item['value'], item['norm']) in ['blue', 'red'] else 'collapse',
+#                                                     'marginLeft': '4px' if get_status_color(item['value'], item['norm']) in ['red', 'blue'] else '0px'
+#                                                 }
+#                                             )
+#                                         ]
+#                                     ),
                                     
-                                    html.Div(
-                                        style={
-                                            'gridColumn': 'span 1',
-                                            'textAlign': 'center',
-                                            'justifySelf': 'center',
-                                        },
-                                        children=html.Span(
-                                            get_status_text(item["value"], item["norm"]),
-                                            style={
-                                                'padding': '3px 8px',
-                                                'borderRadius': '12px',
-                                                'fontSize': '14px',
-                                                'fontWeight': '500',
-                                                'backgroundColor': {
-                                                    'blue': '#e7f1ff',
-                                                    'red': '#f8d7da',
-                                                    'green': '#e6f7ee'
-                                                }[get_status_color(item["value"], item["norm"])],
-                                                'color': {
-                                                    'blue': '#2563eb',
-                                                    'red': '#dc3545',
-                                                    'green': '#198754'
-                                                }[get_status_color(item["value"], item["norm"])]
-                                            }
-                                        )
-                                    ),
-                                    html.Div(
-                                        f"{item['norm']}",
-                                        style={
-                                            'gridColumn': 'span 2',
-                                            'textAlign': 'center',
+#                                     html.Div(
+#                                         style={
+#                                             'gridColumn': 'span 1',
+#                                             'textAlign': 'center',
+#                                             'justifySelf': 'center',
+#                                         },
+#                                         children=html.Span(
+#                                             get_status_text(item["value"], item["norm"]),
+#                                             style={
+#                                                 'padding': '3px 8px',
+#                                                 'borderRadius': '12px',
+#                                                 'fontSize': '14px',
+#                                                 'fontWeight': '500',
+#                                                 'backgroundColor': {
+#                                                     'blue': '#e7f1ff',
+#                                                     'red': '#f8d7da',
+#                                                     'green': '#e6f7ee'
+#                                                 }[get_status_color(item["value"], item["norm"])],
+#                                                 'color': {
+#                                                     'blue': '#2563eb',
+#                                                     'red': '#dc3545',
+#                                                     'green': '#198754'
+#                                                 }[get_status_color(item["value"], item["norm"])]
+#                                             }
+#                                         )
+#                                     ),
+#                                     html.Div(
+#                                         f"{item['norm']}",
+#                                         style={
+#                                             'gridColumn': 'span 2',
+#                                             'textAlign': 'center',
                                             
-                                            'fontSize': '14px',
-                                            'color': '#6c757d',
-                                            'alignItems': 'center'
-                                        }
-                                    ),
-                                    html.Div(
-                                        item["description"],
-                                        style={
-                                            'gridColumn': 'span 5',
-                                            'color': '#6c757d',
-                                            'lineHeight': '1.4',
-                                            'fontSize': '14px'
-                                        }
-                                    ),
-                                ]
-                            )
-                            for item in methylation_data
-                        ],
-                    ]
-                ),
+#                                             'fontSize': '14px',
+#                                             'color': '#6c757d',
+#                                             'alignItems': 'center'
+#                                         }
+#                                     ),
+#                                     html.Div(
+#                                         item["description"],
+#                                         style={
+#                                             'gridColumn': 'span 5',
+#                                             'color': '#6c757d',
+#                                             'lineHeight': '1.4',
+#                                             'fontSize': '14px'
+#                                         }
+#                                     ),
+#                                 ]
+#                             )
+#                             for item in methylation_data
+#                         ],
+#                     ]
+#                 ),
                 
                 
-            ]
-        )
-    ]
-),      
+#             ]
+#         )
+#     ]
+# ),      
                 
                         
          
-                             html.Div([
-                        html.P('Результаты данного отчета не являются диагнозом и должны быть интерпретированы лечащим врачом на основании клинико-лабораторных данных и других диагностических исследований.',
-                        style={'color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"left",'font-style':'italic','margin-top':'5px','width':'85%'}),
-                        html.P('|6',
-                            style={'color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"right",'font-style':'italic','margin-top':'5px','width':'10%','margin-top':'15px'}),
-                    ], style={'page-break-after': 'always','margin':'0px','display':'flex','justify-content':'space-between','width':'100%','margin-top':'200px'}), 
-    
+#                        render_page_footer(page_number=8),
            
-               html.Div([
-                html.Div([
-                    html.B(f"Дата: {date}",style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
-                    html.Div([
-                        html.B(f'Пациент: {name}',style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
-                    ],style={'margin-top':'2px'}),
-                ], style={'width':'33.3%'}),
-                html.Div([
-                    html.B("MetaboScan-Test01",style={'margin':'0px','font-size':'18px','font-family':'Calibri','color':'#FFFFFF'}),
-                ], style={'width':'33.3%','text-align':'center'}),
-                html.Div([
-                    html.Img(src=app.get_asset_url('logo.jpg'),style={'height':'54px','float':'right'}),
-                ], style={'width':'33.3%'}),
-            ], style={'display':'flex', 'justify-content':'space-between','width':'100%','height':'54px','color':'#2563eb'}),
+#    render_page_header(date=date, name=name),
 
            
-           html.Div(
-    style={
-        'width': '100%',
-        'fontFamily': 'Calibri',
-        'padding': '5px'
-    },
-    children=[
-        # Main Card
-        html.Div(
-            style={
-                'backgroundColor': 'white',
-                'borderRadius': '5px',
-                'overflow': 'hidden'
-            },
-            children=[
-                # Section Header
-                html.Div([
-                    html.H3(
-                        children='7. Воспаление, стресс и нейромедиаторный баланс', 
-                        style={
-                            'textAlign': 'center',
-                            'margin': '0px',
-                            'lineHeight': 'normal',
-                            'display': 'inline-block',
-                            'verticalAlign': 'center',
-                            'fontWeight': '600',
-                            'fontSize': '19px'
-                        }
-                    )],
-                    style={
-                        'width': '100%',
-                        'backgroundColor': '#2563eb',
-                        'borderRadius': '5px 5px 0px 0px', 
-                        'color': 'white',
-                        'fontFamily': 'Calibri',
-                        'margin': '0px',
-                        'height': '35px',
-                        'lineHeight': '35px',
-                        'textAlign': 'center',
-                        'marginTop': '0px'
-                    }
-                ),
+#            html.Div(
+#     style={
+#         'width': '100%',
+#         'fontFamily': 'Calibri',
+#         'padding': '5px'
+#     },
+#     children=[
+#         # Main Card
+#         html.Div(
+#             style={
+#                 'backgroundColor': 'white',
+#                 'borderRadius': '5px',
+#                 'overflow': 'hidden'
+#             },
+#             children=[
+#                 # Section Header
+#                 html.Div([
+#                     html.H3(
+#                         children='7. Воспаление, стресс и нейромедиаторный баланс', 
+#                         style={
+#                             'textAlign': 'center',
+#                             'margin': '0px',
+#                             'lineHeight': 'normal',
+#                             'display': 'inline-block',
+#                             'verticalAlign': 'center',
+#                             'fontWeight': '600',
+#                             'fontSize': '19px'
+#                         }
+#                     )],
+#                     style={
+#                         'width': '100%',
+#                         'backgroundColor': '#2563eb',
+#                         'borderRadius': '5px 5px 0px 0px', 
+#                         'color': 'white',
+#                         'fontFamily': 'Calibri',
+#                         'margin': '0px',
+#                         'height': '35px',
+#                         'lineHeight': '35px',
+#                         'textAlign': 'center',
+#                         'marginTop': '0px'
+#                     }
+#                 ),
                 
-                # Table Content
-                html.Div(
-                    style={'padding': '10px 0px'},
-                    children=[
-                        # Table Headers
-                        html.Div(
-                            style={
-                                'display': 'grid',
-                                'gridTemplateColumns': 'repeat(13, minmax(0, 1fr))',
-                                'gap': '10px',
-                                'fontWeight': '500',
-                                'color': "#4D5052",
-                                'backgroundColor': '#f8f9fa',
-                                'padding': '8px',
-                                'borderRadius': '5px',
-                                'margin': '0px',
-                                'fontSize': '14px',
-                                'fontFamily': 'Calibri'
-                            },
-                            children=[
-                                html.Div("Показатель", style={'gridColumn': 'span 3'}),
-                                html.Div("Результат", style={'gridColumn': 'span 2', 'textAlign': 'center'}),
-                                html.Div("Статус", style={'gridColumn': 'span 1', 'textAlign': 'center'}),
-                                html.Div("Норма", style={'gridColumn': 'span 2', 'textAlign': 'center'}),
-                                html.Div("Что это отражает?", style={'gridColumn': 'span 5'}),
-                            ]
-                        ),
+#                 # Table Content
+#                 html.Div(
+#                     style={'padding': '10px 0px'},
+#                     children=[
+#                         # Table Headers
+#                         html.Div(
+#                             style={
+#                                 'display': 'grid',
+#                                 'gridTemplateColumns': 'repeat(13, minmax(0, 1fr))',
+#                                 'gap': '10px',
+#                                 'fontWeight': '500',
+#                                 'color': "#4D5052",
+#                                 'backgroundColor': '#f8f9fa',
+#                                 'padding': '8px',
+#                                 'borderRadius': '5px',
+#                                 'margin': '0px',
+#                                 'fontSize': '14px',
+#                                 'fontFamily': 'Calibri'
+#                             },
+#                             children=[
+#                                 html.Div("Показатель", style={'gridColumn': 'span 3'}),
+#                                 html.Div("Результат", style={'gridColumn': 'span 2', 'textAlign': 'center'}),
+#                                 html.Div("Статус", style={'gridColumn': 'span 1', 'textAlign': 'center'}),
+#                                 html.Div("Норма", style={'gridColumn': 'span 2', 'textAlign': 'center'}),
+#                                 html.Div("Что это отражает?", style={'gridColumn': 'span 5'}),
+#                             ]
+#                         ),
                         
-                        # Data Rows
-                        *[
-                            html.Div(
-                                style={
-                                    'display': 'grid',
-                                    'gridTemplateColumns': 'repeat(13, minmax(0, 1fr))',
-                                    'gap': '10px',
-                                    'padding': '8px 10px',
-                                    'alignItems': 'center',
-                                    'borderBottom': '1px solid #e9ecef',
-                                    'fontFamily': 'Calibri'
-                                },
-                                children=[
-                                    html.Div(
-                                        item["name"],
-                                        style={
-                                            'gridColumn': 'span 3',
-                                            'fontWeight': '600',
+#                         # Data Rows
+#                         *[
+#                             html.Div(
+#                                 style={
+#                                     'display': 'grid',
+#                                     'gridTemplateColumns': 'repeat(13, minmax(0, 1fr))',
+#                                     'gap': '10px',
+#                                     'padding': '8px 10px',
+#                                     'alignItems': 'center',
+#                                     'borderBottom': '1px solid #e9ecef',
+#                                     'fontFamily': 'Calibri'
+#                                 },
+#                                 children=[
+#                                     html.Div(
+#                                         item["name"],
+#                                         style={
+#                                             'gridColumn': 'span 3',
+#                                             'fontWeight': '600',
                                             
-                                            'fontSize': '14px',
-                                            'color': '#212529'
-                                        }
-                                    ),
-                                    html.Div(
-                                        style={
-                                            'gridColumn': 'span 2',
-                                            'display': 'flex',
-                                            'alignItems': 'center',
-                                            'justifyContent': 'center',
-                                            'gap': '4px'
-                                        },
-                                        children=[
-                                            html.Div(
-                                                f"{item['value']}",
-                                                style={
-                                                    'fontWeight': 'bold',
-                                                    'fontSize': '15px',
-                                                    'color': {
-                                                        'blue': '#2563eb',
-                                                        'red': '#dc3545',
-                                                        'green': '#212529'
-                                                        }[get_status_color(item["value"], item["norm"])]
-                                                }
-                                            ),
-                                            html.Div(
-                                                style={
-                                                    'width': '0',
-                                                    'height': '0',
-                                                    'borderLeft': '5px solid transparent',
-                                                    'borderRight': '5px solid transparent',
-                                                    'borderTop': '8px solid #2563eb' if get_status_color(item['value'], item['norm']) == 'blue' else 'none',
-                                                    'borderBottom': '8px solid #dc3545' if get_status_color(item['value'], item['norm']) == 'red' else 'none',
-                                                    'visibility': 'visible' if get_status_color(item['value'], item['norm']) in ['blue', 'red'] else 'collapse',
-                                                    'marginLeft': '4px' if get_status_color(item['value'], item['norm']) in ['red', 'blue'] else '0px'
-                                                }
-                                            )
-                                        ]
-                                    ),
+#                                             'fontSize': '14px',
+#                                             'color': '#212529'
+#                                         }
+#                                     ),
+#                                     html.Div(
+#                                         style={
+#                                             'gridColumn': 'span 2',
+#                                             'display': 'flex',
+#                                             'alignItems': 'center',
+#                                             'justifyContent': 'center',
+#                                             'gap': '4px'
+#                                         },
+#                                         children=[
+#                                             html.Div(
+#                                                 f"{item['value']}",
+#                                                 style={
+#                                                     'fontWeight': 'bold',
+#                                                     'fontSize': '15px',
+#                                                     'color': {
+#                                                         'blue': '#2563eb',
+#                                                         'red': '#dc3545',
+#                                                         'green': '#212529'
+#                                                         }[get_status_color(item["value"], item["norm"])]
+#                                                 }
+#                                             ),
+#                                             html.Div(
+#                                                 style={
+#                                                     'width': '0',
+#                                                     'height': '0',
+#                                                     'borderLeft': '5px solid transparent',
+#                                                     'borderRight': '5px solid transparent',
+#                                                     'borderTop': '8px solid #2563eb' if get_status_color(item['value'], item['norm']) == 'blue' else 'none',
+#                                                     'borderBottom': '8px solid #dc3545' if get_status_color(item['value'], item['norm']) == 'red' else 'none',
+#                                                     'visibility': 'visible' if get_status_color(item['value'], item['norm']) in ['blue', 'red'] else 'collapse',
+#                                                     'marginLeft': '4px' if get_status_color(item['value'], item['norm']) in ['red', 'blue'] else '0px'
+#                                                 }
+#                                             )
+#                                         ]
+#                                     ),
                                     
-                                    html.Div(
-                                        style={
-                                            'gridColumn': 'span 1',
-                                            'textAlign': 'center',
-                                            'justifySelf': 'center',
-                                        },
-                                        children=html.Span(
-                                            get_status_text(item["value"], item["norm"]),
-                                            style={
-                                                'padding': '3px 8px',
-                                                'borderRadius': '12px',
-                                                'fontSize': '14px',
-                                                'fontWeight': '500',
-                                                'backgroundColor': {
-                                                    'blue': '#e7f1ff',
-                                                    'red': '#f8d7da',
-                                                    'green': '#e6f7ee'
-                                                }[get_status_color(item["value"], item["norm"])],
-                                                'color': {
-                                                    'blue': '#2563eb',
-                                                    'red': '#dc3545',
-                                                    'green': '#198754'
-                                                }[get_status_color(item["value"], item["norm"])]
-                                            }
-                                        )
-                                    ),
-                                    html.Div(
-                                        f"{item['norm']}",
-                                        style={
-                                            'gridColumn': 'span 2',
-                                            'textAlign': 'center',
+#                                     html.Div(
+#                                         style={
+#                                             'gridColumn': 'span 1',
+#                                             'textAlign': 'center',
+#                                             'justifySelf': 'center',
+#                                         },
+#                                         children=html.Span(
+#                                             get_status_text(item["value"], item["norm"]),
+#                                             style={
+#                                                 'padding': '3px 8px',
+#                                                 'borderRadius': '12px',
+#                                                 'fontSize': '14px',
+#                                                 'fontWeight': '500',
+#                                                 'backgroundColor': {
+#                                                     'blue': '#e7f1ff',
+#                                                     'red': '#f8d7da',
+#                                                     'green': '#e6f7ee'
+#                                                 }[get_status_color(item["value"], item["norm"])],
+#                                                 'color': {
+#                                                     'blue': '#2563eb',
+#                                                     'red': '#dc3545',
+#                                                     'green': '#198754'
+#                                                 }[get_status_color(item["value"], item["norm"])]
+#                                             }
+#                                         )
+#                                     ),
+#                                     html.Div(
+#                                         f"{item['norm']}",
+#                                         style={
+#                                             'gridColumn': 'span 2',
+#                                             'textAlign': 'center',
                                             
-                                            'fontSize': '14px',
-                                            'color': '#6c757d',
-                                            'alignItems': 'center'
-                                        }
-                                    ),
-                                    html.Div(
-                                        item["description"],
-                                        style={
-                                            'gridColumn': 'span 5',
-                                            'color': '#6c757d',
-                                            'lineHeight': '1.4',
-                                            'fontSize': '14px'
-                                        }
-                                    ),
-                                ]
-                            )
-                            for item in inflammation_data
-                        ],
-                    ]
-                ),
+#                                             'fontSize': '14px',
+#                                             'color': '#6c757d',
+#                                             'alignItems': 'center'
+#                                         }
+#                                     ),
+#                                     html.Div(
+#                                         item["description"],
+#                                         style={
+#                                             'gridColumn': 'span 5',
+#                                             'color': '#6c757d',
+#                                             'lineHeight': '1.4',
+#                                             'fontSize': '14px'
+#                                         }
+#                                     ),
+#                                 ]
+#                             )
+#                             for item in inflammation_data
+#                         ],
+#                     ]
+#                 ),
                 
                 
-            ]
-        )
-    ]
-),
+#             ]
+#         )
+#     ]
+# ),
            
-                    html.Div([
-                        html.P('Результаты данного отчета не являются диагнозом и должны быть интерпретированы лечащим врачом на основании клинико-лабораторных данных и других диагностических исследований.',
-                        style={'color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"left",'font-style':'italic','margin-top':'5px','width':'85%'}),
-                        html.P('|7',
-                            style={'color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"right",'font-style':'italic','margin-top':'5px','width':'10%','margin-top':'15px'}),
-                    ], style={'page-break-after': 'always','margin':'0px','display':'flex','justify-content':'space-between','width':'100%','margin-top':'70px'}),      
-    
-                            html.Div([
-                html.Div([
-                    html.B(f"Дата: {date}",style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
-                    html.Div([
-                        html.B(f'Пациент: {name}',style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
-                    ],style={'margin-top':'2px'}),
-                ], style={'width':'33.3%'}),
-                html.Div([
-                    html.B("MetaboScan-Test01",style={'margin':'0px','font-size':'18px','font-family':'Calibri','color':'#FFFFFF'}),
-                ], style={'width':'33.3%','text-align':'center'}),
-                html.Div([
-                    html.Img(src=app.get_asset_url('logo.jpg'),style={'height':'54px','float':'right'}),
-                ], style={'width':'33.3%'}),
-            ], style={'display':'flex', 'justify-content':'space-between','width':'100%','height':'54px','color':'#2563eb'}),
+#                     render_page_footer(page_number=9),
+#                 render_page_header(date=date, name=name),
 
-        html.Div(
-    style={
-        'width': '100%',
-        'fontFamily': 'Calibri',
-        'padding': '5px'
-    },
-    children=[
-        # Main Card
-        html.Div(
-            style={
-                'backgroundColor': 'white',
-                'borderRadius': '5px',
-                'overflow': 'hidden'
-            },
-            children=[
-                # Section Header
-                html.Div([
-                    html.H3(
-                        children='6. Состояние сосудистой системы и эндотелиальной функции', 
-                        style={
-                            'textAlign': 'center',
-                            'margin': '0px',
-                            'lineHeight': 'normal',
-                            'display': 'inline-block',
-                            'verticalAlign': 'center',
-                            'fontWeight': '600',
-                            'fontSize': '19px'
-                        }
-                    )],
-                    style={
-                        'width': '100%',
-                        'backgroundColor': '#2563eb',
-                        'borderRadius': '5px 5px 0px 0px', 
-                        'color': 'white',
-                        'fontFamily': 'Calibri',
-                        'margin': '0px',
-                        'height': '35px',
-                        'lineHeight': '35px',
-                        'textAlign': 'center',
-                        'marginTop': '0px'
-                    }
-                ),
+#         html.Div(
+#     style={
+#         'width': '100%',
+#         'fontFamily': 'Calibri',
+#         'padding': '5px'
+#     },
+#     children=[
+#         # Main Card
+#         html.Div(
+#             style={
+#                 'backgroundColor': 'white',
+#                 'borderRadius': '5px',
+#                 'overflow': 'hidden'
+#             },
+#             children=[
+#                 # Section Header
+#                 html.Div([
+#                     html.H3(
+#                         children='6. Состояние сосудистой системы и эндотелиальной функции', 
+#                         style={
+#                             'textAlign': 'center',
+#                             'margin': '0px',
+#                             'lineHeight': 'normal',
+#                             'display': 'inline-block',
+#                             'verticalAlign': 'center',
+#                             'fontWeight': '600',
+#                             'fontSize': '19px'
+#                         }
+#                     )],
+#                     style={
+#                         'width': '100%',
+#                         'backgroundColor': '#2563eb',
+#                         'borderRadius': '5px 5px 0px 0px', 
+#                         'color': 'white',
+#                         'fontFamily': 'Calibri',
+#                         'margin': '0px',
+#                         'height': '35px',
+#                         'lineHeight': '35px',
+#                         'textAlign': 'center',
+#                         'marginTop': '0px'
+#                     }
+#                 ),
                 
-                # Table Content
-                html.Div(
-                    style={'padding': '10px 0px'},
-                    children=[
-                        # Table Headers
-                        html.Div(
-                            style={
-                                'display': 'grid',
-                                'gridTemplateColumns': 'repeat(13, minmax(0, 1fr))',
-                                'gap': '10px',
-                                'fontWeight': '500',
-                                'color': "#4D5052",
-                                'backgroundColor': '#f8f9fa',
-                                'padding': '8px',
-                                'borderRadius': '5px',
-                                'margin': '0px',
-                                'fontSize': '14px',
-                                'fontFamily': 'Calibri'
-                            },
-                            children=[
-                                html.Div("Показатель", style={'gridColumn': 'span 3'}),
-                                html.Div("Результат", style={'gridColumn': 'span 2', 'textAlign': 'center'}),
-                                html.Div("Статус", style={'gridColumn': 'span 1', 'textAlign': 'center'}),
-                                html.Div("Норма", style={'gridColumn': 'span 2', 'textAlign': 'center'}),
-                                html.Div("Что это отражает?", style={'gridColumn': 'span 5'}),
-                            ]
-                        ),
+#                 # Table Content
+#                 html.Div(
+#                     style={'padding': '10px 0px'},
+#                     children=[
+#                         # Table Headers
+#                         html.Div(
+#                             style={
+#                                 'display': 'grid',
+#                                 'gridTemplateColumns': 'repeat(13, minmax(0, 1fr))',
+#                                 'gap': '10px',
+#                                 'fontWeight': '500',
+#                                 'color': "#4D5052",
+#                                 'backgroundColor': '#f8f9fa',
+#                                 'padding': '8px',
+#                                 'borderRadius': '5px',
+#                                 'margin': '0px',
+#                                 'fontSize': '14px',
+#                                 'fontFamily': 'Calibri'
+#                             },
+#                             children=[
+#                                 html.Div("Показатель", style={'gridColumn': 'span 3'}),
+#                                 html.Div("Результат", style={'gridColumn': 'span 2', 'textAlign': 'center'}),
+#                                 html.Div("Статус", style={'gridColumn': 'span 1', 'textAlign': 'center'}),
+#                                 html.Div("Норма", style={'gridColumn': 'span 2', 'textAlign': 'center'}),
+#                                 html.Div("Что это отражает?", style={'gridColumn': 'span 5'}),
+#                             ]
+#                         ),
                         
-                        # Data Rows
-                        *[
-                            html.Div(
-                                style={
-                                    'display': 'grid',
-                                    'gridTemplateColumns': 'repeat(13, minmax(0, 1fr))',
-                                    'gap': '10px',
-                                    'padding': '8px 10px',
-                                    'alignItems': 'center',
-                                    'borderBottom': '1px solid #e9ecef',
-                                    'fontFamily': 'Calibri'
-                                },
-                                children=[
-                                    html.Div(
-                                        item["name"],
-                                        style={
-                                            'gridColumn': 'span 3',
-                                            'fontWeight': '600',
+#                         # Data Rows
+#                         *[
+#                             html.Div(
+#                                 style={
+#                                     'display': 'grid',
+#                                     'gridTemplateColumns': 'repeat(13, minmax(0, 1fr))',
+#                                     'gap': '10px',
+#                                     'padding': '8px 10px',
+#                                     'alignItems': 'center',
+#                                     'borderBottom': '1px solid #e9ecef',
+#                                     'fontFamily': 'Calibri'
+#                                 },
+#                                 children=[
+#                                     html.Div(
+#                                         item["name"],
+#                                         style={
+#                                             'gridColumn': 'span 3',
+#                                             'fontWeight': '600',
                                             
-                                            'fontSize': '14px',
-                                            'color': '#212529'
-                                        }
-                                    ),
-                                    html.Div(
-                                        style={
-                                            'gridColumn': 'span 2',
-                                            'display': 'flex',
-                                            'alignItems': 'center',
-                                            'justifyContent': 'center',
-                                            'gap': '4px'
-                                        },
-                                        children=[
-                                            html.Div(
-                                                f"{item['value']}",
-                                                style={
-                                                    'fontWeight': 'bold',
-                                                    'fontSize': '15px',
-                                                    'color': {
-                                                        'blue': '#2563eb',
-                                                        'red': '#dc3545',
-                                                        'green': '#212529'
-                                                        }[get_status_color(item["value"], item["norm"])]
-                                                }
-                                            ),
-                                            html.Div(
-                                                style={
-                                                    'width': '0',
-                                                    'height': '0',
-                                                    'borderLeft': '5px solid transparent',
-                                                    'borderRight': '5px solid transparent',
-                                                    'borderTop': '8px solid #2563eb' if get_status_color(item['value'], item['norm']) == 'blue' else 'none',
-                                                    'borderBottom': '8px solid #dc3545' if get_status_color(item['value'], item['norm']) == 'red' else 'none',
-                                                    'visibility': 'visible' if get_status_color(item['value'], item['norm']) in ['blue', 'red'] else 'collapse',
-                                                    'marginLeft': '4px' if get_status_color(item['value'], item['norm']) in ['red', 'blue'] else '0px'
-                                                }
-                                            )
-                                        ]
-                                    ),
+#                                             'fontSize': '14px',
+#                                             'color': '#212529'
+#                                         }
+#                                     ),
+#                                     html.Div(
+#                                         style={
+#                                             'gridColumn': 'span 2',
+#                                             'display': 'flex',
+#                                             'alignItems': 'center',
+#                                             'justifyContent': 'center',
+#                                             'gap': '4px'
+#                                         },
+#                                         children=[
+#                                             html.Div(
+#                                                 f"{item['value']}",
+#                                                 style={
+#                                                     'fontWeight': 'bold',
+#                                                     'fontSize': '15px',
+#                                                     'color': {
+#                                                         'blue': '#2563eb',
+#                                                         'red': '#dc3545',
+#                                                         'green': '#212529'
+#                                                         }[get_status_color(item["value"], item["norm"])]
+#                                                 }
+#                                             ),
+#                                             html.Div(
+#                                                 style={
+#                                                     'width': '0',
+#                                                     'height': '0',
+#                                                     'borderLeft': '5px solid transparent',
+#                                                     'borderRight': '5px solid transparent',
+#                                                     'borderTop': '8px solid #2563eb' if get_status_color(item['value'], item['norm']) == 'blue' else 'none',
+#                                                     'borderBottom': '8px solid #dc3545' if get_status_color(item['value'], item['norm']) == 'red' else 'none',
+#                                                     'visibility': 'visible' if get_status_color(item['value'], item['norm']) in ['blue', 'red'] else 'collapse',
+#                                                     'marginLeft': '4px' if get_status_color(item['value'], item['norm']) in ['red', 'blue'] else '0px'
+#                                                 }
+#                                             )
+#                                         ]
+#                                     ),
                                     
-                                    html.Div(
-                                        style={
-                                            'gridColumn': 'span 1',
-                                            'textAlign': 'center',
-                                            'justifySelf': 'center',
-                                        },
-                                        children=html.Span(
-                                            get_status_text(item["value"], item["norm"]),
-                                            style={
-                                                'padding': '3px 8px',
-                                                'borderRadius': '12px',
-                                                'fontSize': '14px',
-                                                'fontWeight': '500',
-                                                'backgroundColor': {
-                                                    'blue': '#e7f1ff',
-                                                    'red': '#f8d7da',
-                                                    'green': '#e6f7ee'
-                                                }[get_status_color(item["value"], item["norm"])],
-                                                'color': {
-                                                    'blue': '#2563eb',
-                                                    'red': '#dc3545',
-                                                    'green': '#198754'
-                                                }[get_status_color(item["value"], item["norm"])]
-                                            }
-                                        )
-                                    ),
-                                    html.Div(
-                                        f"{item['norm']}",
-                                        style={
-                                            'gridColumn': 'span 2',
-                                            'textAlign': 'center',
+#                                     html.Div(
+#                                         style={
+#                                             'gridColumn': 'span 1',
+#                                             'textAlign': 'center',
+#                                             'justifySelf': 'center',
+#                                         },
+#                                         children=html.Span(
+#                                             get_status_text(item["value"], item["norm"]),
+#                                             style={
+#                                                 'padding': '3px 8px',
+#                                                 'borderRadius': '12px',
+#                                                 'fontSize': '14px',
+#                                                 'fontWeight': '500',
+#                                                 'backgroundColor': {
+#                                                     'blue': '#e7f1ff',
+#                                                     'red': '#f8d7da',
+#                                                     'green': '#e6f7ee'
+#                                                 }[get_status_color(item["value"], item["norm"])],
+#                                                 'color': {
+#                                                     'blue': '#2563eb',
+#                                                     'red': '#dc3545',
+#                                                     'green': '#198754'
+#                                                 }[get_status_color(item["value"], item["norm"])]
+#                                             }
+#                                         )
+#                                     ),
+#                                     html.Div(
+#                                         f"{item['norm']}",
+#                                         style={
+#                                             'gridColumn': 'span 2',
+#                                             'textAlign': 'center',
                                             
-                                            'fontSize': '14px',
-                                            'color': '#6c757d',
-                                            'alignItems': 'center'
-                                        }
-                                    ),
-                                    html.Div(
-                                        item["description"],
-                                        style={
-                                            'gridColumn': 'span 5',
-                                            'color': '#6c757d',
-                                            'lineHeight': '1.4',
-                                            'fontSize': '14px'
-                                        }
-                                    ),
-                                ]
-                            )
-                            for item in vascular_data
-                        ],
-                    ]
-                ),
+#                                             'fontSize': '14px',
+#                                             'color': '#6c757d',
+#                                             'alignItems': 'center'
+#                                         }
+#                                     ),
+#                                     html.Div(
+#                                         item["description"],
+#                                         style={
+#                                             'gridColumn': 'span 5',
+#                                             'color': '#6c757d',
+#                                             'lineHeight': '1.4',
+#                                             'fontSize': '14px'
+#                                         }
+#                                     ),
+#                                 ]
+#                             )
+#                             for item in vascular_data
+#                         ],
+#                     ]
+#                 ),
                 
                 
-            ]
-        )
-    ]
-),  
-                            html.Div([
-                        html.P('Результаты данного отчета не являются диагнозом и должны быть интерпретированы лечащим врачом на основании клинико-лабораторных данных и других диагностических исследований.',
-                        style={'color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"left",'font-style':'italic','margin-top':'5px','width':'85%'}),
-                        html.P('|8',
-                            style={'color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"right",'font-style':'italic','margin-top':'5px','width':'10%','margin-top':'15px'}),
-                    ], style={'page-break-after': 'always','margin':'0px','display':'flex','justify-content':'space-between','width':'100%','margin-top':'285px'}),      
-    
-                html.Div([
-                html.Div([
-                    html.B(f"Дата: {date}",style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
-                    html.Div([
-                        html.B(f'Пациент: {name}',style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
-                    ],style={'margin-top':'2px'}),
-                ], style={'width':'33.3%'}),
-                html.Div([
-                    html.B("MetaboScan-Test01",style={'margin':'0px','font-size':'18px','font-family':'Calibri','color':'#FFFFFF'}),
-                ], style={'width':'33.3%','text-align':'center'}),
-                html.Div([
-                    html.Img(src=app.get_asset_url('logo.jpg'),style={'height':'54px','float':'right'}),
-                ], style={'width':'33.3%'}),
-            ], style={'display':'flex', 'justify-content':'space-between','width':'100%','height':'54px','color':'#2563eb'}),
+#             ]
+#         )
+#     ]
+# ),  
+#                            render_page_footer(page_number=10),
+#     render_page_header(date=date, name=name),
 
     
-    html.Div(
-    style={
-        'width': '100%',
-        'fontFamily': 'Calibri',
-        'padding': '5px'
-    },
-    children=[
-        # Main Card
-        html.Div(
-            style={
-                'backgroundColor': 'white',
-                'borderRadius': '5px',
-                'overflow': 'hidden'
-            },
-            children=[
-                # Section Header
-                html.Div([
-                    html.H3(
-                        children='9. Энергетический обмен, цикл Кребса и баланс аминокислот', 
-                        style={
-                            'textAlign': 'center',
-                            'margin': '0px',
-                            'lineHeight': 'normal',
-                            'display': 'inline-block',
-                            'verticalAlign': 'center',
-                            'fontWeight': '600',
-                            'fontSize': '19px'
-                        }
-                    )],
-                    style={
-                        'width': '100%',
-                        'backgroundColor': '#2563eb',
-                        'borderRadius': '5px 5px 0px 0px', 
-                        'color': 'white',
-                        'fontFamily': 'Calibri',
-                        'margin': '0px',
-                        'height': '35px',
-                        'lineHeight': '35px',
-                        'textAlign': 'center',
-                        'marginTop': '0px'
-                    }
-                ),
+#     html.Div(
+#     style={
+#         'width': '100%',
+#         'fontFamily': 'Calibri',
+#         'padding': '5px'
+#     },
+#     children=[
+#         # Main Card
+#         html.Div(
+#             style={
+#                 'backgroundColor': 'white',
+#                 'borderRadius': '5px',
+#                 'overflow': 'hidden'
+#             },
+#             children=[
+#                 # Section Header
+#                 html.Div([
+#                     html.H3(
+#                         children='9. Энергетический обмен, цикл Кребса и баланс аминокислот', 
+#                         style={
+#                             'textAlign': 'center',
+#                             'margin': '0px',
+#                             'lineHeight': 'normal',
+#                             'display': 'inline-block',
+#                             'verticalAlign': 'center',
+#                             'fontWeight': '600',
+#                             'fontSize': '19px'
+#                         }
+#                     )],
+#                     style={
+#                         'width': '100%',
+#                         'backgroundColor': '#2563eb',
+#                         'borderRadius': '5px 5px 0px 0px', 
+#                         'color': 'white',
+#                         'fontFamily': 'Calibri',
+#                         'margin': '0px',
+#                         'height': '35px',
+#                         'lineHeight': '35px',
+#                         'textAlign': 'center',
+#                         'marginTop': '0px'
+#                     }
+#                 ),
                 
-                # Table Content
-                html.Div(
-                    style={'padding': '10px 0px'},
-                    children=[
-                        # Table Headers
-                        html.Div(
-                            style={
-                                'display': 'grid',
-                                'gridTemplateColumns': 'repeat(13, minmax(0, 1fr))',
-                                'gap': '10px',
-                                'fontWeight': '500',
-                                'color': "#4D5052",
-                                'backgroundColor': '#f8f9fa',
-                                'padding': '8px',
-                                'borderRadius': '5px',
-                                'margin': '0px',
-                                'fontSize': '14px',
-                                'fontFamily': 'Calibri'
-                            },
-                            children=[
-                                html.Div("Показатель", style={'gridColumn': 'span 3'}),
-                                html.Div("Результат", style={'gridColumn': 'span 2', 'textAlign': 'center'}),
-                                html.Div("Статус", style={'gridColumn': 'span 1', 'textAlign': 'center'}),
-                                html.Div("Норма", style={'gridColumn': 'span 2', 'textAlign': 'center'}),
-                                html.Div("Что это отражает?", style={'gridColumn': 'span 5'}),
-                            ]
-                        ),
+#                 # Table Content
+#                 html.Div(
+#                     style={'padding': '10px 0px'},
+#                     children=[
+#                         # Table Headers
+#                         html.Div(
+#                             style={
+#                                 'display': 'grid',
+#                                 'gridTemplateColumns': 'repeat(13, minmax(0, 1fr))',
+#                                 'gap': '10px',
+#                                 'fontWeight': '500',
+#                                 'color': "#4D5052",
+#                                 'backgroundColor': '#f8f9fa',
+#                                 'padding': '8px',
+#                                 'borderRadius': '5px',
+#                                 'margin': '0px',
+#                                 'fontSize': '14px',
+#                                 'fontFamily': 'Calibri'
+#                             },
+#                             children=[
+#                                 html.Div("Показатель", style={'gridColumn': 'span 3'}),
+#                                 html.Div("Результат", style={'gridColumn': 'span 2', 'textAlign': 'center'}),
+#                                 html.Div("Статус", style={'gridColumn': 'span 1', 'textAlign': 'center'}),
+#                                 html.Div("Норма", style={'gridColumn': 'span 2', 'textAlign': 'center'}),
+#                                 html.Div("Что это отражает?", style={'gridColumn': 'span 5'}),
+#                             ]
+#                         ),
                         
-                        # Data Rows
-                        *[
-                            html.Div(
-                                style={
-                                    'display': 'grid',
-                                    'gridTemplateColumns': 'repeat(13, minmax(0, 1fr))',
-                                    'gap': '10px',
-                                    'padding': '8px 10px',
-                                    'alignItems': 'center',
-                                    'borderBottom': '1px solid #e9ecef',
-                                    'fontFamily': 'Calibri'
-                                },
-                                children=[
-                                    html.Div(
-                                        item["name"],
-                                        style={
-                                            'gridColumn': 'span 3',
-                                            'fontWeight': '600',
+#                         # Data Rows
+#                         *[
+#                             html.Div(
+#                                 style={
+#                                     'display': 'grid',
+#                                     'gridTemplateColumns': 'repeat(13, minmax(0, 1fr))',
+#                                     'gap': '10px',
+#                                     'padding': '8px 10px',
+#                                     'alignItems': 'center',
+#                                     'borderBottom': '1px solid #e9ecef',
+#                                     'fontFamily': 'Calibri'
+#                                 },
+#                                 children=[
+#                                     html.Div(
+#                                         item["name"],
+#                                         style={
+#                                             'gridColumn': 'span 3',
+#                                             'fontWeight': '600',
                                             
-                                            'fontSize': '14px',
-                                            'color': '#212529'
-                                        }
-                                    ),
-                                    html.Div(
-                                        style={
-                                            'gridColumn': 'span 2',
-                                            'display': 'flex',
-                                            'alignItems': 'center',
-                                            'justifyContent': 'center',
-                                            'gap': '4px'
-                                        },
-                                        children=[
-                                            html.Div(
-                                                f"{item['value']}",
-                                                style={
-                                                    'fontWeight': 'bold',
-                                                    'fontSize': '15px',
-                                                    'color': {
-                                                        'blue': '#2563eb',
-                                                        'red': '#dc3545',
-                                                        'green': '#212529'
-                                                        }[get_status_color(item["value"], item["norm"])]
-                                                }
-                                            ),
-                                            html.Div(
-                                                style={
-                                                    'width': '0',
-                                                    'height': '0',
-                                                    'borderLeft': '5px solid transparent',
-                                                    'borderRight': '5px solid transparent',
-                                                    'borderTop': '8px solid #2563eb' if get_status_color(item['value'], item['norm']) == 'blue' else 'none',
-                                                    'borderBottom': '8px solid #dc3545' if get_status_color(item['value'], item['norm']) == 'red' else 'none',
-                                                    'visibility': 'visible' if get_status_color(item['value'], item['norm']) in ['blue', 'red'] else 'collapse',
-                                                    'marginLeft': '4px' if get_status_color(item['value'], item['norm']) in ['red', 'blue'] else '0px'
-                                                }
-                                            )
-                                        ]
-                                    ),
+#                                             'fontSize': '14px',
+#                                             'color': '#212529'
+#                                         }
+#                                     ),
+#                                     html.Div(
+#                                         style={
+#                                             'gridColumn': 'span 2',
+#                                             'display': 'flex',
+#                                             'alignItems': 'center',
+#                                             'justifyContent': 'center',
+#                                             'gap': '4px'
+#                                         },
+#                                         children=[
+#                                             html.Div(
+#                                                 f"{item['value']}",
+#                                                 style={
+#                                                     'fontWeight': 'bold',
+#                                                     'fontSize': '15px',
+#                                                     'color': {
+#                                                         'blue': '#2563eb',
+#                                                         'red': '#dc3545',
+#                                                         'green': '#212529'
+#                                                         }[get_status_color(item["value"], item["norm"])]
+#                                                 }
+#                                             ),
+#                                             html.Div(
+#                                                 style={
+#                                                     'width': '0',
+#                                                     'height': '0',
+#                                                     'borderLeft': '5px solid transparent',
+#                                                     'borderRight': '5px solid transparent',
+#                                                     'borderTop': '8px solid #2563eb' if get_status_color(item['value'], item['norm']) == 'blue' else 'none',
+#                                                     'borderBottom': '8px solid #dc3545' if get_status_color(item['value'], item['norm']) == 'red' else 'none',
+#                                                     'visibility': 'visible' if get_status_color(item['value'], item['norm']) in ['blue', 'red'] else 'collapse',
+#                                                     'marginLeft': '4px' if get_status_color(item['value'], item['norm']) in ['red', 'blue'] else '0px'
+#                                                 }
+#                                             )
+#                                         ]
+#                                     ),
                                     
-                                    html.Div(
-                                        style={
-                                            'gridColumn': 'span 1',
-                                            'textAlign': 'center',
-                                            'justifySelf': 'center',
-                                        },
-                                        children=html.Span(
-                                            get_status_text(item["value"], item["norm"]),
-                                            style={
-                                                'padding': '3px 8px',
-                                                'borderRadius': '12px',
-                                                'fontSize': '14px',
-                                                'fontWeight': '500',
-                                                'backgroundColor': {
-                                                    'blue': '#e7f1ff',
-                                                    'red': '#f8d7da',
-                                                    'green': '#e6f7ee'
-                                                }[get_status_color(item["value"], item["norm"])],
-                                                'color': {
-                                                    'blue': '#2563eb',
-                                                    'red': '#dc3545',
-                                                    'green': '#198754'
-                                                }[get_status_color(item["value"], item["norm"])]
-                                            }
-                                        )
-                                    ),
-                                    html.Div(
-                                        f"{item['norm']}",
-                                        style={
-                                            'gridColumn': 'span 2',
-                                            'textAlign': 'center',
+#                                     html.Div(
+#                                         style={
+#                                             'gridColumn': 'span 1',
+#                                             'textAlign': 'center',
+#                                             'justifySelf': 'center',
+#                                         },
+#                                         children=html.Span(
+#                                             get_status_text(item["value"], item["norm"]),
+#                                             style={
+#                                                 'padding': '3px 8px',
+#                                                 'borderRadius': '12px',
+#                                                 'fontSize': '14px',
+#                                                 'fontWeight': '500',
+#                                                 'backgroundColor': {
+#                                                     'blue': '#e7f1ff',
+#                                                     'red': '#f8d7da',
+#                                                     'green': '#e6f7ee'
+#                                                 }[get_status_color(item["value"], item["norm"])],
+#                                                 'color': {
+#                                                     'blue': '#2563eb',
+#                                                     'red': '#dc3545',
+#                                                     'green': '#198754'
+#                                                 }[get_status_color(item["value"], item["norm"])]
+#                                             }
+#                                         )
+#                                     ),
+#                                     html.Div(
+#                                         f"{item['norm']}",
+#                                         style={
+#                                             'gridColumn': 'span 2',
+#                                             'textAlign': 'center',
                                             
-                                            'fontSize': '14px',
-                                            'color': '#6c757d',
-                                            'alignItems': 'center'
-                                        }
-                                    ),
-                                    html.Div(
-                                        item["description"],
-                                        style={
-                                            'gridColumn': 'span 5',
-                                            'color': '#6c757d',
-                                            'lineHeight': '1.4',
-                                            'fontSize': '14px'
-                                        }
-                                    ),
-                                ]
-                            )
-                            for item in energy_metabolism_data
-                        ],
-                    ]
-                ),
+#                                             'fontSize': '14px',
+#                                             'color': '#6c757d',
+#                                             'alignItems': 'center'
+#                                         }
+#                                     ),
+#                                     html.Div(
+#                                         item["description"],
+#                                         style={
+#                                             'gridColumn': 'span 5',
+#                                             'color': '#6c757d',
+#                                             'lineHeight': '1.4',
+#                                             'fontSize': '14px'
+#                                         }
+#                                     ),
+#                                 ]
+#                             )
+#                             for item in energy_metabolism_data
+#                         ],
+#                     ]
+#                 ),
                 
                 
-            ]
-        )
-    ]
-),
+#             ]
+#         )
+#     ]
+# ),
                                  
-                                                     html.Div([
-                        html.P('Результаты данного отчета не являются диагнозом и должны быть интерпретированы лечащим врачом на основании клинико-лабораторных данных и других диагностических исследований.',
-                        style={'color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"left",'font-style':'italic','margin-top':'5px','width':'85%'}),
-                        html.P('|9',
-                            style={'color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"right",'font-style':'italic','margin-top':'5px','width':'10%','margin-top':'15px'}),
-                    ], style={'page-break-after': 'always','margin':'0px','display':'flex','justify-content':'space-between','width':'100%','margin-top':'75px'}),      
+#                     render_page_footer(page_number=11),
     
-    
-                html.Div([
-                html.Div([
-                    html.B(f"Дата: {date}",style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
-                    html.Div([
-                        html.B(f'Пациент: {name}',style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
-                    ],style={'margin-top':'2px'}),
-                ], style={'width':'33.3%'}),
-                html.Div([
-                    html.B("MetaboScan-Test01",style={'margin':'0px','font-size':'18px','font-family':'Calibri','color':'#FFFFFF'}),
-                ], style={'width':'33.3%','text-align':'center'}),
-                html.Div([
-                    html.Img(src=app.get_asset_url('logo.jpg'),style={'height':'54px','float':'right'}),
-                ], style={'width':'33.3%'}),
-            ], style={'display':'flex', 'justify-content':'space-between','width':'100%','height':'54px','color':'#2563eb'}),
+#     render_page_header(date=date, name=name),
 
                                  
-                                            html.Div(
-    style={
-        'width': '100%',
-        'fontFamily': 'Calibri',
-        'padding': '5px'
-    },
-    children=[
-        # Main Card
-        html.Div(
-            style={
-                'backgroundColor': 'white',
-                'borderRadius': '5px',
-                'overflow': 'hidden'
-            },
-            children=[
-                # Section Header
-                html.Div([
-                    html.H3(
-                        children='10. Здоровье митохондрий и β-окисление жирных кислот', 
-                        style={
-                            'textAlign': 'center',
-                            'margin': '0px',
-                            'lineHeight': 'normal',
-                            'display': 'inline-block',
-                            'verticalAlign': 'center',
-                            'fontWeight': '600',
-                            'fontSize': '19px'
-                        }
-                    )],
-                    style={
-                        'width': '100%',
-                        'backgroundColor': '#2563eb',
-                        'borderRadius': '5px 5px 0px 0px', 
-                        'color': 'white',
-                        'fontFamily': 'Calibri',
-                        'margin': '0px',
-                        'height': '35px',
-                        'lineHeight': '35px',
-                        'textAlign': 'center',
-                        'marginTop': '0px'
-                    }
-                ),
+# html.Div(
+#     style={
+#         'width': '100%',
+#         'fontFamily': 'Calibri',
+#         'padding': '5px'
+#     },
+#     children=[
+#         # Main Card
+#         html.Div(
+#             style={
+#                 'backgroundColor': 'white',
+#                 'borderRadius': '5px',
+#                 'overflow': 'hidden'
+#             },
+#             children=[
+#                 # Section Header
+#                 html.Div([
+#                     html.H3(
+#                         children='10. Здоровье митохондрий и β-окисление жирных кислот', 
+#                         style={
+#                             'textAlign': 'center',
+#                             'margin': '0px',
+#                             'lineHeight': 'normal',
+#                             'display': 'inline-block',
+#                             'verticalAlign': 'center',
+#                             'fontWeight': '600',
+#                             'fontSize': '19px'
+#                         }
+#                     )],
+#                     style={
+#                         'width': '100%',
+#                         'backgroundColor': '#2563eb',
+#                         'borderRadius': '5px 5px 0px 0px', 
+#                         'color': 'white',
+#                         'fontFamily': 'Calibri',
+#                         'margin': '0px',
+#                         'height': '35px',
+#                         'lineHeight': '35px',
+#                         'textAlign': 'center',
+#                         'marginTop': '0px'
+#                     }
+#                 ),
                 
-                # Table Content
-                html.Div(
-                    style={'padding': '10px 0px'},
-                    children=[
-                        # Table Headers
-                        html.Div(
-                            style={
-                                'display': 'grid',
-                                'gridTemplateColumns': 'repeat(13, minmax(0, 1fr))',
-                                'gap': '10px',
-                                'fontWeight': '500',
-                                'color': "#4D5052",
-                                'backgroundColor': '#f8f9fa',
-                                'padding': '8px',
-                                'borderRadius': '5px',
-                                'margin': '0px',
-                                'fontSize': '14px',
-                                'fontFamily': 'Calibri'
-                            },
-                            children=[
-                                html.Div("Показатель", style={'gridColumn': 'span 3'}),
-                                html.Div("Результат", style={'gridColumn': 'span 2', 'textAlign': 'center'}),
-                                html.Div("Статус", style={'gridColumn': 'span 1', 'textAlign': 'center'}),
-                                html.Div("Норма", style={'gridColumn': 'span 2', 'textAlign': 'center'}),
-                                html.Div("Что это отражает?", style={'gridColumn': 'span 5'}),
-                            ]
-                        ),
+#                 # Table Content
+#                 html.Div(
+#                     style={'padding': '10px 0px'},
+#                     children=[
+#                         # Table Headers
+#                         html.Div(
+#                             style={
+#                                 'display': 'grid',
+#                                 'gridTemplateColumns': 'repeat(13, minmax(0, 1fr))',
+#                                 'gap': '10px',
+#                                 'fontWeight': '500',
+#                                 'color': "#4D5052",
+#                                 'backgroundColor': '#f8f9fa',
+#                                 'padding': '8px',
+#                                 'borderRadius': '5px',
+#                                 'margin': '0px',
+#                                 'fontSize': '14px',
+#                                 'fontFamily': 'Calibri'
+#                             },
+#                             children=[
+#                                 html.Div("Показатель", style={'gridColumn': 'span 3'}),
+#                                 html.Div("Результат", style={'gridColumn': 'span 2', 'textAlign': 'center'}),
+#                                 html.Div("Статус", style={'gridColumn': 'span 1', 'textAlign': 'center'}),
+#                                 html.Div("Норма", style={'gridColumn': 'span 2', 'textAlign': 'center'}),
+#                                 html.Div("Что это отражает?", style={'gridColumn': 'span 5'}),
+#                             ]
+#                         ),
                         
-                        # Data Rows
-                        *[
-                            html.Div(
-                                style={
-                                    'display': 'grid',
-                                    'gridTemplateColumns': 'repeat(13, minmax(0, 1fr))',
-                                    'gap': '10px',
-                                    'padding': '8px 10px',
-                                    'alignItems': 'center',
-                                    'borderBottom': '1px solid #e9ecef',
-                                    'fontFamily': 'Calibri'
-                                },
-                                children=[
-                                    html.Div(
-                                        item["name"],
-                                        style={
-                                            'gridColumn': 'span 3',
-                                            'fontWeight': '600',
+#                         # Data Rows
+#                         *[
+#                             html.Div(
+#                                 style={
+#                                     'display': 'grid',
+#                                     'gridTemplateColumns': 'repeat(13, minmax(0, 1fr))',
+#                                     'gap': '10px',
+#                                     'padding': '8px 10px',
+#                                     'alignItems': 'center',
+#                                     'borderBottom': '1px solid #e9ecef',
+#                                     'fontFamily': 'Calibri'
+#                                 },
+#                                 children=[
+#                                     html.Div(
+#                                         item["name"],
+#                                         style={
+#                                             'gridColumn': 'span 3',
+#                                             'fontWeight': '600',
                                             
-                                            'fontSize': '14px',
-                                            'color': '#212529'
-                                        }
-                                    ),
-                                    html.Div(
-                                        style={
-                                            'gridColumn': 'span 2',
-                                            'display': 'flex',
-                                            'alignItems': 'center',
-                                            'justifyContent': 'center',
-                                            'gap': '4px'
-                                        },
-                                        children=[
-                                            html.Div(
-                                                f"{item['value']}",
-                                                style={
-                                                    'fontWeight': 'bold',
-                                                    'fontSize': '15px',
-                                                    'color': {
-                                                        'blue': '#2563eb',
-                                                        'red': '#dc3545',
-                                                        'green': '#212529'
-                                                        }[get_status_color(item["value"], item["norm"])]
-                                                }
-                                            ),
-                                            html.Div(
-                                                style={
-                                                    'width': '0',
-                                                    'height': '0',
-                                                    'borderLeft': '5px solid transparent',
-                                                    'borderRight': '5px solid transparent',
-                                                    'borderTop': '8px solid #2563eb' if get_status_color(item['value'], item['norm']) == 'blue' else 'none',
-                                                    'borderBottom': '8px solid #dc3545' if get_status_color(item['value'], item['norm']) == 'red' else 'none',
-                                                    'visibility': 'visible' if get_status_color(item['value'], item['norm']) in ['blue', 'red'] else 'collapse',
-                                                    'marginLeft': '4px' if get_status_color(item['value'], item['norm']) in ['red', 'blue'] else '0px'
-                                                }
-                                            )
-                                        ]
-                                    ),
+#                                             'fontSize': '14px',
+#                                             'color': '#212529'
+#                                         }
+#                                     ),
+#                                     html.Div(
+#                                         style={
+#                                             'gridColumn': 'span 2',
+#                                             'display': 'flex',
+#                                             'alignItems': 'center',
+#                                             'justifyContent': 'center',
+#                                             'gap': '4px'
+#                                         },
+#                                         children=[
+#                                             html.Div(
+#                                                 f"{item['value']}",
+#                                                 style={
+#                                                     'fontWeight': 'bold',
+#                                                     'fontSize': '15px',
+#                                                     'color': {
+#                                                         'blue': '#2563eb',
+#                                                         'red': '#dc3545',
+#                                                         'green': '#212529'
+#                                                         }[get_status_color(item["value"], item["norm"])]
+#                                                 }
+#                                             ),
+#                                             html.Div(
+#                                                 style={
+#                                                     'width': '0',
+#                                                     'height': '0',
+#                                                     'borderLeft': '5px solid transparent',
+#                                                     'borderRight': '5px solid transparent',
+#                                                     'borderTop': '8px solid #2563eb' if get_status_color(item['value'], item['norm']) == 'blue' else 'none',
+#                                                     'borderBottom': '8px solid #dc3545' if get_status_color(item['value'], item['norm']) == 'red' else 'none',
+#                                                     'visibility': 'visible' if get_status_color(item['value'], item['norm']) in ['blue', 'red'] else 'collapse',
+#                                                     'marginLeft': '4px' if get_status_color(item['value'], item['norm']) in ['red', 'blue'] else '0px'
+#                                                 }
+#                                             )
+#                                         ]
+#                                     ),
                                     
-                                    html.Div(
-                                        style={
-                                            'gridColumn': 'span 1',
-                                            'textAlign': 'center',
-                                            'justifySelf': 'center',
-                                        },
-                                        children=html.Span(
-                                            get_status_text(item["value"], item["norm"]),
-                                            style={
-                                                'padding': '3px 8px',
-                                                'borderRadius': '12px',
-                                                'fontSize': '14px',
-                                                'fontWeight': '500',
-                                                'backgroundColor': {
-                                                    'blue': '#e7f1ff',
-                                                    'red': '#f8d7da',
-                                                    'green': '#e6f7ee'
-                                                }[get_status_color(item["value"], item["norm"])],
-                                                'color': {
-                                                    'blue': '#2563eb',
-                                                    'red': '#dc3545',
-                                                    'green': '#198754'
-                                                }[get_status_color(item["value"], item["norm"])]
-                                            }
-                                        )
-                                    ),
-                                    html.Div(
-                                        f"{item['norm']}",
-                                        style={
-                                            'gridColumn': 'span 2',
-                                            'textAlign': 'center',
+#                                     html.Div(
+#                                         style={
+#                                             'gridColumn': 'span 1',
+#                                             'textAlign': 'center',
+#                                             'justifySelf': 'center',
+#                                         },
+#                                         children=html.Span(
+#                                             get_status_text(item["value"], item["norm"]),
+#                                             style={
+#                                                 'padding': '3px 8px',
+#                                                 'borderRadius': '12px',
+#                                                 'fontSize': '14px',
+#                                                 'fontWeight': '500',
+#                                                 'backgroundColor': {
+#                                                     'blue': '#e7f1ff',
+#                                                     'red': '#f8d7da',
+#                                                     'green': '#e6f7ee'
+#                                                 }[get_status_color(item["value"], item["norm"])],
+#                                                 'color': {
+#                                                     'blue': '#2563eb',
+#                                                     'red': '#dc3545',
+#                                                     'green': '#198754'
+#                                                 }[get_status_color(item["value"], item["norm"])]
+#                                             }
+#                                         )
+#                                     ),
+#                                     html.Div(
+#                                         f"{item['norm']}",
+#                                         style={
+#                                             'gridColumn': 'span 2',
+#                                             'textAlign': 'center',
                                             
-                                            'fontSize': '14px',
-                                            'color': '#6c757d',
-                                            'alignItems': 'center'
-                                        }
-                                    ),
-                                    html.Div(
-                                        item["description"],
-                                        style={
-                                            'gridColumn': 'span 5',
-                                            'color': '#6c757d',
-                                            'lineHeight': '1.4',
-                                            'fontSize': '14px'
-                                        }
-                                    ),
-                                ]
-                            )
-                            for item in mitochondrial_data
-                        ],
-                    ]
-                ),
+#                                             'fontSize': '14px',
+#                                             'color': '#6c757d',
+#                                             'alignItems': 'center'
+#                                         }
+#                                     ),
+#                                     html.Div(
+#                                         item["description"],
+#                                         style={
+#                                             'gridColumn': 'span 5',
+#                                             'color': '#6c757d',
+#                                             'lineHeight': '1.4',
+#                                             'fontSize': '14px'
+#                                         }
+#                                     ),
+#                                 ]
+#                             )
+#                             for item in mitochondrial_data
+#                         ],
+#                     ]
+#                 ),
                 
                 
-            ]
-        )
-    ]
-),
-                       html.Div([
-                        html.P('Результаты данного отчета не являются диагнозом и должны быть интерпретированы лечащим врачом на основании клинико-лабораторных данных и других диагностических исследований.',
-                        style={'color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"left",'font-style':'italic','margin-top':'5px','width':'85%'}),
-                        html.P('|10',
-                            style={'color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"right",'font-style':'italic','margin-top':'5px','width':'10%','margin-top':'15px'}),
-                    ], style={'page-break-after': 'always','margin':'0px','display':'flex','justify-content':'space-between','width':'100%','margin-top':'75px'}),      
-                
-                
+#             ]
+#         )
+#     ]
+# ),
+#                        render_page_footer(page_number=12),
                 
     
-                html.Div([
-                html.Div([
-                    html.B(f"Дата: {date}",style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
-                    html.Div([
-                        html.B(f'Пациент: {name}',style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
-                    ],style={'margin-top':'2px'}),
-                ], style={'width':'33.3%'}),
-                html.Div([
-                    html.B("MetaboScan-Test01",style={'margin':'0px','font-size':'18px','font-family':'Calibri','color':'#FFFFFF'}),
-                ], style={'width':'33.3%','text-align':'center'}),
-                html.Div([
-                    html.Img(src=app.get_asset_url('logo.jpg'),style={'height':'54px','float':'right'}),
-                ], style={'width':'33.3%'}),
-            ], style={'display':'flex', 'justify-content':'space-between','width':'100%','height':'54px','color':'#2563eb'}),
+#     render_page_header(date=date, name=name),
    
                                             
-                # Table Content
-                html.Div(
-                    style={'padding': '10px 0px'},
-                    children=[
-                        # Table Headers
-                        html.Div(
-                            style={
-                                'display': 'grid',
-                                'gridTemplateColumns': 'repeat(13, minmax(0, 1fr))',
-                                'gap': '10px',
-                                'fontWeight': '500',
-                                'color': "#4D5052",
-                                'backgroundColor': '#f8f9fa',
-                                'padding': '8px',
-                                'borderRadius': '5px',
-                                'margin': '0px',
-                                'fontSize': '14px',
-                                'fontFamily': 'Calibri'
-                            },
-                            children=[
-                                html.Div("Показатель", style={'gridColumn': 'span 3'}),
-                                html.Div("Результат", style={'gridColumn': 'span 2', 'textAlign': 'center'}),
-                                html.Div("Статус", style={'gridColumn': 'span 1', 'textAlign': 'center'}),
-                                html.Div("Норма", style={'gridColumn': 'span 2', 'textAlign': 'center'}),
-                                html.Div("Что это отражает?", style={'gridColumn': 'span 5'}),
-                            ]
-                        ),
+#                 # Table Content
+#                 html.Div(
+#                     style={'padding': '10px 0px'},
+#                     children=[
+#                         # Table Headers
+#                         html.Div(
+#                             style={
+#                                 'display': 'grid',
+#                                 'gridTemplateColumns': 'repeat(13, minmax(0, 1fr))',
+#                                 'gap': '10px',
+#                                 'fontWeight': '500',
+#                                 'color': "#4D5052",
+#                                 'backgroundColor': '#f8f9fa',
+#                                 'padding': '8px',
+#                                 'borderRadius': '5px',
+#                                 'margin': '0px',
+#                                 'fontSize': '14px',
+#                                 'fontFamily': 'Calibri'
+#                             },
+#                             children=[
+#                                 html.Div("Показатель", style={'gridColumn': 'span 3'}),
+#                                 html.Div("Результат", style={'gridColumn': 'span 2', 'textAlign': 'center'}),
+#                                 html.Div("Статус", style={'gridColumn': 'span 1', 'textAlign': 'center'}),
+#                                 html.Div("Норма", style={'gridColumn': 'span 2', 'textAlign': 'center'}),
+#                                 html.Div("Что это отражает?", style={'gridColumn': 'span 5'}),
+#                             ]
+#                         ),
                         
-                        # Data Rows
-                        *[
-                            html.Div(
-                                style={
-                                    'display': 'grid',
-                                    'gridTemplateColumns': 'repeat(13, minmax(0, 1fr))',
-                                    'gap': '10px',
-                                    'padding': '8px 10px',
-                                    'alignItems': 'center',
-                                    'borderBottom': '1px solid #e9ecef',
-                                    'fontFamily': 'Calibri'
-                                },
-                                children=[
-                                    html.Div(
-                                        item["name"],
-                                        style={
-                                            'gridColumn': 'span 3',
-                                            'fontWeight': '600',
+#                         # Data Rows
+#                         *[
+#                             html.Div(
+#                                 style={
+#                                     'display': 'grid',
+#                                     'gridTemplateColumns': 'repeat(13, minmax(0, 1fr))',
+#                                     'gap': '10px',
+#                                     'padding': '8px 10px',
+#                                     'alignItems': 'center',
+#                                     'borderBottom': '1px solid #e9ecef',
+#                                     'fontFamily': 'Calibri'
+#                                 },
+#                                 children=[
+#                                     html.Div(
+#                                         item["name"],
+#                                         style={
+#                                             'gridColumn': 'span 3',
+#                                             'fontWeight': '600',
                                             
-                                            'fontSize': '14px',
-                                            'color': '#212529'
-                                        }
-                                    ),
-                                    html.Div(
-                                        style={
-                                            'gridColumn': 'span 2',
-                                            'display': 'flex',
-                                            'alignItems': 'center',
-                                            'justifyContent': 'center',
-                                            'gap': '4px'
-                                        },
-                                        children=[
-                                            html.Div(
-                                                f"{item['value']}",
-                                                style={
-                                                    'fontWeight': 'bold',
-                                                    'fontSize': '15px',
-                                                    'color': {
-                                                        'blue': '#2563eb',
-                                                        'red': '#dc3545',
-                                                        'green': '#212529'
-                                                        }[get_status_color(item["value"], item["norm"])]
-                                                }
-                                            ),
-                                            html.Div(
-                                                style={
-                                                    'width': '0',
-                                                    'height': '0',
-                                                    'borderLeft': '5px solid transparent',
-                                                    'borderRight': '5px solid transparent',
-                                                    'borderTop': '8px solid #2563eb' if get_status_color(item['value'], item['norm']) == 'blue' else 'none',
-                                                    'borderBottom': '8px solid #dc3545' if get_status_color(item['value'], item['norm']) == 'red' else 'none',
-                                                    'visibility': 'visible' if get_status_color(item['value'], item['norm']) in ['blue', 'red'] else 'collapse',
-                                                    'marginLeft': '4px' if get_status_color(item['value'], item['norm']) in ['red', 'blue'] else '0px'
-                                                }
-                                            )
-                                        ]
-                                    ),
+#                                             'fontSize': '14px',
+#                                             'color': '#212529'
+#                                         }
+#                                     ),
+#                                     html.Div(
+#                                         style={
+#                                             'gridColumn': 'span 2',
+#                                             'display': 'flex',
+#                                             'alignItems': 'center',
+#                                             'justifyContent': 'center',
+#                                             'gap': '4px'
+#                                         },
+#                                         children=[
+#                                             html.Div(
+#                                                 f"{item['value']}",
+#                                                 style={
+#                                                     'fontWeight': 'bold',
+#                                                     'fontSize': '15px',
+#                                                     'color': {
+#                                                         'blue': '#2563eb',
+#                                                         'red': '#dc3545',
+#                                                         'green': '#212529'
+#                                                         }[get_status_color(item["value"], item["norm"])]
+#                                                 }
+#                                             ),
+#                                             html.Div(
+#                                                 style={
+#                                                     'width': '0',
+#                                                     'height': '0',
+#                                                     'borderLeft': '5px solid transparent',
+#                                                     'borderRight': '5px solid transparent',
+#                                                     'borderTop': '8px solid #2563eb' if get_status_color(item['value'], item['norm']) == 'blue' else 'none',
+#                                                     'borderBottom': '8px solid #dc3545' if get_status_color(item['value'], item['norm']) == 'red' else 'none',
+#                                                     'visibility': 'visible' if get_status_color(item['value'], item['norm']) in ['blue', 'red'] else 'collapse',
+#                                                     'marginLeft': '4px' if get_status_color(item['value'], item['norm']) in ['red', 'blue'] else '0px'
+#                                                 }
+#                                             )
+#                                         ]
+#                                     ),
                                     
-                                    html.Div(
-                                        style={
-                                            'gridColumn': 'span 1',
-                                            'textAlign': 'center',
-                                            'justifySelf': 'center',
-                                        },
-                                        children=html.Span(
-                                            get_status_text(item["value"], item["norm"]),
-                                            style={
-                                                'padding': '3px 8px',
-                                                'borderRadius': '12px',
-                                                'fontSize': '14px',
-                                                'fontWeight': '500',
-                                                'backgroundColor': {
-                                                    'blue': '#e7f1ff',
-                                                    'red': '#f8d7da',
-                                                    'green': '#e6f7ee'
-                                                }[get_status_color(item["value"], item["norm"])],
-                                                'color': {
-                                                    'blue': '#2563eb',
-                                                    'red': '#dc3545',
-                                                    'green': '#198754'
-                                                }[get_status_color(item["value"], item["norm"])]
-                                            }
-                                        )
-                                    ),
-                                    html.Div(
-                                        f"{item['norm']}",
-                                        style={
-                                            'gridColumn': 'span 2',
-                                            'textAlign': 'center',
+#                                     html.Div(
+#                                         style={
+#                                             'gridColumn': 'span 1',
+#                                             'textAlign': 'center',
+#                                             'justifySelf': 'center',
+#                                         },
+#                                         children=html.Span(
+#                                             get_status_text(item["value"], item["norm"]),
+#                                             style={
+#                                                 'padding': '3px 8px',
+#                                                 'borderRadius': '12px',
+#                                                 'fontSize': '14px',
+#                                                 'fontWeight': '500',
+#                                                 'backgroundColor': {
+#                                                     'blue': '#e7f1ff',
+#                                                     'red': '#f8d7da',
+#                                                     'green': '#e6f7ee'
+#                                                 }[get_status_color(item["value"], item["norm"])],
+#                                                 'color': {
+#                                                     'blue': '#2563eb',
+#                                                     'red': '#dc3545',
+#                                                     'green': '#198754'
+#                                                 }[get_status_color(item["value"], item["norm"])]
+#                                             }
+#                                         )
+#                                     ),
+#                                     html.Div(
+#                                         f"{item['norm']}",
+#                                         style={
+#                                             'gridColumn': 'span 2',
+#                                             'textAlign': 'center',
                                             
-                                            'fontSize': '14px',
-                                            'color': '#6c757d',
-                                            'alignItems': 'center'
-                                        }
-                                    ),
-                                    html.Div(
-                                        item["description"],
-                                        style={
-                                            'gridColumn': 'span 5',
-                                            'color': '#6c757d',
-                                            'lineHeight': '1.4',
-                                            'fontSize': '14px'
-                                        }
-                                    ),
-                                ]
-                            )
-                            for item in mytochondrial_data_2
-                        ],
-                    ]
-                ),
+#                                             'fontSize': '14px',
+#                                             'color': '#6c757d',
+#                                             'alignItems': 'center'
+#                                         }
+#                                     ),
+#                                     html.Div(
+#                                         item["description"],
+#                                         style={
+#                                             'gridColumn': 'span 5',
+#                                             'color': '#6c757d',
+#                                             'lineHeight': '1.4',
+#                                             'fontSize': '14px'
+#                                         }
+#                                     ),
+#                                 ]
+#                             )
+#                             for item in mytochondrial_data_2
+#                         ],
+#                     ]
+#                 ),
                                                        
                     
-                    html.Div([
-                        html.P('Результаты данного отчета не являются диагнозом и должны быть интерпретированы лечащим врачом на основании клинико-лабораторных данных и других диагностических исследований.',
-                        style={'color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"left",'font-style':'italic','margin-top':'5px','width':'85%'}),
-                        html.P('|11',
-                            style={'color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"right",'font-style':'italic','margin-top':'5px','width':'10%','margin-top':'15px'}),
-                    ], style={'page-break-after':'always','margin':'0px','display':'flex','justify-content':'space-between','width':'100%','margin-top':'345px'}), 
-                        
+                    render_page_footer(page_number=13),
 
 
                 # Header section
-                html.Div([
-                    html.Div([
-                        html.B(f"Дата: {date}", style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
-                        html.Div([
-                            html.B(f'Пациент: {name}', style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
-                        ], style={'margin-top':'2px'}),
-                    ], style={'width':'33.3%'}),
-                    
-                    html.Div([
-                        html.B("MetaboScan-Test01", style={'margin':'0px','font-size':'18px','font-family':'Calibri','color':'#FFFFFF'}),
-                    ], style={'width':'33.3%','text-align':'center'}),
-                    
-                    html.Div([
-                        html.Img(src=app.get_asset_url('logo.jpg'), style={'height':'54px','float':'right'}),
-                    ], style={'width':'33.3%'}),
-                ], style={'display':'flex', 'justify-content':'space-between','width':'100%','height':'54px','color':'#2563eb'}),
+
                 
                 # Health corridor title
                 html.Div([
@@ -8572,32 +4471,10 @@ html.Div(
                 })
             ]),               
                     
-              html.Div([
-                        html.P('Результаты данного отчета не являются диагнозом и должны быть интерпретированы лечащим врачом на основании клинико-лабораторных данных и других диагностических исследований.',
-                        style={'color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"left",'font-style':'italic','margin-top':'5px','width':'85%'}),
-                        html.P('|12',
-                            style={'color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"right",'font-style':'italic','margin-top':'5px','width':'10%','margin-top':'15px'}),
-                    ], style={'page-break-after':'always','margin':'0px','display':'flex','justify-content':'space-between','width':'100%','margin-top':'30px'}), 
-                        
-
+              render_page_footer(page_number=14),
 
                 # Header section
-                html.Div([
-                    html.Div([
-                        html.B(f"Дата: {date}", style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
-                        html.Div([
-                            html.B(f'Пациент: {name}', style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
-                        ], style={'margin-top':'2px'}),
-                    ], style={'width':'33.3%'}),
-                    
-                    html.Div([
-                        html.B("MetaboScan-Test01", style={'margin':'0px','font-size':'18px','font-family':'Calibri','color':'#FFFFFF'}),
-                    ], style={'width':'33.3%','text-align':'center'}),
-                    
-                    html.Div([
-                        html.Img(src=app.get_asset_url('logo.jpg'), style={'height':'54px','float':'right'}),
-                    ], style={'width':'33.3%'}),
-                ], style={'display':'flex', 'justify-content':'space-between','width':'100%','height':'54px','color':'#2563eb'}),
+render_page_header(date=date, name=name),
                 
                 # Health corridor title
                 html.Div([
@@ -8763,31 +4640,10 @@ html.Div(
                     'white-space': 'nowrap'  # Prevents wrapping to next line
                 })
             ]),                           
-                       html.Div([
-                        html.P('Результаты данного отчета не являются диагнозом и должны быть интерпретированы лечащим врачом на основании клинико-лабораторных данных и других диагностических исследований.',
-                        style={'color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"left",'font-style':'italic','margin-top':'5px','width':'85%'}),
-                        html.P('|13',
-                            style={'color':'black','font-family':'Calibri','font-size':'14px','margin':'0px','text-align':"right",'font-style':'italic','margin-top':'5px','width':'10%','margin-top':'15px'}),
-                    ], style={'margin':'0px','display':'flex','justify-content':'space-between','width':'100%','margin-top':'30px'}),      
-                
+                       render_page_footer(page_number=15),
                 
                 # Header section
-                html.Div([
-                    html.Div([
-                        html.B(f"Дата: {date}", style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
-                        html.Div([
-                            html.B(f'Пациент: {name}', style={'margin':'0px','font-size':'18px','font-family':'Calibri'}),
-                        ], style={'margin-top':'2px'}),
-                    ], style={'width':'33.3%'}),
-                    
-                    html.Div([
-                        html.B("MetaboScan-Test01", style={'margin':'0px','font-size':'18px','font-family':'Calibri','color':'#FFFFFF'}),
-                    ], style={'width':'33.3%','text-align':'center'}),
-                    
-                    html.Div([
-                        html.Img(src=app.get_asset_url('logo.jpg'), style={'height':'54px','float':'right'}),
-                    ], style={'width':'33.3%'}),
-                ], style={'display':'flex', 'justify-content':'space-between','width':'100%','height':'54px','color':'#2563eb'}),
+render_page_header(date=date, name=name),
                 
                 # Health corridor title
                 html.Div([

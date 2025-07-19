@@ -214,7 +214,7 @@ def calculate_metabolite_ratios(metabolomic_data):
 
         # Amino acids
         new_columns['Asn Synthesis'] = data['Asparagine'] / data['Aspartic acid']
-        new_columns['Glutaminase Activity'] = data['Glutamine'] / data['Glutamic acid']
+        new_columns['Glutamine/Glutamate'] = data['Glutamine'] / data['Glutamic acid']
         new_columns['Gly Synthesis'] = data['Glycine'] / data['Serine']
         new_columns['GSG Index'] = data['Glutamic acid'] / (data['Serine'] + data['Glycine'])
         new_columns['Sum of Aromatic AAs'] = data['Phenylalanine'] + data['Tyrosin']
@@ -398,7 +398,7 @@ def calculate_risks(risk_params_data, metabolic_data_with_ratios):
         "Состояние сердечно-сосудистой системы",
         "Состояние функции печени",
         "Состояние дыхательной системы",
-        "Состояние иммуного метаболического баланса"
+        "Состояние иммунного метаболического баланса"
     }
     
         # --- Part 1: Validate input data indices ---
@@ -429,7 +429,7 @@ def calculate_risks(risk_params_data, metabolic_data_with_ratios):
             "model_path": os.path.join(os.path.dirname(__file__), "models", "Pulmo_healthy_RF_0907.pkl"),
             "features": metabolites_selected_PULM
         },
-        "Состояние иммуного метаболического баланса": {
+        "Состояние иммунного метаболического баланса": {
             "model_path": os.path.join(os.path.dirname(__file__), "models", "RA_healthy_RF_0907.pkl"),
             "features": metabolites_selected_RA
         }

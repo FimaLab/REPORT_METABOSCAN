@@ -288,3 +288,53 @@
 2025-07-18 17:32:52,387 - ERROR - Report generation error: Dash app failed to start or load content
 2025-07-18 17:35:19,338 - ERROR - Report generation error: Dash app failed to start or load content
 2025-07-18 17:44:36,549 - ERROR - Report generation error: Dash app failed to start or load content
+2025-07-18 17:54:06,843 - ERROR - Report generation error: Dash app failed to start or load content
+2025-07-18 18:43:23,403 - ERROR - Report generation error: Dash app failed to start or load content
+2025-07-19 03:06:17,847 - ERROR - Report generation error: Dash app failed to start or load content
+2025-07-19 03:08:20,178 - WARNING - There was an error managing chromedriver (error sending request for url (https://googlechromelabs.github.io/chrome-for-testing/known-good-versions-with-downloads.json)); using driver found in the cache
+2025-07-19 03:08:20,178 - WARNING - Error sending stats to Plausible: error sending request for url (https://plausible.io/api/event)
+2025-07-19 03:48:46,475 - ERROR - Report generation error: Dash app failed to start or load content
+2025-07-19 03:53:39,289 - ERROR - Report generation error: Dash app failed to start or load content
+2025-07-19 04:34:41,590 - ERROR - Report generation error: Dash app failed to start or load content
+2025-07-19 04:49:53,184 - ERROR - Report generation error: Dash app failed to start or load content
+2025-07-19 04:56:38,786 - ERROR - Report generation error: Dash app failed to start or load content
+2025-07-19 05:00:29,333 - ERROR - Report generation error: Dash app failed to start or load content
+2025-07-19 05:01:38,750 - ERROR - Report generation error: Dash app failed to start or load content
+2025-07-19 05:03:39,006 - ERROR - Report generation error: Dash app failed to start or load content
+2025-07-19 05:06:40,313 - ERROR - Report generation error: Dash app failed to start or load content
+2025-07-19 05:14:27,882 - WARNING - There was an error managing chromedriver (error sending request for url (https://googlechromelabs.github.io/chrome-for-testing/known-good-versions-with-downloads.json)); using driver found in the cache
+2025-07-19 05:14:27,882 - WARNING - Error sending stats to Plausible: error sending request for url (https://plausible.io/api/event)
+2025-07-19 05:16:56,314 - ERROR - Report generation error: Dash app failed to start or load content
+2025-07-19 05:21:32,198 - ERROR - Report generation error: Dash app failed to start or load content
+2025-07-19 05:23:34,282 - ERROR - Report generation error: Dash app failed to start or load content
+2025-07-19 05:27:32,084 - ERROR - Report generation error: Dash app failed to start or load content
+2025-07-19 05:29:19,301 - ERROR - Report generation error: Dash app failed to start or load content
+2025-07-19 06:05:21,958 - ERROR - Report generation error: Dash app failed to start or load content
+2025-07-19 06:21:12,942 - ERROR - Report generation error: Dash app failed to start or load content
+2025-07-19 08:05:34,962 - WARNING - There was an error managing chromedriver (error sending request for url (https://googlechromelabs.github.io/chrome-for-testing/known-good-versions-with-downloads.json)); using driver found in the cache
+2025-07-19 08:05:34,962 - WARNING - Error sending stats to Plausible: error sending request for url (https://plausible.io/api/event)
+2025-07-19 08:52:54,846 - ERROR - Report generation error: Dash app failed to start or load content
+2025-07-19 08:53:45,678 - WARNING - There was an error managing chromedriver (error sending request for url (https://googlechromelabs.github.io/chrome-for-testing/known-good-versions-with-downloads.json)); using driver found in the cache
+2025-07-19 09:02:22,113 - ERROR - Report generation error: Dash app failed to start or load content
+2025-07-19 09:05:37,757 - WARNING - Error sending stats to Plausible: error sending request for url (https://plausible.io/api/event)
+2025-07-19 09:41:20,915 - ERROR - Report generation error: Dash app failed to start or load content
+2025-07-19 10:25:09,822 - ERROR - Report generation error: Dash app failed to start or load content
+2025-07-19 10:26:46,785 - ERROR - Report generation error: Dash app failed to start or load content
+2025-07-19 10:27:51,435 - WARNING - Error sending stats to Plausible: error sending request for url (https://plausible.io/api/event)
+2025-07-19 11:15:13,964 - ERROR - Report generation error: Dash app failed to start or load content
+2025-07-19 11:34:22,898 - WARNING - Error sending stats to Plausible: error sending request for url (https://plausible.io/api/event)
+2025-07-19 13:06:59,802 - ERROR - Report generation error: Dash app failed to start or load content
+2025-07-19 13:09:51,279 - ERROR - Report generation error: Dash app failed to start or load content
+2025-07-19 13:15:42,716 - ERROR - Report generation error: Dash app failed to start or load content
+2025-07-19 14:58:25,528 - ERROR - Report generation error: Dash app failed to start or load content
+2025-07-19 15:02:17,216 - ERROR - Report generation error: Dash app failed to start or load content
+2025-07-19 15:05:40,609 - ERROR - Report generation error: Dash app failed to start or load content
+2025-07-19 15:09:18,457 - ERROR - Report generation error: Dash app failed to start or load content
+2025-07-19 15:10:16,797 - ERROR - Report generation error: Dash app failed to start or load content
+2025-07-19 15:12:57,722 - ERROR - Report generation error: Dash app failed to start or load content
+2025-07-19 15:14:01,464 - ERROR - Report generation error: Dash app failed to start or load content
+2025-07-19 15:16:01,447 - ERROR - Report generation error: Dash app failed to start or load content
+2025-07-19 15:17:22,724 - ERROR - Report generation error: Dash app failed to start or load content
+2025-07-19 15:18:23,036 - ERROR - Report generation error: Dash app failed to start or load content
+2025-07-19 15:19:15,047 - ERROR - Report generation error: Dash app failed to start or load content
+2025-07-19 15:20:07,701 - ERROR - Report generation error: Dash app failed to start or load content
