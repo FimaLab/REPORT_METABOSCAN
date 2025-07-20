@@ -610,8 +610,8 @@ def generate_pdf_report(patient_info, risk_scores_path, risk_params_exp_path, me
         return pdf_path
         
     except Exception as e:
-        st.error(f"Report generation failed: {str(e)}")
-        logging.error(f"Report generation error: {str(e)}")
+        st.error(f"Report generation failed: {e}")
+        logging.error(f"Report generation error: {e}")
         return None
         
     finally:
