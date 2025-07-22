@@ -45,13 +45,6 @@ metabolites_selected_Liv=['5-hydroxytryptophan','Adenosin','ADMA','Alanine','Ant
  'Ratio of Short-Chain to Long-Chain ACs','SCAD Deficiency (NBS)','Sum of MUFA-ACs', 'Sum of PUFA-ACs','TFP Deficiency (NBS)',
  'Sum of Dimethylated Arg','Cit Synthesis','Ratio of Pro to Cit','Met Oxidation']
 
-# Параметры обучения
-TRAIN_PARAMS = {
-    'test_size': 0.2,
-    'random_state': 42,
-    'cv_splits': 5
-}
-
 thresholds = {
     "Оценка пролиферативных процессов": 0.35,
     "Состояние сердечно-сосудистой системы": 0.48,

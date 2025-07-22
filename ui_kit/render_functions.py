@@ -4,13 +4,241 @@ import matplotlib.pyplot as plt
 from dash import dcc
 from dash import html
 import os
-from ui_kit.utilit import *
+from ui_kit.dash_utilit import *
 
 
 BASE_DIR = os.path.dirname(
     os.path.dirname(os.path.abspath(__file__))
 )  # Parent folder of the project
-print(BASE_DIR)
+
+app = None
+
+def render_page_layout(header=None, content=None, footer=None):
+    """
+    Creates a standardized page layout with:
+    - Header fixed at top
+    - Footer fixed at bottom
+    - Content filling remaining space
+    
+    Args:
+        header (dash.html.Component): Header component (optional)
+        content (dash.html.Component): Main content component (optional)
+        footer (dash.html.Component): Footer component (optional)
+    
+    Returns:
+        html.Div: Complete page layout container
+    """
+    # Default empty components if none provided
+    header = header if header is not None else html.Div()
+    content = content if content is not None else html.Div()
+    footer = footer if footer is not None else html.Div()
+    
+    return html.Div(
+        [
+            # Header section (fixed at top)
+            html.Div(
+                header,
+                style={
+                    'width': '100%',
+                    'position': 'sticky',
+                    'top': '0',
+                    'zIndex': '100',
+                    'background': 'white'  # Ensure header is visible
+                }
+            ),
+            
+            # Content section (fills available space)
+            html.Div(
+                content,
+                style={
+                    'width': '100%',
+                    'flex': '1',
+                    'padding': '0'   # Vertical padding only
+                }
+            ),
+            
+            # Footer section (fixed at bottom)
+            html.Div(
+                footer,
+                style={
+                    'width': '100%',
+                    'position': 'sticky',
+                    'bottom': '0',
+                    'zIndex': '100',
+                    'background': 'white'  # Ensure footer is visible
+                }
+            )
+        ],
+        style={
+            'display': 'flex',
+            'flexDirection': 'column',
+            'height': '1180px',
+            'width': '100%',
+            'padding': '0',  # No padding on container
+            'fontFamily': 'Calibri',
+            'overflow': 'hidden'  # Prevents double scrollbars
+        }
+    )
+
+
+def render_main_header_report(name, date, age, gender):
+    """Render the main header section for the report.
+    
+    Args:
+        name (str): Patient name
+        date (str): Report date
+        age (str): Patient age
+        gender (str): Patient gender
+        
+    Returns:
+        html.Div: The complete header component
+    """
+    return html.Div(
+        [
+            html.Div(
+                [
+                    html.Img(
+                        src=app.get_asset_url('logo-sechenov.png'),
+                        style={
+                            'width': '100%',
+                            'object-fit': 'contain',
+                        },
+                    )
+                ],
+                style={
+                    'width': '25%',
+                    'height': 'auto',
+                    'margin': '0px',
+                    'display': 'flex',
+                    'justify-content': 'left',
+                    'align-items': 'center',
+                },
+            ),
+            html.Div(
+                [
+                    html.Img(
+                        src=app.get_asset_url('logo_inst_tox.png'),
+                        style={
+                            'width': '100%',
+                            'object-fit': 'contain',
+                        },
+                    )
+                ],
+                style={
+                    'width': '20%',
+                    'height': 'auto',
+                    'margin': '0px',
+                    'display': 'flex',
+                    'justify-content': 'left',
+                    'align-items': 'center',
+                },
+            ),
+            html.Div(
+                [
+                    html.Div(
+                        [
+                            html.Div(
+                                [
+                                    html.P('ФИО:', style={'margin': '0px'}),
+                                    html.B(
+                                        f'{name}',
+                                        style={
+                                            'margin': '0px',
+                                            'margin-left': '5px',
+                                        },
+                                    ),
+                                ],
+                                style={
+                                    'margin': '0px',
+                                    'display': 'flex',
+                                    'justify-content': 'left',
+                                    'width': '40%',
+                                },
+                            ),
+                            html.Div(
+                                [
+                                    html.P('Дата:', style={'margin': '0px'}),
+                                    html.B(
+                                        f'{date}',
+                                        style={
+                                            'margin': '0px',
+                                            'margin-left': '5px',
+                                        },
+                                    ),
+                                ],
+                                style={
+                                    'margin': '0px',
+                                    'display': 'flex',
+                                    'justify-content': 'left',
+                                    'width': '40%',
+                                },
+                            ),
+                            html.Div(
+                                [
+                                    html.P('Возраст:', style={'margin': '0px'}),
+                                    html.B(
+                                        f'{age}',
+                                        style={
+                                            'margin': '0px',
+                                            'margin-left': '5px',
+                                        },
+                                    ),
+                                ],
+                                style={
+                                    'margin': '0px',
+                                    'display': 'flex',
+                                    'justify-content': 'left',
+                                    'width': '40%',
+                                },
+                            ),
+                            html.Div(
+                                [
+                                    html.P('Пол:', style={'margin': '0px'}),
+                                    html.B(
+                                        f'{gender}',
+                                        style={
+                                            'margin': '0px',
+                                            'margin-left': '5px',
+                                        },
+                                    ),
+                                ],
+                                style={
+                                    'margin': '0px',
+                                    'display': 'flex',
+                                    'justify-content': 'left',
+                                    'width': '40%',
+                                },
+                            ),
+                        ],
+                        style={
+                            'margin-top': '10px',
+                            'margin-left': '35px',
+                            'color': 'black',
+                            'font-family': 'Calibri',
+                            'font-size': '14px',
+                        },
+                    ),
+                ],
+                style={
+                    'width': '60%',
+                    'height': '100px',
+                    'color': 'white',
+                    'margin': '0px',
+                    'background-image': 'url("/assets/rHeader_2.png")',
+                    'background-repeat': 'no-repeat',
+                    'background-size': '100%',
+                    'background-position': 'center',
+                },
+            ),
+        ],
+        style={
+            'display': 'flex',
+            'justify-content': 'right',
+            'width': '100%',
+            'height': '100px',
+            'margin-bottom': '10px',
+        },
+    )
 
 
 def generate_radial_diagram(df_result, output_path):
@@ -130,9 +358,7 @@ def render_category_params(group_number, group_risk_name, risk_scores, ref_param
         param_scores[param_name] = score
 
     # Get the overall risk score for this group
-    overall_score = risk_scores.loc[
-        risk_scores['Группа риска'] == group_risk_name, 'Риск-скор'
-    ].values[0]
+    overall_score = risk_scores.loc[risk_scores['Группа риска'] == group_risk_name, 'Риск-скор'].values[0]
 
     # Create header based on name length
     if len(group_risk_name) > 30:
@@ -147,10 +373,10 @@ def render_category_params(group_number, group_risk_name, risk_scores, ref_param
                                     f"{group_number}.",
                                     style={
                                         'margin': '0px',
-                                        'margin-bottom': '1px',
                                         'font-weight': 'bold',
                                         'margin-right': '5px',
                                         'color': '#404547',
+                                        'font-size': '0.9rem',
                                     },
                                 ),
                                 html.P(
@@ -161,6 +387,7 @@ def render_category_params(group_number, group_risk_name, risk_scores, ref_param
                                         'width': '200px',
                                         'font-weight': 'bold',
                                         'color': '#404547',
+                                        'font-size': '0.9rem',
                                     },
                                 ),
                             ],
@@ -239,6 +466,7 @@ def render_category_params(group_number, group_risk_name, risk_scores, ref_param
                         'margin-bottom': '1px',
                         'font-weight': 'bold',
                         'color': '#404547',
+                        'font-size': '0.9rem',
                     },
                 ),
                 html.Div(
@@ -459,7 +687,7 @@ def render_ml_score_card(title, subtitle, description, metrics, risk_scores):
                     "lineHeight": "1",
                 },
             ),
-            html.Div("/10", style={"fontSize": "0.7rem", "color": "#6b7280", "lineHeight": "1"}),
+            html.Div("/10", style={"fontSize": "0.7rem", "color": "#6b7280", "lineHeight": "100%"}),
         ],
     )
 
@@ -544,7 +772,7 @@ def render_ml_score_card(title, subtitle, description, metrics, risk_scores):
     # Main card container
     return html.Div(
         style={
-            "flex": "0 0 50%",
+            "flex": "0 0 49%",
             "backgroundColor": "white",
             "border": "1px solid #e5e7eb",
             "borderRadius": "0.5rem",
@@ -555,7 +783,7 @@ def render_ml_score_card(title, subtitle, description, metrics, risk_scores):
         children=[
             html.Div(
                 [left_section, right_section],
-                style={"display": "flex", "width": "100%", "height": "100%"},
+                style={"display": "flex"},
             )
         ],
     )
@@ -574,15 +802,15 @@ def render_metabolite_row(concentration, ref_stats_entry, subtitle):
     # Determine if we should show the subtitle
     show_subtitle = bool(subtitle.strip())
 
-    progress_img = os.path.join(BASE_DIR, 'assets', 'progress.png')
-    progress_left_img = os.path.join(BASE_DIR, 'assets', 'progress_left.png')
-    pointer_img = os.path.join(BASE_DIR, 'assets', 'pointer.png')
+    progress_img = app.get_asset_url('progress.png')
+    progress_left_img = app.get_asset_url( 'progress_left.png')
+    pointer_img = app.get_asset_url('pointer.png')
 
     return html.Div(
         style={'margin': '0px'},
         children=[
             html.Div(
-                style={'margin': '0px', 'margin-left': '20px'},
+                style={'margin': '0px'},
                 children=[
                     html.Div(
                         style={
@@ -590,7 +818,7 @@ def render_metabolite_row(concentration, ref_stats_entry, subtitle):
                             'display': 'flex',
                             'justify-content': 'space-between',
                             'height': (
-                                '45px' if not show_subtitle else '53px'
+                                '45px' if not show_subtitle else '52px'
                             ),  # Adjust height based on subtitle
                             'margin-left': '5px',
                         },
@@ -599,7 +827,7 @@ def render_metabolite_row(concentration, ref_stats_entry, subtitle):
                             html.Div(
                                 style={
                                     'width': '39%',
-                                    'height': '45px' if not show_subtitle else '53px',
+                                    'height': '45px' if not show_subtitle else '52px',
                                     'margin': '0px',
                                     'font-size': '15px',
                                     'font-family': 'Calibri',
@@ -635,7 +863,7 @@ def render_metabolite_row(concentration, ref_stats_entry, subtitle):
                             html.Div(
                                 style={
                                     'width': '8%',
-                                    'height': '45px' if not show_subtitle else '53px',
+                                    'height': '45px' if not show_subtitle else '52px',
                                     'margin': '0px',
                                     'font-size': '15px',
                                     'font-family': 'Calibri',
@@ -668,7 +896,7 @@ def render_metabolite_row(concentration, ref_stats_entry, subtitle):
                             html.Div(
                                 style={
                                     'width': '27%',
-                                    'height': '45px' if not show_subtitle else '53px',
+                                    'height': '45px' if not show_subtitle else '52px',
                                     'margin': '0px',
                                     'font-size': '15px',
                                     'font-family': 'Calibri',
@@ -716,7 +944,7 @@ def render_metabolite_row(concentration, ref_stats_entry, subtitle):
                             html.Div(
                                 style={
                                     'width': '21%',
-                                    'height': '45px' if not show_subtitle else '53px',
+                                    'height': '45px' if not show_subtitle else '52px',
                                     'margin': '0px',
                                     'font-size': '15px',
                                     'font-family': 'Calibri',
@@ -811,12 +1039,12 @@ def render_metabolite_category_header(title):
                                 ],
                                 style={
                                     'width': '39%',
-                                    'height': '40px',
+                                    'height': '35px',
                                     'margin': '0px',
                                     'font-size': '16px',
                                     'font-family': 'Calibri',
                                     'color': '#2563eb',
-                                    'line-height': '40px',
+                                    'line-height': '30px',
                                 },
                             ),
                             html.Div(
@@ -909,7 +1137,7 @@ def render_metabolite_category_header(title):
                             'display': 'flex',
                             'alignItems': 'center',
                             'justify-content': 'space-between',
-                            'height': '40px',
+                            'height': '30px',
                         },
                     ),
                 ],
@@ -919,7 +1147,7 @@ def render_metabolite_category_header(title):
     )
 
 
-def render_page_header(date, name, logo_height='53px'):
+def render_page_header(date, name, logo_height='45px'):
     """
     Render the main header with date/name on left and logo on right
 
@@ -929,14 +1157,14 @@ def render_page_header(date, name, logo_height='53px'):
     - logo_height: Height of the logo image (default '53px')
     """
 
-    logo_img = os.path.join(BASE_DIR, 'assets', 'logo.jpg')
+    logo_img = app.get_asset_url('logo.jpg')
 
     return html.Div(
         style={
             'display': 'flex',
             'justify-content': 'space-between',
             'width': '100%',
-            'height': '53px',
+            'height': '45px',
             'color': '#2563eb',
         },
         children=[
@@ -946,7 +1174,7 @@ def render_page_header(date, name, logo_height='53px'):
                 children=[
                     html.B(
                         f"Дата: {date}",
-                        style={'margin': '0px', 'font-size': '18px', 'font-family': 'Calibri'},
+                        style={'margin': '0px', 'font-size': '16px', 'font-family': 'Calibri'},
                     ),
                     html.Div(
                         style={'margin-top': '2px'},
@@ -955,7 +1183,7 @@ def render_page_header(date, name, logo_height='53px'):
                                 f'Пациент: {name}',
                                 style={
                                     'margin': '0px',
-                                    'font-size': '18px',
+                                    'font-size': '16px',
                                     'font-family': 'Calibri',
                                 },
                             )
@@ -983,11 +1211,10 @@ def render_page_footer(page_number):
     return html.Div(
         style={
             'page-break-after': 'always',
-            'margin': '0px',
+            'margin-top': '3px',
             'display': 'flex',
             'justify-content': 'space-between',
             'width': '100%',
-            'margin-top': '10px',
         },
         children=[
             # Disclaimer text
@@ -996,7 +1223,7 @@ def render_page_footer(page_number):
                 style={
                     'color': 'black',
                     'font-family': 'Calibri',
-                    'font-size': '14px',
+                    'font-size': '13px',
                     'margin': '0px',
                     'text-align': "left",
                     'font-style': 'italic',
@@ -1009,7 +1236,7 @@ def render_page_footer(page_number):
                 style={
                     'color': 'black',
                     'font-family': 'Calibri',
-                    'font-size': '14px',
+                    'font-size': '13px',
                     'margin': '0px',
                     'text-align': "right",
                     'font-style': 'italic',
@@ -1024,7 +1251,7 @@ def render_page_footer(page_number):
 def render_radial_diagram_legend():
     # Common styles
     score_style = {
-        'borderRadius': '3px',
+        'borderRadius': '6px',
         'padding': '0px 10px',
         'fontSize': '0.7rem',
         'fontWeight': 'bold',
@@ -1061,7 +1288,6 @@ def render_radial_diagram_legend():
                         style={
                             **score_style,
                             'backgroundColor': "#10b9815b",
-                            'border': '2px solid #12a070',
                             'color': "#12a070",
                         },
                     ),
@@ -1079,8 +1305,7 @@ def render_radial_diagram_legend():
                         style={
                             **score_style,
                             'backgroundColor': "#a0d04772",
-                            'border': '2px solid #79a822',
-                            'color': "#79a822",
+                            'color': "#709e19",
                         },
                     ),
                     html.Span(
@@ -1098,7 +1323,6 @@ def render_radial_diagram_legend():
                         style={
                             **score_style,
                             'backgroundColor': 'rgba(255,225,175,255)',
-                            'border': '2px solid #ff8c00',
                             'color': "#e07d04",
                         },
                     ),
@@ -1117,7 +1341,6 @@ def render_radial_diagram_legend():
                         style={
                             **score_style,
                             'backgroundColor': 'rgb(234, 102, 25, 0.3)',
-                            'border': '2px solid #e67c30',
                             'color': "#c7631b",
                         },
                     ),
@@ -1136,7 +1359,6 @@ def render_radial_diagram_legend():
                         style={
                             **score_style,
                             'backgroundColor': 'rgb(234, 25, 25, 0.3)',
-                            'border': '2px solid #d9534f',
                             'color': "#b63e3a",
                         },
                     ),
@@ -1185,19 +1407,19 @@ def render_ratios_header(order_number, title):
             html.Div(
                 style={
                     'display': 'grid',
-                    'gridTemplateColumns': 'repeat(13, minmax(0, 1fr))',
+                    'gridTemplateColumns': 'repeat(12, minmax(0, 1fr))',
                     'gap': '10px',
                     'fontWeight': '500',
                     'color': "#4D5052",
                     'backgroundColor': '#f8f9fa',
                     'padding': '8px',
                     'borderRadius': '0px 0px 5px 5px',
-                    'margin': '0px',
+                    'marginTop': '5px',
                     'fontSize': '14px',
                     'fontFamily': 'Calibri',
                 },
                 children=[
-                    html.Div('Показатель', style={'gridColumn': 'span 3'}),
+                    html.Div('Показатель', style={'gridColumn': 'span 2'}),
                     html.Div('Результат', style={'gridColumn': 'span 2', 'textAlign': 'center'}),
                     html.Div('Статус', style={'gridColumn': 'span 1', 'textAlign': 'center'}),
                     html.Div('Норма', style={'gridColumn': 'span 2', 'textAlign': 'center'}),
@@ -1216,8 +1438,7 @@ def render_ratios_row(value, ref_stats_entry, description):
     return html.Div(
         style={
             'display': 'grid',
-            'gridTemplateColumns': 'repeat(13, minmax(0, 1fr))',
-            'gap': '10px',
+            'gridTemplateColumns': 'repeat(12, minmax(0, 1fr))',
             'padding': '8px 10px',
             'alignItems': 'center',
             'borderBottom': '1px solid #e9ecef',
@@ -1228,13 +1449,13 @@ def render_ratios_row(value, ref_stats_entry, description):
             html.Div(
                 ref_stats_entry["name_view"],
                 style={
-                    'gridColumn': 'span 3',
+                    'gridColumn': 'span 2',
                     'fontWeight': '600',
                     'fontSize': '14px',
                     'color': '#212529',
                 },
             ),
-            # Value with indicator
+            # Value with indicator - now properly centered
             html.Div(
                 style={
                     'gridColumn': 'span 2',
@@ -1242,19 +1463,19 @@ def render_ratios_row(value, ref_stats_entry, description):
                     'alignItems': 'center',
                     'justifyContent': 'center',
                     'gap': '4px',
+                    'margin': '0 auto',  # Ensures centering within grid cell
+                    'width': 'fit-content',  # Prevents full-width stretching
                 },
                 children=[
                     html.Div(
-                        f"{value}",
+                        smart_round(value, ref_stats_entry=ref_stats_entry),
                         style={
                             'fontWeight': 'bold',
                             'fontSize': '15px',
-                            'color': {'blue': '#2563eb', 'red': '#dc3545', 'green': '#212529'}[
-                                status_color
-                            ],
+                            'color': {'blue': '#2563eb', 'red': '#dc3545', 'green': '#212529'}[status_color],
                         },
                     ),
-                    # Status indicator
+                    # Status indicator (only for blue/red)
                     html.Div(
                         style={
                             'width': '0',
@@ -1262,14 +1483,10 @@ def render_ratios_row(value, ref_stats_entry, description):
                             'borderLeft': '5px solid transparent',
                             'borderRight': '5px solid transparent',
                             'borderTop': '8px solid #2563eb' if status_color == 'blue' else 'none',
-                            'borderBottom': (
-                                '8px solid #dc3545' if status_color == 'red' else 'none'
-                            ),
-                            'visibility': (
-                                'visible' if status_color in ['blue', 'red'] else 'collapse'
-                            ),
+                            'borderBottom': '8px solid #dc3545' if status_color == 'red' else 'none',
+                            'marginLeft': '4px' if status_color == 'red' else '0',
                         }
-                    ),
+                    ) if status_color in ['blue', 'red'] else None,
                 ],
             ),
             # Status badge
@@ -1325,7 +1542,7 @@ def render_coridor_plot(title, metabolites_dict):
         src=fig_coridor,
         style={
             'height': 'fit-content',
-            'width': '100%',
+            'width': '99%',
             'object-fit': 'contain',
             'border': '1px solid #e5e7eb',
             'borderRadius': '12px',
@@ -1437,7 +1654,7 @@ def render_questions_dialog():
                                 'alignItems': 'center',
                             },
                             children=html.Img(
-                                src=os.path.join(BASE_DIR, 'assets', 'person.svg'),
+                                src=app.get_asset_url('person.svg'),
                                 style={
                                     'width': '16px',
                                     'height': '16px',
@@ -1541,7 +1758,7 @@ def render_questions_dialog():
                                 'alignItems': 'center',
                             },
                             children=html.Img(
-                                src=os.path.join(BASE_DIR, 'assets', 'person.svg'),
+                                src=app.get_asset_url('person.svg'),
                                 style={
                                     'width': '16px',
                                     'height': '16px',
@@ -1610,7 +1827,6 @@ def render_questions_dialog():
                             style={
                                 'color': '#150c77',
                                 'fontSize': '13px',
-                                'margin': '0',
                                 'lineHeight': '1.5',
                                 'font-family': 'Calibri',
                             },
@@ -1619,37 +1835,43 @@ def render_questions_dialog():
                 ),
             ),
             html.Div(
-                style={
-                    'flexShrink': '0',
-                    'display': 'flex',
-                    'flexDirection': 'column',
-                    'alignItems': 'center',
-                },
-                children=[
-                    html.Div(
-                        style={
-                            'width': '26px',
-                            'height': '26px',
-                            'backgroundColor': '#2563eb',
-                            'borderRadius': '50%',
-                            'display': 'flex',
-                            'justifyContent': 'center',
-                            'alignItems': 'center',
-                        },
-                        children=html.I(className="fas fa-robot", style={'color': 'white'}),
-                    ),
-                    html.Div(
-                        "Метабоскан",
-                        style={
-                            'fontSize': '12px',
-                            'color': '#6b7280',
-                            'marginTop': '4px',
-                            'font-family': 'Calibri',
-                            'whiteSpace': 'nowrap',
-                        },
-                    ),
-                ],
-            ),
+                    style={
+                        'flexShrink': '0',
+                        'display': 'flex',
+                        'flexDirection': 'column',
+                        'alignItems': 'center',
+                    },
+                    children=[
+                        html.Div(
+                            style={
+                                'width': '26px',
+                                'height': '26px',
+                                'backgroundColor': "#ffffff",
+                                'borderRadius': '50%',
+                                'display': 'flex',
+                                'justifyContent': 'center',
+                                'alignItems': 'center',
+                            },
+                            children=html.Img(
+                                src=app.get_asset_url('person.svg'),
+                                style={
+                                    'width': '16px',
+                                    'height': '16px',
+                                },
+                            ),
+                        ),
+                        html.Div(
+                            "Метабоскан",
+                            style={
+                                'fontSize': '12px',
+                                'color': "#ffffff",
+                                'marginTop': '4px',
+                                'font-family': 'Calibri',
+                                'whiteSpace': 'nowrap',
+                            },
+                        ),
+                    ],
+                ),
         ],
     )
 
@@ -1679,39 +1901,44 @@ def render_questions_dialog():
                         },
                     ),
                 ),
-            ),
-            html.Div(
-                style={
-                    'flexShrink': '0',
-                    'display': 'flex',
-                    'flexDirection': 'column',
-                    'alignItems': 'center',
-                },
-                children=[
-                    html.Div(
-                        style={
-                            'width': '26px',
-                            'height': '26px',
-                            'backgroundColor': '#2563eb',
-                            'borderRadius': '50%',
-                            'display': 'flex',
-                            'justifyContent': 'center',
-                            'alignItems': 'center',
-                        },
-                        children=html.I(className="fas fa-robot", style={'color': 'white'}),
-                    ),
-                    html.Div(
-                        "Метабоскан",
-                        style={
-                            'fontSize': '12px',
-                            'color': '#6b7280',
-                            'marginTop': '4px',
-                            'font-family': 'Calibri',
-                            'whiteSpace': 'nowrap',
-                        },
-                    ),
-                ],
-            ),
+            ),html.Div(
+                    style={
+                        'flexShrink': '0',
+                        'display': 'flex',
+                        'flexDirection': 'column',
+                        'alignItems': 'center',
+                    },
+                    children=[
+                        html.Div(
+                            style={
+                                'width': '26px',
+                                'height': '26px',
+                                'backgroundColor': "#ffffff",
+                                'borderRadius': '50%',
+                                'display': 'flex',
+                                'justifyContent': 'center',
+                                'alignItems': 'center',
+                            },
+                            children=html.Img(
+                                src=app.get_asset_url('person.svg'),
+                                style={
+                                    'width': '16px',
+                                    'height': '16px',
+                                },
+                            ),
+                        ),
+                        html.Div(
+                            "Метабоскан",
+                            style={
+                                'fontSize': '12px',
+                                'color': "#ffffff",
+                                'marginTop': '4px',
+                                'font-family': 'Calibri',
+                                'whiteSpace': 'nowrap',
+                            },
+                        ),
+                    ],
+                ),
         ],
     )
 
@@ -1750,7 +1977,7 @@ def render_qr_codes():
                         },
                         children=[
                             html.Img(
-                                src=os.path.join(BASE_DIR, 'assets', 'telegram_qr_link.png'),
+                                src=app.get_asset_url('telegram_qr_link.png'),
                                 style={'width': '100px', 'height': '100px', 'borderRadius': '8px'},
                             ),
                             html.Div(
@@ -1773,7 +2000,7 @@ def render_qr_codes():
                         },
                         children=[
                             html.Img(
-                                src=os.path.join(BASE_DIR, 'assets', 'web_qr_link.png'),
+                                src=app.get_asset_url('web_qr_link.png'),
                                 style={'width': '100px', 'height': '100px', 'borderRadius': '8px'},
                             ),
                             html.Div(
@@ -1806,7 +2033,7 @@ def render_stats_legend():
     """Returns a styled table component explaining statistical metrics"""
     # Define common styles
     table_style = {
-        'width': '100%',
+        'width': 'fit-content',
         'borderCollapse': 'collapse',
         'fontFamily': 'Calibri',
         'fontSize': '12px'
@@ -1814,11 +2041,12 @@ def render_stats_legend():
 
     container_style = {
         'display': 'flex',
-        'marginTop': '20px',
+        'color': '#150c77',
+        'marginTop': '1rem',
         'marginBottom': '5px',
         'flexDirection': 'row',
         'alignItems': 'center',
-        'width': '95%',
+        'width': 'fit-content',
         'borderRadius': '0.5rem',
         'padding': '3px 15px',
         'backgroundColor': '#dbeafe'
@@ -1854,6 +2082,332 @@ def render_stats_legend():
                     html.Table(
                         children=table_rows,
                         style=table_style
+                    )
+                ]
+            )
+        ]
+    )
+    
+def render_info_message(message=""):
+    return  html.Div(
+                        [
+                            html.Img(
+                                src=app.get_asset_url('info_icon.png'),
+                                style={
+                                    'width': '20px',
+                                    'height': '20px',
+                                    'margin-right': '15px',
+                                },
+                            ),
+                            html.Div(
+                                message,
+                                style={
+                                    'color': '#3d1502',
+                                    'font-family': 'Calibri',
+                                    'font-size': '13px',
+                                    'text-align': "left",
+                                    'margin': '0px !important',
+                                },
+                            ),
+                        ],
+                        style={
+                            'display': 'flex',
+                            'margin-top': '10px',
+                            'margin-bottom': '10px',
+                            'flex-direction': 'row',
+                            'align-items': 'center',
+                            "borderRadius": "0.5rem",
+                            'padding': '5px 7px 5px 15px',
+                            'background-color': '#fee4cf',
+                        },
+                    )
+
+def render_age_bell(age_score=0):
+    speed_labels=["медленно", "нормально", "быстро"]
+    procent_speed = (10 - age_score) * 10
+    N = 1000
+    a = 3.5
+    normal_dist(N, a, procent_speed)
+    status_text = get_text_from_procent(procent_speed)
+    text_color= get_color_age_border(procent_speed)
+    status_color= get_color_age(procent_speed)
+    
+    
+    return html.Div([
+        html.Div([
+            html.Div([
+                # Image container
+                html.Div([
+                    html.Img(
+                        src=app.get_asset_url('normal.png'),
+                        style={'width': '100%'}
+                    )
+                ], style={'height': 'fit-content'}),
+                
+                # Speed labels
+                html.Div([
+                    html.P(speed_labels[0], style={
+                        'margin': '0px',
+                        'display': 'inline-block',
+                        'background-color': "#e3e3e3",
+                        'border-radius': '5px',
+                        'padding': '2px 6px',
+                        'width': 'fit-content',
+                        'text-align': 'center'
+                    }),
+                    html.P(speed_labels[1], style={
+                        'margin': '0px',
+                        'display': 'inline-block',
+                        'background-color': "#e3e3e3",
+                        'border-radius': '5px',
+                        'padding': '2px 6px',
+                        'width': 'fit-content',
+                    }),
+                    html.P(speed_labels[2], style={
+                        'margin': '0px',
+                        'display': 'inline-block',
+                        'background-color': "#e3e3e3",
+                        'border-radius': '5px',
+                        'padding': '3px 6px',
+                        'width': 'fit-content',
+                        'text-align': 'center'
+                    }),
+                ], style={
+                    'width': '100%',
+                    'color': "#696969",
+                    'font-family': 'Calibri',
+                    'font-size': '12px',
+                    'margin-top': '5px',
+                    'display': 'flex',
+                    'text-align': 'center',
+                    'justify-content': 'space-between'
+                }),
+                
+                # Status box
+                html.Div([
+                    html.P(
+                        status_text,
+                        style={
+                            'margin': '0',
+                            'padding': '5px 10px',
+                            'font-size': '15px',
+                            'color': text_color,
+                            'font-family': 'Calibri',
+                            'text-align': 'center'
+                        }
+                    ),
+                ], style={
+                    'background-color': status_color,
+                    'border-radius': '8px',
+                    'margin-top': '10px',
+                    'justify-self': 'center',
+                    'width': 'fit-content'
+                }),
+            ], style={'width': '100%'}),
+        ])
+    ], style={
+        'width': '100%',
+        'display': 'inline-block',
+        'padding': '10px'
+    })
+
+
+def render_metabolism_score(risk_scores):
+    """
+    Renders the metabolism score assessment component.
+    
+    Args:
+        risk_scores (pd.DataFrame): DataFrame containing 'Риск-скор' column with risk scores
+        width (str): Width of the component container
+        
+    Returns:
+        html.Div: The complete metabolism score component
+    """
+    # Calculate total score (0-100 scale)
+    number_of_groups = len(risk_scores['Группа риска'].unique())
+    total_score = int(round(pd.to_numeric(risk_scores['Риск-скор'], errors='coerce').sum() * 100 / (number_of_groups * 10), 0))
+    
+    # Determine rating category and colors
+    if total_score >= 90:
+        rating = 'Отлично'
+        rating_bg = '#e8f5e9'
+        rating_color = '#50c150'
+    elif total_score >= 67:
+        rating = 'Хорошо'
+        rating_bg = '#fff3e0'
+        rating_color = '#fe991d'
+    elif total_score >= 50:
+        rating = 'Требуется коррекция'
+        rating_bg = '#ffebee'
+        rating_color = '#f25708'
+    else:
+        rating = 'Серьезные нарушения'
+        rating_bg = '#ffcdd2'
+        rating_color = '#f21f08'
+    
+    return html.Div(
+        style={
+            'width': '100%',
+            'height': 'fit-content',
+            'maxWidth': 'auto'
+        },
+        children=[
+            # Header
+            html.Div(
+                style={
+                    'backgroundColor': '#2563eb',
+                    'color': 'white',
+                    'padding': '5px 15px',
+                    'borderTopLeftRadius': '4px',
+                    'borderTopRightRadius': '4px',
+                    'marginTop': '20px'
+                },
+                children=[
+                    html.H2(
+                        'Общая оценка метаболизма', 
+                        style={
+                            'margin': '0', 
+                            'fontFamily': 'Calibri', 
+                            'fontSize': '16px'
+                        }
+                    )
+                ]
+            ),
+            
+            # Main content
+            html.Div(
+                style={
+                    'border': '1px solid #ddd',
+                    'padding': '8px 8px 8px 20px',
+                    'borderBottomLeftRadius': '4px',
+                    'borderBottomRightRadius': '4px'
+                },
+                children=[
+                    html.Div(
+                        style={
+                            'display': 'flex', 
+                            'marginBottom': '7px'
+                        },
+                        children=[
+                            # Left side - Rating boxes
+                            html.Div(
+                                style={'flex': '1'},
+                                children=[
+                                    # Excellent
+                                    html.Div(
+                                        style={
+                                            'backgroundColor': '#e8f5e9',
+                                            'padding': '4px 8px',
+                                            'marginBottom': '10px',
+                                            'borderRadius': '4px',
+                                            'fontFamily': 'Calibri', 
+                                            'fontSize': '14px'
+                                        },
+                                        children=[
+                                            html.Span('Отлично'),
+                                            html.Span('90 +', style={'float': 'right'})
+                                        ]
+                                    ),
+                                    
+                                    # Good
+                                    html.Div(
+                                        style={
+                                            'backgroundColor': '#fff3e0',
+                                            'padding': '4px 8px',
+                                            'marginBottom': '10px',
+                                            'borderRadius': '4px',
+                                            'fontFamily': 'Calibri', 
+                                            'fontSize': '14px'
+                                        },
+                                        children=[
+                                            html.Span('Хорошо'),
+                                            html.Span('67 +', style={'float': 'right'})
+                                        ]
+                                    ),
+                                    
+                                    # Needs correction
+                                    html.Div(
+                                        style={
+                                            'backgroundColor': '#ffebee',
+                                            'padding': '4px 8px',
+                                            'marginBottom': '10px',
+                                            'borderRadius': '4px',
+                                            'fontFamily': 'Calibri', 
+                                            'fontSize': '14px'
+                                        },
+                                        children=[
+                                            html.Span('Требуется коррекция'),
+                                            html.Span('50 +', style={'float': 'right'})
+                                        ]
+                                    ),
+                                    
+                                    # Serious pathologies
+                                    html.Div(
+                                        style={
+                                            'backgroundColor': '#ffcdd2',
+                                            'padding': '4px 8px',
+                                            'borderRadius': '4px',
+                                            'fontFamily': 'Calibri', 
+                                            'fontSize': '14px'
+                                        },
+                                        children=[
+                                            html.Span('Серьезные нарушения'),
+                                            html.Span('<50', style={'float': 'right'})
+                                        ]
+                                    )
+                                ]
+                            ),
+                            
+                            # Right side - Score display
+                            html.Div(
+                                style={
+                                    'flex': '0.8',
+                                    'display': 'flex',
+                                    'justifyContent': 'center',
+                                    'alignItems': 'center'
+                                },
+                                children=[
+                                    html.Div(
+                                        style={'textAlign': 'center'},
+                                        children=[
+                                            html.Div(
+                                                style={
+                                                    'fontSize': '32px',
+                                                    'fontWeight': 'bold',
+                                                    'marginBottom': '5px',
+                                                    'fontFamily': 'Calibri' 
+                                                },
+                                                children=[
+                                                    f"{total_score}",
+                                                    html.Span(
+                                                        '/100%',
+                                                        style={
+                                                            'fontSize': '16px',
+                                                            'color': '#666',
+                                                            'marginLeft': '5px',
+                                                            'fontFamily': 'Calibri' 
+                                                        }
+                                                    )
+                                                ]
+                                            ),
+                                            html.Div(
+                                                children=[html.Span(rating)],
+                                                style={
+                                                    'backgroundColor': rating_bg,
+                                                    'color': rating_color,
+                                                    'padding': '5px 15px',
+                                                    'borderRadius': '15px',
+                                                    'display': 'inline-block',
+                                                    'fontFamily': 'Calibri',
+                                                    'fontWeight': 'bold',
+                                                    'margin': '0px 10px'
+                                                }
+                                            )
+                                        ]
+                                    )
+                                ]
+                            )
+                        ]
                     )
                 ]
             )
