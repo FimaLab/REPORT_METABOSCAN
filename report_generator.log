@@ -789,3 +789,6 @@
 2025-07-23 16:33:23,319 - ERROR - Report generation error: expected str, bytes or os.PathLike object, not DataFrame
 2025-07-23 16:37:08,694 - ERROR - Report generation error: Dash app failed to start or load content
 2025-07-23 16:48:09,243 - ERROR - Report generation error: Dash app failed to start or load content
+2025-07-23 17:11:28,489 - ERROR - Report generation error: Dash app failed to start
+2025-07-23 17:14:13,635 - ERROR - Report generation error: Dash app failed to start
+2025-07-23 17:14:49,755 - ERROR - Report generation error: Dash app failed to start

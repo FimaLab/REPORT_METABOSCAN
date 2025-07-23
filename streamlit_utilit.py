@@ -11,12 +11,8 @@ import sys
 import logging
 import requests
 import psutil
+from glob import glob
 
-from config_ml import (
-    metabolites_selected_onco, metabolites_selected_CVD,
-    metabolites_selected_Liv, metabolites_selected_PULM,
-    metabolites_selected_RA, thresholds
-)
 
 
 def calculate_metabolite_ratios(metabolomic_data):
@@ -132,6 +128,7 @@ def calculate_metabolite_ratios(metabolomic_data):
         new_columns['Glutamine/Glutamate'] = data['Glutamine'] / data['Glutamic acid']
         new_columns['Gly Synthesis'] = data['Glycine'] / data['Serine']
         new_columns['GSG Index'] = data['Glutamic acid'] / (data['Serine'] + data['Glycine'])
+        new_columns['GSG_index'] = data['Glutamic acid'] / (data['Serine'] + data['Glycine'])
         new_columns['Sum of Aromatic AAs'] = data['Phenylalanine'] + data['Tyrosin']
         new_columns['BCAA'] = data['Summ Leu-Ile'] + data['Valine']
         new_columns['BCAA/AAA'] = (data['Valine'] + data['Summ Leu-Ile']) / (data['Phenylalanine'] + data['Tyrosin'])
@@ -193,6 +190,7 @@ def calculate_metabolite_ratios(metabolomic_data):
         new_columns['C0/(C16+C18)'] = data['C0'] / (data['C16'] + data['C18'])
         new_columns['(Leu+IsL)/(C3+С5+С5-1+C5-DC)'] = (data['Summ Leu-Ile']) / (data['C3'] + data['C5'] + data['C5-1'] + data['C5-DC'])
         new_columns['Val/C4'] = data['Valine'] / data['C4']
+        new_columns['(C16+C18)/C2'] = (data['C16'] + data['C18']) / data['C2']
 
         # Convert the dictionary to a DataFrame and concatenate with original data
         new_data = pd.DataFrame(new_columns)
@@ -293,11 +291,45 @@ def prepare_final_dataframe(risk_params_data, metabolomic_data_with_ratios):
 def probability_to_score(prob, threshold):
     prob = min(max(prob, 0), 1)
     if prob < threshold:
-        score = 5 * prob / threshold
+        score = 4 * prob / threshold
     else:
-        score = 5 + 5 * (prob - threshold) / (1 - threshold)
+        score = 4 + 4 * (prob - threshold) / (1 - threshold)
     return 10- round(score, 0)
 
+def classify_onco_pipeline(X_row, onco_model, onco_liver_model):
+    """
+    Two-stage oncology prediction pipeline
+    Returns: (final_probability, final_score, final_diagnosis, source)
+    """
+    # Configuration
+    onco_threshold = 0.6
+    liver_threshold = 0.45
+    
+    # Get features from models
+    onco_features = onco_model.feature_names_in_
+    liver_features = onco_liver_model.feature_names_in_
+    
+    # First stage prediction
+    X_onco = pd.DataFrame([X_row[onco_features]], columns=onco_features)
+    X_onco = X_onco.replace([np.inf, -np.inf], np.nan).fillna(0).clip(-1e10, 1e10).astype(np.float32)
+    
+    onco_proba = onco_model.predict_proba(X_onco)[0][0]  # class 0 = Onco
+    initial_diagnosis = "Onco" if onco_proba >= onco_threshold else "Здоров"
+    
+    # If first stage is negative, return those results
+    if initial_diagnosis == "Здоров":
+        return (onco_proba, probability_to_score(onco_proba, onco_threshold), 
+                initial_diagnosis, "onco-control модель")
+    
+    # Second stage prediction
+    X_liver = pd.DataFrame([X_row[liver_features]], columns=liver_features)
+    X_liver = X_liver.replace([np.inf, -np.inf], np.nan).fillna(0).clip(-1e10, 1e10).astype(np.float32)
+    
+    liver_proba = onco_liver_model.predict_proba(X_liver)[0][0]  # class 0 = Onco
+    final_diagnosis = "Onco" if liver_proba >= liver_threshold else "Здоров"
+    
+    return (liver_proba, probability_to_score(liver_proba, liver_threshold), 
+            final_diagnosis, "onco-liver модель")
 
 
 def calculate_risks(risk_params_data, metabolic_data_with_ratios):
@@ -325,65 +357,130 @@ def calculate_risks(risk_params_data, metabolic_data_with_ratios):
     
     metabolic_data_with_ratios = ensure_unique_index(metabolic_data_with_ratios, "metabolic_data_with_ratios")
     risk_params_data = ensure_unique_index(risk_params_data, "risk_params_data")
+    
+    # First, get all .pkl files in the ONCO folder
+    onco_files = glob(os.path.join(os.path.dirname(__file__), "models", "ONCO", "*.pkl"))
+
+    # Separate the files based on their names
+    onco_model_path = None
+    onco_liver_model_path = None
+
+    for file_path in onco_files:
+        if 'liver' in os.path.basename(file_path).lower():
+            onco_liver_model_path = file_path
+        else:
+            onco_model_path = file_path
+
+    # Verify we found both models
+    if not onco_model_path or not onco_liver_model_path:
+        raise FileNotFoundError(
+            "Need both regular and liver models in ONCO folder. "
+            f"Found files: {onco_files}"
+        )
+
+
 
     # --- Part 1: Model-based risk calculation ---
     models_info = {
         "Оценка пролиферативных процессов": {
-            "model_path": os.path.join(os.path.dirname(__file__), "models", "Onco_healthy_RF_0907.pkl"),
-            "features": metabolites_selected_onco
+            "onco_model_path": onco_model_path,
+            "liver_model_path": onco_liver_model_path,
         },
         "Состояние сердечно-сосудистой системы": {
-            "model_path": os.path.join(os.path.dirname(__file__), "models", "CVD_healthy_RF_0907.pkl"),
-            "features": metabolites_selected_CVD
+            "model_path": glob(os.path.join(os.path.dirname(__file__), "models", "CVD", "*.pkl"))[0]
         },
         "Состояние функции печени": {
-            "model_path": os.path.join(os.path.dirname(__file__), "models", "Liver_healthy_RF_0907.pkl"),
-            "features": metabolites_selected_Liv
+            "model_path": glob(os.path.join(os.path.dirname(__file__), "models", "LIVER", "*.pkl"))[0]
         },
         "Состояние дыхательной системы": {
-            "model_path": os.path.join(os.path.dirname(__file__), "models", "Pulmo_healthy_RF_0907.pkl"),
-            "features": metabolites_selected_PULM
+            "model_path": glob(os.path.join(os.path.dirname(__file__), "models", "PULMO", "*.pkl"))[0]
         },
         "Состояние иммунного метаболического баланса": {
-            "model_path": os.path.join(os.path.dirname(__file__), "models", "RA_healthy_RF_0907.pkl"),
-            "features": metabolites_selected_RA
+            "model_path": glob(os.path.join(os.path.dirname(__file__), "models", "RA", "*.pkl"))[0]
         }
     }
+    
+    thresholds = {
+            "Состояние сердечно-сосудистой системы": 0.48,
+            "Состояние функции печени": 0.45,
+            "Состояние дыхательной системы": 0.58,
+            "Состояние иммунного метаболического баланса": 0.65
+        }
 
     # Initialize results
     results = []
 
-    # Read metabolic data
-    row = metabolic_data_with_ratios.iloc[0]  # Assuming single row input
-
+    # Process each row of metabolic data
     for idx, row in metabolic_data_with_ratios.iterrows():
-        for disease, info in models_info.items():
+        # Oncology-specific processing
+        if "Оценка пролиферативных процессов" in models_info:
+            onco_info = models_info["Оценка пролиферативных процессов"]
             try:
-                model = joblib.load(info["model_path"])
-                threshold = thresholds[disease]
-                X_row = pd.DataFrame([row[info["features"]]], columns=info["features"])
-                # Clean data - replace inf and large values
-                X_row = X_row.replace([np.inf, -np.inf], np.nan)
-                X_row = X_row.fillna(0)
-                X_row = X_row.clip(-1e10, 1e10)
+                # Load models if not already loaded
+                if "onco_model" not in onco_info:
+                    onco_info["onco_model"] = joblib.load(onco_info["onco_model_path"])
+                if "liver_model" not in onco_info:
+                    onco_info["liver_model"] = joblib.load(onco_info["liver_model_path"])
                 
-                # Convert to float32 to match typical model expectations
+                # Run two-stage prediction
+                prob, score, diagnosis, source = classify_onco_pipeline(
+                    row,
+                    onco_info["onco_model"],
+                    onco_info["liver_model"],
+                )
+                
+                results.append({
+                    "Группа риска": "Оценка пролиферативных процессов",
+                    "Риск-скор": score,
+                    "Метод оценки": source,
+                    "Диагноз": diagnosis,
+                    "Вероятность": prob
+                })
+                
+            except Exception as e:
+                print(f"Ошибка в онко-модели: {e}")
+                results.append({
+                    "Группа риска": "Оценка пролиферативных процессов",
+                    "Риск-скор": None,
+                    "Метод оценки": f"ML модель (ошибка: {str(e)})",
+                    "Диагноз": None,
+                    "Вероятность": None
+                })
+        
+        # Process other models (CVD, Liver, etc.)
+        for disease, info in models_info.items():
+            if disease == "Оценка пролиферативных процессов":
+                continue  # Already processed
+                
+            try:
+                # Load model if not already loaded
+                if "model" not in info:
+                    info["model"] = joblib.load(info["model_path"])
+                    info["features"] = info["model"].feature_names_in_
+                
+                # Prepare input data
+                X_row = pd.DataFrame([row[info["features"]]], columns=info["features"])
+                X_row = X_row.replace([np.inf, -np.inf], np.nan).fillna(0).clip(-1e10, 1e10)
                 X_row = X_row.astype(np.float32)
-                pred_proba = model.predict_proba(X_row)[0][1]
-                score = probability_to_score(pred_proba, threshold)
+                
+                # Make prediction
+                pred_proba = info["model"].predict_proba(X_row)[0][1]
+                score = probability_to_score(pred_proba, thresholds.get(disease, 0.5))
 
                 results.append({
                     "Группа риска": disease,
-                    "Риск-скор": score ,
-                    "Метод оценки": "ML модель"
+                    "Риск-скор": score,
+                    "Метод оценки": "ML модель",
+                    "Диагноз": None,
+                    "Вероятность": pred_proba
                 })
 
             except Exception as e:
-                print(f"Ошибка в модели {disease}: {e}")
+                print(f"Ошибка в модели {disease}: {str(e)}")
                 results.append({
                     "Группа риска": disease,
                     "Риск-скор": None,
-                    "Метод оценки": "ML модель"
+                    "Метод оценки": f"ML модель (ошибка: {str(e)})"
                 })
        
 
