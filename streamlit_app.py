@@ -9,16 +9,17 @@ import subprocess
 import base64
 import logging
 import requests
+import shutil
 
 from streamlit_utilit import *
 
-def validate_inputs(name,  file):
+def validate_inputs(name, file1):
     """Validate user inputs before processing"""
     if not name.strip():
         st.error("Please enter a valid patient name")
         return False
-    if not file:
-        st.error("Please upload both data files")
+    if not file1:
+        st.error("Please upload metabolomic data file")
         return False
     return True
 
@@ -131,9 +132,15 @@ def main():
                 st.error("Reference file not found. Cannot proceed without Ref.xlsx")
                 return
                 
-            if 'edited_ref' not in st.session_state or 'Params_metaboscan' not in st.session_state.edited_ref:
-                st.error("Params_metaboscan sheet not found in reference file")
+            if 'edited_ref' not in st.session_state:
+                st.error("Reference data not loaded")
                 return
+
+            required_sheets = ['Params_metaboscan', 'Ref_stats']
+            for sheet in required_sheets:
+                if sheet not in st.session_state.edited_ref:
+                    st.error(f"Required sheet '{sheet}' not found in reference file")
+                    return
 
             patient_info = {
                 "name": name.strip(),
@@ -149,16 +156,14 @@ def main():
                         risk_params_path = os.path.join(temp_dir, "risk_params.xlsx")
                         st.session_state.edited_ref['Params_metaboscan'].to_excel(risk_params_path, index=False)
 
+                        # Save Ref_stats sheet as temporary file
+                        ref_stats_path = os.path.join(temp_dir, "Ref_stats.xlsx")
+                        st.session_state.edited_ref['Ref_stats'].to_excel(ref_stats_path, index=False)
+
                         # Process data
                         metabolomic_data_with_ratios = calculate_metabolite_ratios(metabolomic_data)
                         metabolomic_data_with_ratios_path = os.path.join(temp_dir, "metabolomic_data.xlsx")
                         metabolomic_data_with_ratios.to_excel(metabolomic_data_with_ratios_path, index=False)
-                        
-                        # Save Ref_stats separately if available
-                        ref_stats_path = None
-                        if 'Ref_stats' in st.session_state.edited_ref:
-                            ref_stats_path = os.path.join(temp_dir, "Ref_stats.xlsx")
-                            st.session_state.edited_ref['Ref_stats'].to_excel(ref_stats_path, index=False)
                         
                         risk_params_exp = prepare_final_dataframe(risk_params_path, metabolomic_data_with_ratios_path)
                         risk_params_exp_path = os.path.join(temp_dir, "risk_exp_params.xlsx")
@@ -168,12 +173,12 @@ def main():
                         risk_scores_path = os.path.join(temp_dir, "risk_scores.xlsx")
                         risk_scores.to_excel(risk_scores_path, index=False)
                         
-                        st.info("✅ Параметры рисков успещно рассчитаны!")
-                        cols=st.columns(2)
+                        st.info("✅ Предварительный просмотр рассчитанных значений!")
+                        cols = st.columns(2)
                         with cols[0]:
-                            st.dataframe(risk_params_exp)
-                        with cols[1]:
                             st.dataframe(risk_scores)
+                        with cols[1]:
+                            st.dataframe(risk_params_exp)
                         
                         # Generate report
                         report_path = generate_pdf_report(
@@ -181,9 +186,9 @@ def main():
                             risk_scores_path,
                             risk_params_exp_path,
                             metabolomic_data_with_ratios_path,
+                            ref_stats_path,  # Pass ref_stats_path to the report generator
                             temp_dir
                         )
-                        
                         
                         if report_path:
                             st.success("✅ Отчет успешно сформирован!")
@@ -200,7 +205,8 @@ def main():
                     except Exception as e:
                         st.error(f"An error occurred: {str(e)}")
 
-def generate_pdf_report(patient_info, risk_scores_path, risk_params_exp_path, metabolomic_data_with_ratios_path, output_dir):
+def generate_pdf_report(patient_info, risk_scores_path, risk_params_exp_path, 
+                       metabolomic_data_with_ratios_path, ref_stats_path, output_dir):
     """Generate PDF report with proper error handling"""
     dash_process = None
     driver = None
@@ -221,6 +227,7 @@ def generate_pdf_report(patient_info, risk_scores_path, risk_params_exp_path, me
             "--risk_scores", risk_scores_path,
             "--risk_params", risk_params_exp_path,
             "--metabolomic_data", metabolomic_data_with_ratios_path,
+            "--ref_stats", ref_stats_path,  # Add ref_stats parameter
         ]
         
         dash_process = subprocess.Popen(

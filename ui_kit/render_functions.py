@@ -1534,9 +1534,9 @@ def render_ratios_row(value, ref_stats_entry, description):
     )
 
 
-def render_coridor_plot(title, metabolites_dict):
+def render_coridor_plot(title, metabolites_dict, ref_stats):
     fig_coridor = plot_metabolite_z_scores(
-        metabolite_concentrations=metabolites_dict, group_title=title
+        metabolite_concentrations=metabolites_dict, group_title=title, ref_stats=ref_stats
     )
     return html.Img(
         src=fig_coridor,

@@ -16,6 +16,7 @@ app = Dash(__name__)
 render_functions.app = app
 
 
+
 def shutdown_handler(signum, frame):
     sys.exit(0)
 
@@ -33,6 +34,7 @@ def main():
     parser.add_argument('--metabolomic_data', required=True)
     parser.add_argument('--risk_scores', required=True)
     parser.add_argument('--risk_params', required=True)
+    parser.add_argument('--ref_stats', required=True)
     args = parser.parse_args()
     # Register shutdown handler
     signal.signal(signal.SIGTERM, shutdown_handler)
@@ -52,7 +54,8 @@ def main():
 
         risk_scores = pd.read_excel(risk_scores_path)
         ref_params = pd.read_excel(risk_params_path)
-        ref_stats = create_ref_stats_from_excel('Ref.xlsx')
+        ref_stats = create_ref_stats_from_excel(args.ref_stats)
+        
 
         # Generate radial diagram
         radial_path = os.path.join('assets', "radial_diagram.png")
@@ -1478,6 +1481,7 @@ def main():
                                                         "(Leu+IsL)/(C3+С5+С5-1+C5-DC)"
                                                     ],
                                                 },
+                                                ref_stats=ref_stats,
                                             )
                                         ],
                                         style={
@@ -1506,6 +1510,7 @@ def main():
                                                     "GSG Index": metabolite_data["GSG Index"],
                                                     "Carnosine": metabolite_data["Carnosine"],
                                                 },
+                                                ref_stats=ref_stats,
                                             )
                                         ],
                                         style={
@@ -1543,6 +1548,7 @@ def main():
                                                     "TMAO Synthesis": metabolite_data["TMAO Synthesis"],
                                                     "DMG / Choline": metabolite_data["DMG / Choline"],
                                                 },
+                                                ref_stats=ref_stats,
                                             )
                                         ],
                                         style={
@@ -1567,6 +1573,7 @@ def main():
                                                     "Trp/(Kyn+QA)": metabolite_data["Trp/(Kyn+QA)"],
                                                     "Kyn/Quin": metabolite_data["Kyn/Quin"],
                                                 },
+                                                ref_stats=ref_stats,
                                             )
                                         ],
                                         style={
@@ -1597,6 +1604,7 @@ def main():
                                                     "5-hydroxytryptophan": metabolite_data["5-hydroxytryptophan"],
                                                     "Serotonin / Trp": metabolite_data["Serotonin / Trp"],
                                                 },
+                                                ref_stats=ref_stats,
                                             )
                                         ],
                                         style={
@@ -1623,6 +1631,7 @@ def main():
                                                     "Tryptamine": metabolite_data["Tryptamine"],
                                                     "Tryptamine / IAA": metabolite_data["Tryptamine / IAA"],
                                                 },
+                                                ref_stats=ref_stats,
                                             )
                                         ],
                                         style={
@@ -1711,7 +1720,7 @@ def main():
                                                     ],
                                                     "Ratio of Pro to Cit": metabolite_data["Ratio of Pro to Cit"],
                                                     "Cit Synthesis": metabolite_data["Cit Synthesis"],
-                                                },
+                                                },ref_stats=ref_stats,
                                             )
                                         ],
                                         style={
@@ -1748,6 +1757,7 @@ def main():
                                                     "Sum of ACs + С0": metabolite_data["Sum of ACs + С0"],
                                                     "Sum of ACs/C0": metabolite_data["Sum of ACs/C0"],
                                                 },
+                                                ref_stats=ref_stats,
                                             )
                                         ],
                                         style={
@@ -1781,6 +1791,7 @@ def main():
                                                     "C5-DC": metabolite_data["C5-DC"],
                                                     "C5-OH": metabolite_data["C5-OH"],
                                                 },
+                                                ref_stats=ref_stats,
                                             )
                                         ],
                                         style={
@@ -1805,6 +1816,7 @@ def main():
                                                     "C12": metabolite_data["C12"],
                                                     "C12-1": metabolite_data["C12-1"],
                                                 },
+                                                ref_stats=ref_stats,
                                             )
                                         ],
                                         style={
@@ -1844,6 +1856,7 @@ def main():
                                                     "C18-2": metabolite_data["C18-2"],
                                                     "C18-OH": metabolite_data["C18-OH"],
                                                 },
+                                                ref_stats=ref_stats,
                                             )
                                         ],
                                         style={
@@ -1867,6 +1880,7 @@ def main():
                                                     "Cortisol": metabolite_data["Cortisol"],
                                                     "Histamine": metabolite_data["Histamine"],
                                                 },
+                                                ref_stats=ref_stats,
                                             )
                                         ],
                                         style={

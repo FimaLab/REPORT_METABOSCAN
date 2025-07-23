@@ -83,7 +83,7 @@ def smart_round(value, default_decimals=0, ref_stats_entry=None):
 
 def create_ref_stats_from_excel(excel_path):
     # Read Excel with explicit handling of decimal commas
-    df = pd.read_excel(excel_path, engine='openpyxl')
+    df = pd.read_excel(excel_path)
 
     # Transpose to metabolites-as-rows format
     df = df.set_index('metabolite').T.reset_index()
@@ -143,12 +143,7 @@ def create_ref_stats_from_excel(excel_path):
 
     return ref_stats
 
-
-ref_path = os.path.join(base_dir, 'Ref.xlsx')
-ref_stats = create_ref_stats_from_excel(ref_path)
-
-
-def plot_metabolite_z_scores(metabolite_concentrations, group_title, norm_ref=[-1, 1]):
+def plot_metabolite_z_scores(metabolite_concentrations, group_title, norm_ref=[-1, 1], ref_stats={}):
     # Set font to Calibri
     mpl.rcParams['font.family'] = 'Calibri'
 
