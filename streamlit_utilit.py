@@ -191,10 +191,23 @@ def calculate_metabolite_ratios(metabolomic_data):
         new_columns['(Leu+IsL)/(C3+С5+С5-1+C5-DC)'] = (data['Summ Leu-Ile']) / (data['C3'] + data['C5'] + data['C5-1'] + data['C5-DC'])
         new_columns['Val/C4'] = data['Valine'] / data['C4']
         new_columns['(C16+C18)/C2'] = (data['C16'] + data['C18']) / data['C2']
+        new_columns['C3 / C0'] = data['C3'] / data['C0']
 
-        # Convert the dictionary to a DataFrame and concatenate with original data
+        # Convert the dictionary to a DataFrame
         new_data = pd.DataFrame(new_columns)
-        data = pd.concat([data, new_data], axis=1)
+
+        # Get columns that exist in both DataFrames
+        common_cols = data.columns.intersection(new_data.columns)
+
+        # For overlapping columns, fill NaN in original data with new_data values
+        for col in common_cols:
+            data[col] = data[col].fillna(new_data[col])
+
+        # Get columns that only exist in new_data
+        new_cols_only = new_data.columns.difference(data.columns)
+
+        # Add the new columns
+        data = pd.concat([data, new_data[new_cols_only]], axis=1)
 
         # Drop Group column if it exists
         if 'Group' in data.columns:

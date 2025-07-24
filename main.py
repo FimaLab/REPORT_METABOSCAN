@@ -1,3 +1,4 @@
+import json
 from dash import Dash, html
 import os
 import pandas as pd
@@ -35,6 +36,7 @@ def main():
     parser.add_argument('--risk_scores', required=True)
     parser.add_argument('--risk_params', required=True)
     parser.add_argument('--ref_stats', required=True)
+    parser.add_argument('--metrics', required=True)
     args = parser.parse_args()
     # Register shutdown handler
     signal.signal(signal.SIGTERM, shutdown_handler)
@@ -56,7 +58,20 @@ def main():
         ref_params = pd.read_excel(risk_params_path)
         ref_stats = create_ref_stats_from_excel(args.ref_stats)
         
+        metrics = pd.read_excel(args.metrics)
+        # Convert to the desired JSON structure
+        metrics_dict = {}
+        for _, row in metrics.iterrows():
+            metrics_dict[row['group_name']] = {
+                "Acc": f"{row['Acc']}%",
+                "Se": f"{row['Se']}%",
+                "Sp": f"{row['Sp']}%",
+                "+PV": f"{row['Pos_PV']}%",
+                "-PV": f"{row['Neg_PV']}%"
+            }
 
+        
+        
         # Generate radial diagram
         radial_path = os.path.join('assets', "radial_diagram.png")
         generate_radial_diagram(risk_scores, radial_path)
@@ -241,13 +256,7 @@ def main():
                                                 различными формами сердечно-сосудистых
                                                 нарушений.
                                                 ''',
-                                                    metrics={
-                                                        "Acc": "93,7%",
-                                                        "Se": "94,4%",
-                                                        "Sp": "89,7%",
-                                                        "+PV": "98,2%",
-                                                        "-PV": "73,2%",
-                                                    },
+                                                    metrics=metrics_dict["Состояние сердечно-сосудистой системы"],
                                                     risk_scores=risk_scores,
                                                 ),
                                                 # Oncology Score Card
@@ -267,13 +276,7 @@ def main():
                                                 злокачественные заболевания: лимфомы
                                                 и множественная миелома.
                                                 ''',
-                                                    metrics={
-                                                        "Acc": "92,1%",
-                                                        "Se": "90,5%",
-                                                        "Sp": "89,2%",
-                                                        "+PV": "91,8%",
-                                                        "-PV": "86,1%",
-                                                    },
+                                                    metrics=metrics_dict["Оценка пролиферативных процессов"],
                                                     risk_scores=risk_scores,
                                                 ),
                                             ],
@@ -303,13 +306,7 @@ def main():
                                                 гепатит, алкогольное поражение печени и
                                                 цирроз.
                                                 ''',
-                                                    metrics={
-                                                        "Acc": "91,8%",
-                                                        "Se": "90,7%",
-                                                        "Sp": "87,9%",
-                                                        "+PV": "92,1%",
-                                                        "-PV": "85,4%",
-                                                    },
+                                                    metrics=metrics_dict["Состояние функции печени"],
                                                     risk_scores=risk_scores,
                                                 ),
                                                 # Pulmonary Score Card
@@ -328,13 +325,7 @@ def main():
                                                 легких (ХОБЛ), постковидный синдром и
                                                 легочный фиброз.
                                                 ''',
-                                                    metrics={
-                                                        "Acc": "90,4%",
-                                                        "Se": "88,9%",
-                                                        "Sp": "86,2%",
-                                                        "+PV": "89,7%",
-                                                        "-PV": "84,5%",
-                                                    },
+                                                    metrics=metrics_dict["Состояние дыхательной системы"],
                                                     risk_scores=risk_scores,
                                                 ),
                                             ],
@@ -360,34 +351,7 @@ def main():
                                                 пациентов с установленным диагнозом
                                                 ревматоидного артрита различной степени
                                                 активности.''',
-                                                    metrics={
-                                                        "Acc": "93,7%",
-                                                        "Se": "94,4%",
-                                                        "Sp": "89,7%",
-                                                        "+PV": "98,2%",
-                                                        "-PV": "73,2%",
-                                                    },
-                                                    risk_scores=risk_scores,
-                                                ),
-                                                # Empty div to maintain layout
-                                                render_ml_score_card(
-                                                    title="Состояние иммунного метаболического баланса",
-                                                    subtitle='''Отражает метаболические отклонения,
-                                            связанные с хронической активацией
-                                            иммунной системы и воспалением''',
-                                                    description='''Оценка данного параметра основана на
-                                                анализе плазмы крови пациентов без
-                                                признаков аутоиммунных расстройств и
-                                                пациентов с установленным диагнозом
-                                                ревматоидного артрита различной степени
-                                                активности.''',
-                                                    metrics={
-                                                        "Acc": "93,7%",
-                                                        "Se": "94,4%",
-                                                        "Sp": "89,7%",
-                                                        "+PV": "98,2%",
-                                                        "-PV": "73,2%",
-                                                    },
+                                                    metrics=metrics_dict["Состояние иммунного метаболического баланса"],
                                                     risk_scores=risk_scores,
                                                 ),
                                             ],
@@ -665,8 +629,8 @@ def main():
                             ),
                             # ADMA
                             render_metabolite_row(
-                                concentration=metabolite_data["DMG"],
-                                ref_stats_entry=ref_stats["DMG"],
+                                concentration=metabolite_data["ADMA"],
+                                ref_stats_entry=ref_stats["ADMA"],
                                 subtitle="Эндогенный ингибитор синтазы оксида азота",
                             ),
                             # MMA

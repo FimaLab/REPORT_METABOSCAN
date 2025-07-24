@@ -792,3 +792,43 @@
 2025-07-23 17:11:28,489 - ERROR - Report generation error: Dash app failed to start
 2025-07-23 17:14:13,635 - ERROR - Report generation error: Dash app failed to start
 2025-07-23 17:14:49,755 - ERROR - Report generation error: Dash app failed to start
+2025-07-23 20:17:54,289 - ERROR - Report generation error: Dash app failed to start
+2025-07-23 20:21:51,528 - ERROR - Report generation error: Dash app failed to start
+2025-07-23 20:25:22,997 - ERROR - Report generation error: Dash app failed to start
+2025-07-23 20:28:03,631 - ERROR - Report generation error: Dash app failed to start
+2025-07-23 20:30:17,770 - ERROR - Report generation error: Dash app failed to start
+2025-07-23 20:33:07,481 - ERROR - Report generation error: Dash app failed to start
+2025-07-23 20:35:07,832 - ERROR - Report generation error: Dash app failed to start
+2025-07-23 20:40:46,225 - ERROR - Report generation error: Dash app failed to start
+2025-07-24 12:12:01,392 - ERROR - Report generation error: Dash app failed to start
+2025-07-24 12:12:59,110 - ERROR - Report generation error: Dash app failed to start
+2025-07-24 12:14:14,977 - ERROR - Report generation error: Dash app failed to start
+2025-07-24 12:15:03,311 - ERROR - Report generation error: Dash app failed to start
+2025-07-24 12:28:27,312 - ERROR - Report generation error: Dash app failed to start
+2025-07-24 12:31:20,405 - ERROR - Report generation error: Dash app failed to start
+2025-07-24 12:40:50,216 - ERROR - Report generation error: Dash app failed to start
+2025-07-24 12:41:45,590 - ERROR - Report generation error: Dash app failed to start
+2025-07-24 12:45:30,181 - ERROR - Report generation error: Dash app failed to start
+2025-07-24 12:49:17,396 - ERROR - Report generation error: Dash app failed to start
+2025-07-24 12:52:40,827 - ERROR - Report generation error: Dash app failed to start
+2025-07-24 13:34:54,827 - WARNING - There was an error managing chromedriver (error sending request for url (https://googlechromelabs.github.io/chrome-for-testing/known-good-versions-with-downloads.json)); using driver found in the cache
+2025-07-24 13:34:54,827 - WARNING - Error sending stats to Plausible: error sending request for url (https://plausible.io/api/event)
+2025-07-24 13:37:37,446 - WARNING - There was an error managing chromedriver (error sending request for url (https://googlechromelabs.github.io/chrome-for-testing/known-good-versions-with-downloads.json)); using driver found in the cache
+2025-07-24 13:57:37,692 - WARNING - There was an error managing chromedriver (error sending request for url (https://googlechromelabs.github.io/chrome-for-testing/known-good-versions-with-downloads.json)); using driver found in the cache
+2025-07-24 14:20:58,261 - WARNING - There was an error managing chromedriver (error sending request for url (https://googlechromelabs.github.io/chrome-for-testing/known-good-versions-with-downloads.json)); using driver found in the cache
+2025-07-24 14:43:58,435 - ERROR - Report generation error: Dash app failed to start
+2025-07-24 14:50:36,823 - ERROR - Report generation error: Dash app failed to start
+2025-07-24 14:52:43,357 - ERROR - Error in report generation: cannot access local variable 'report_path' where it is not associated with a value
+2025-07-24 15:02:52,205 - ERROR - Error in report generation: 'Patient'
+2025-07-24 15:07:33,378 - ERROR - Error in report generation: '>' not supported between instances of 'str' and 'float'
+2025-07-24 15:11:28,272 - ERROR - Error in report generation: '>' not supported between instances of 'str' and 'float'
+2025-07-24 15:31:14,582 - ERROR - Error in report generation: Invalid file path or buffer object type: <class 'pandas.core.frame.DataFrame'>
+2025-07-24 15:32:35,457 - ERROR - Error in report generation: 'builtin_function_or_method' object has no attribute 'is_unique'
+2025-07-24 15:34:06,838 - ERROR - Error in report generation: 'builtin_function_or_method' object has no attribute 'is_unique'
+2025-07-24 15:35:15,157 - ERROR - Error in report generation: '>' not supported between instances of 'str' and 'float'
+2025-07-24 15:35:43,523 - ERROR - Error in report generation: '>' not supported between instances of 'str' and 'float'
+2025-07-24 15:50:06,854 - ERROR - Report generation error: Dash app failed to start
+2025-07-24 15:56:32,804 - ERROR - Report generation error: Dash app failed to start
+2025-07-24 16:24:04,205 - ERROR - Error in report generation: 'UploadedFile' object is not subscriptable
+2025-07-24 16:24:15,055 - ERROR - Error in report generation: 'UploadedFile' object is not subscriptable
+2025-07-24 16:27:50,596 - ERROR - Report generation error: Dash app failed to start

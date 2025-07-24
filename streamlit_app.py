@@ -1,3 +1,4 @@
+import zipfile
 import streamlit as st
 import os
 import tempfile
@@ -142,13 +143,6 @@ def main():
                     st.error(f"Required sheet '{sheet}' not found in reference file")
                     return
 
-            patient_info = {
-                "name": name.strip(),
-                "age": age,
-                "date": date.strftime("%d.%m.%Y"),
-                "gender": gender,
-            }
-            
             with st.spinner("🔬 Читаем данные и генерируем отчет. Это займет не больше минуты..."):
                 with tempfile.TemporaryDirectory() as temp_dir:
                     try:
@@ -165,48 +159,110 @@ def main():
                         metabolomic_data_with_ratios_path = os.path.join(temp_dir, "metabolomic_data.xlsx")
                         metabolomic_data_with_ratios.to_excel(metabolomic_data_with_ratios_path, index=False)
                         
-                        risk_params_exp = prepare_final_dataframe(risk_params_path, metabolomic_data_with_ratios_path)
-                        risk_params_exp_path = os.path.join(temp_dir, "risk_exp_params.xlsx")
-                        risk_params_exp.to_excel(risk_params_exp_path, index=False)
+                        # Check if input file contains multiple patients (more than 1 row after header)
+                        df_metabolomic = pd.read_excel(metabolomic_data)
+                        multiple_patients = len(df_metabolomic) > 1
+                        
+                        if multiple_patients:
+                            st.info("Обнаружены данные для нескольких пациентов. Показаны результаты для всех пациентов.")
+                            st.warning("Для генерации индивидуальных отчетов, пожалуйста, загружайте данные по одному пациенту за раз.")
                             
-                        risk_scores = calculate_risks(risk_params_exp, metabolomic_data_with_ratios)
-                        risk_scores_path = os.path.join(temp_dir, "risk_scores.xlsx")
-                        risk_scores.to_excel(risk_scores_path, index=False)
-                        
-                        st.info("✅ Предварительный просмотр рассчитанных значений!")
-                        cols = st.columns(2)
-                        with cols[0]:
-                            st.dataframe(risk_scores)
-                        with cols[1]:
-                            st.dataframe(risk_params_exp)
-                        
-                        # Generate report
-                        report_path = generate_pdf_report(
-                            patient_info,
-                            risk_scores_path,
-                            risk_params_exp_path,
-                            metabolomic_data_with_ratios_path,
-                            ref_stats_path,  # Pass ref_stats_path to the report generator
-                            temp_dir
-                        )
-                        
-                        if report_path:
-                            st.success("✅ Отчет успешно сформирован!")
-                            with open(report_path, "rb") as f:
-                                st.download_button(
-                                    label="📥 Скачать отчет",
-                                    data=f.read(),
-                                    file_name=f"Report_{name.replace(' ', '_')}_{date.strftime('%Y%m%d')}.pdf",
-                                    mime="application/pdf",
-                                )
-                        else:
-                            st.error("Ошибка при генерации отчета")
+                            # Get patient identifiers and groups from file
+                            patient_ids = df_metabolomic.get('Код', [f"Пациент {i+1}" for i in range(len(df_metabolomic))])
+                            patient_groups = df_metabolomic.get('Группа', ["-" for _ in range(len(df_metabolomic))])
                             
+                            # Create tabs for each patient
+                            tabs = st.tabs([f"Пациент {i+1}" for i in range(len(patient_ids))])
+                            
+                            for idx, tab in enumerate(tabs):
+                                with tab:
+                                    with st.spinner(f"Расчет показателей для пациента {idx+1}/{len(patient_ids)}..."):
+                                        # Get individual patient data
+                                        patient_data = metabolomic_data_with_ratios.iloc[[idx]]
+                                        patient_data_path = os.path.join(temp_dir, f"patient_data_{idx}.xlsx")
+                                        patient_data.to_excel(patient_data_path, index=False)
+                                        
+                                        # Calculate risk parameters for this patient only
+                                        patient_risk_params_exp = prepare_final_dataframe(risk_params_path, patient_data_path)
+                                        
+                                        # Calculate risk scores for this patient only
+                                        patient_risk_scores = calculate_risks(patient_risk_params_exp, patient_data)
+                                        
+                                        # Display results
+                                        col1, col2 = st.columns([1, 3])
+                                        
+                                        with col1:
+                                            st.markdown(f"**Код пациента:** {patient_ids[idx]}")
+                                            st.markdown(f"**Группа:** {patient_groups[idx]}")
+                                            st.markdown("---")
+                                            
+                                        
+                                        with col2:
+                                            # Display individual risk scores
+                                            st.markdown("**Оценка рисков по заболеваниям:**")
+                                            
+                                            st.dataframe( 
+                                                patient_risk_scores,
+                                                use_container_width=True
+                                            )
+                                            st.dataframe(
+                                                patient_risk_params_exp,
+                                                use_container_width=True
+                                            )
+                        else:  # Single patient case (original behavior)
+                            patient_info = {
+                                "name": name.strip(),
+                                "age": age,
+                                "date": date.strftime("%d.%m.%Y"),
+                                "gender": gender,
+                            }
+                            
+                            risk_params_exp = prepare_final_dataframe(risk_params_path, metabolomic_data_with_ratios_path)
+                            risk_params_exp_path = os.path.join(temp_dir, "risk_exp_params.xlsx")
+                            risk_params_exp.to_excel(risk_params_exp_path, index=False)
+                                
+                            risk_scores = calculate_risks(risk_params_exp, metabolomic_data_with_ratios)
+                            risk_scores_path = os.path.join(temp_dir, "risk_scores.xlsx")
+                            risk_scores.to_excel(risk_scores_path, index=False)
+                            
+                            metrics_path = os.path.join(temp_dir, "metrics.xlsx")
+                            st.session_state.edited_ref['Group_score'].to_excel(metrics_path, index=False)
+                            st.info("✅ Предварительный просмотр рассчитанных значений!")
+                            cols = st.columns(2)
+                            with cols[0]:
+                                st.dataframe(risk_scores)
+                            with cols[1]:
+                                st.dataframe(risk_params_exp)
+                            
+                            # Generate report
+                            report_path = generate_pdf_report(
+                                patient_info,
+                                risk_scores_path,
+                                risk_params_exp_path,
+                                metabolomic_data_with_ratios_path,
+                                ref_stats_path,
+                                metrics_path,
+                                temp_dir
+                            )
+                            
+                            if report_path:
+                                st.success("✅ Отчет успешно сформирован!")
+                                with open(report_path, "rb") as f:
+                                    st.download_button(
+                                        label="📥 Скачать отчет",
+                                        data=f.read(),
+                                        file_name=f"Report_{name.replace(' ', '_')}_{date.strftime('%Y%m%d')}.pdf",
+                                        mime="application/pdf",
+                                    )
+                            else:
+                                st.error("Ошибка при генерации отчета")
+                                
                     except Exception as e:
                         st.error(f"An error occurred: {str(e)}")
+                        logging.error(f"Error in report generation: {str(e)}")
 
 def generate_pdf_report(patient_info, risk_scores_path, risk_params_exp_path, 
-                       metabolomic_data_with_ratios_path, ref_stats_path, output_dir):
+                       metabolomic_data_with_ratios_path, ref_stats_path,metrics_path, output_dir):
     """Generate PDF report with proper error handling"""
     dash_process = None
     driver = None
@@ -228,6 +284,7 @@ def generate_pdf_report(patient_info, risk_scores_path, risk_params_exp_path,
             "--risk_params", risk_params_exp_path,
             "--metabolomic_data", metabolomic_data_with_ratios_path,
             "--ref_stats", ref_stats_path,  # Add ref_stats parameter
+            "--metrics", metrics_path,
         ]
         
         dash_process = subprocess.Popen(
