@@ -1009,18 +1009,6 @@ def main():
                                     render_ratios_row(
                                         value=metabolite_data['Trp/(Kyn+QA)'],
                                         ref_stats_entry=ref_stats["Trp/(Kyn+QA)"],
-                                        description='''Является обратным показателем Kyn/Trp и
-                                                    отражает доступность триптофана относительно
-                                                    его воспалительного метаболита кинуренина.
-                                                    Он характеризует запас триптофана и
-                                                    интенсивность его потребления через
-                                                    кинурениновый путь при воспалении и
-                                                    иммунной активации.
-                                                    ''',
-                                    ),
-                                    render_ratios_row(
-                                        value=metabolite_data['Kyn/Quin'],
-                                        ref_stats_entry=ref_stats["Kyn/Quin"],
                                         description='''Это соотношение концентрации триптофана к
                                                 сумме его метаболитов (кинуренина и
                                                 хинолиновой кислоты). Он является важным
@@ -1031,8 +1019,8 @@ def main():
                                                 ''',
                                     ),
                                     render_ratios_row(
-                                        value=metabolite_data['Serotonin / Trp'],
-                                        ref_stats_entry=ref_stats["Serotonin / Trp"],
+                                        value=metabolite_data['Kyn/Quin'],
+                                        ref_stats_entry=ref_stats["Kyn/Quin"],
                                         description='''Отражает баланс между промежуточными
                                                         метаболитами кинуренинового пути:
                                                         относительно нейтральным по действию
@@ -1043,8 +1031,8 @@ def main():
                                                         ''',
                                     ),
                                     render_ratios_row(
-                                        value=metabolite_data['Tryptamine / IAA'],
-                                        ref_stats_entry=ref_stats["Tryptamine / IAA"],
+                                        value=metabolite_data['Serotonin / Trp'],
+                                        ref_stats_entry=ref_stats["Serotonin / Trp"],
                                         description='''Отражает эффективность превращения
                                                         аминокислоты триптофана в нейромедиатор
                                                         серотонин (5-HT), тем самым характеризуя
@@ -1054,12 +1042,24 @@ def main():
                                                         ''',
                                     ),
                                     render_ratios_row(
+                                        value=metabolite_data['Tryptamine / IAA'],
+                                        ref_stats_entry=ref_stats["Tryptamine / IAA"],
+                                        description='''Отражает баланс в микробном метаболизме
+                                                        триптофана в кишечнике и характеризует
+                                                        состояние кишечной микробиоты и кишечного
+                                                        барьера.
+                                                        ''',
+                                    ),
+                                    render_ratios_row(
                                         value=metabolite_data['TMAO Synthesis'],
                                         ref_stats_entry=ref_stats["TMAO Synthesis"],
-                                        description='''Отражает баланс в микробном метаболизме
-                                                    триптофана в кишечнике и характеризует
-                                                    состояние кишечной микробиоты и кишечного
-                                                    барьера.''',
+                                        description='''Отражает интенсивность образования
+                                                        триметиламин-N-оксида (TMAO) из его
+                                                        предшественников (бетаина, холина и
+                                                        карнитина), характеризуя активность кишечной
+                                                        микробиоты и риск воспаления и
+                                                        атеросклероза.
+                                                        ''',
                                     ),
                                 ]
                             )

@@ -135,12 +135,6 @@ def create_ref_stats_from_excel(excel_path):
         except Exception as e:
             print(f"Error processing {row.get('index', 'unknown')}: {str(e)}")
             continue
-    import json
-    # create jso utf-8 file structured json
-    with open('ref_stats.json', 'w', encoding='utf-8') as f:
-        json.dump(ref_stats, f, ensure_ascii=False)
-    
-
     return ref_stats
 
 def plot_metabolite_z_scores(metabolite_concentrations, group_title, norm_ref=[-1, 1], ref_stats={}):
@@ -275,9 +269,17 @@ def plot_metabolite_z_scores(metabolite_concentrations, group_title, norm_ref=[-
 
     y_range = max(abs(y_min), abs(y_max))
     step = (
-        3.0
+        5.0
         if y_range > 15
-        else 1.5 if y_range > 10 else 1.0 if y_range > 7 else 0.75 if y_range > 5 else 0.5
+        else 2.5
+        if y_range > 12
+        else 2.0
+        if y_range > 10
+        else 1.0 
+        if y_range > 7 
+        else 0.75 
+        if y_range > 5 
+        else 0.5
     )
     ax.set_yticks(np.arange(np.floor(y_min), np.ceil(y_max) + step, step))
 

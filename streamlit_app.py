@@ -85,16 +85,13 @@ def main():
         
         if os.path.exists(REF_FILE):
             try:
-                # Load all sheets from Ref.xlsx
-                if 'original_ref' not in st.session_state:
+                # Initialize session state for both original and edited data
+                if 'original_ref' not in st.session_state or 'edited_ref' not in st.session_state:
                     xls = pd.ExcelFile(REF_FILE)
                     st.session_state.original_ref = {
                         sheet_name: xls.parse(sheet_name) 
                         for sheet_name in xls.sheet_names
                     }
-                
-                # Initialize edited_ref if not exists
-                if 'edited_ref' not in st.session_state:
                     st.session_state.edited_ref = {
                         sheet_name: df.copy() 
                         for sheet_name, df in st.session_state.original_ref.items()
@@ -226,7 +223,7 @@ def main():
                             risk_scores.to_excel(risk_scores_path, index=False)
                             
                             metrics_path = os.path.join(temp_dir, "metrics.xlsx")
-                            st.session_state.edited_ref['Group_score'].to_excel(metrics_path, index=False)
+                            st.session_state.edited_ref['metrics_ml_models'].to_excel(metrics_path, index=False)
                             st.info("✅ Предварительный просмотр рассчитанных значений!")
                             cols = st.columns(2)
                             with cols[0]:
