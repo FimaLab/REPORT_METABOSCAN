@@ -1,4 +1,4 @@
-FROM python:3.10.9
+FROM python:3.11.4
 
 # Открываем порт для Streamlit
 EXPOSE 8501
