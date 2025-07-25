@@ -598,23 +598,23 @@ def setup_chrome_driver():
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("--window-size=1920,1080")
-    # add font calibri
-    # Font configuration for Linux
-    chrome_options.add_argument("--font-cache-shared-handle=0")
+    # Improved font configuration for Docker/Linux
     chrome_options.add_argument("--disable-font-subpixel-positioning")
-    chrome_options.add_argument("--font-render-hinting=none")
+    chrome_options.add_argument("--disable-remote-fonts")
+    chrome_options.add_argument("--force-color-profile=srgb")
     
-    # Set the default font
-    prefs = {
+    # Set default fonts
+    font_prefs = {
         "webkit.webprefs.default_fixed_font_size": 13,
         "webkit.webprefs.default_font_size": 16,
         "webkit.webprefs.minimum_font_size": 12,
         "webkit.webprefs.minimum_logical_font_size": 12,
         "webkit.webprefs.default_font_family": "Calibri",
         "webkit.webprefs.sansserif_font_family": "Calibri",
+        "webkit.webprefs.serif_font_family": "Times New Roman",
         "webkit.webprefs.fixed_font_family": "Consolas"
     }
-    chrome_options.add_experimental_option("prefs", prefs)
+    chrome_options.add_experimental_option("prefs", font_prefs)
     
     service = Service("/usr/bin/chromedriver") #для корректной работы на сервере
     driver = webdriver.Chrome(service=service, options=chrome_options) #для корректной работы на сервере
