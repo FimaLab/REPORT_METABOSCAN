@@ -101,7 +101,7 @@ def main():
                     html.Img(
                         src=app.get_asset_url('radial_diagram.png'),
                         style={
-                            'height': '390px',
+                            'height': '380px',
                             'width': 'auto',  # This maintains aspect ratio
                             'max-width': '100%',  # Ensures it doesn't overflow container
                             'object-fit': 'contain',  # Prevents distortion
