@@ -14,8 +14,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gnupg \
     curl \
     fonts-liberation \
-    ttf-mscorefonts-installer \
-    fontconfig \
     libasound2 \
     libatk-bridge2.0-0 \
     libatk1.0-0 \
@@ -32,9 +30,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libu2f-udev \
     libvulkan1 \
     chromium-driver \
-    chromium && \
-    fc-cache -f -v && \
-    rm -rf /var/lib/apt/lists/*
+    chromium \
+    && rm -rf /var/lib/apt/lists/*
 
 # Кеш pip и requirements
 ENV PIP_NO_CACHE_DIR=off
