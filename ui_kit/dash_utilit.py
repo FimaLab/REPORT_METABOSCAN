@@ -117,7 +117,8 @@ def create_ref_stats_from_excel(excel_path):
                     if pd.notna(row['ref_max'])
                     else None
                 ),
-                'name_view': row['name_view'],
+                'name_view': row['name_view,
+                'name_short_view': row['name_short_view']
             }
 
             # Generate norm string with clean formatting
