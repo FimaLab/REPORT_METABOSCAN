@@ -619,7 +619,6 @@ def setup_chrome_driver():
     service = Service("/usr/bin/chromedriver") #для корректной работы на сервере
     driver = webdriver.Chrome(service=service, options=chrome_options) #для корректной работы на сервере
     
-    driver = webdriver.Chrome(options=chrome_options)
     driver.set_page_load_timeout(55)
     driver.set_script_timeout(40)
     return driver
