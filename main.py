@@ -963,30 +963,7 @@ def main():
                                 ref_stats_entry=ref_stats["Histamine"],
                                 subtitle="",
                             ),
-                            html.Div(
-                                [
-                                    html.Div(
-                                        [
-                                            render_info_message(
-                                                "На основании метаболомного профиля был оценен темп биологического старения организма"
-                                            ),
-                                            render_age_bell(
-                                                age_score=risk_scores.loc[
-                                                    risk_scores['Группа риска'] == 'Темп биологического старения',
-                                                    'Риск-скор',
-                                                ].values[0]
-                                            ),
-                                        ],
-                                        style={'margin-top': '15px', 'width': '48%'},
-                                    ),
-                                    html.Div(
-                                        [render_metabolism_score(risk_scores=risk_scores)],
-                                        style={'margin-top': '15px', 'width': '48%'},
-                                    ),
-                                ],
-                                style={'display': 'flex', 'flex-wrap': 'wrap', 'justify-content': 'space-between'},
-                            ),
-                        ],
+                            
                         footer=render_page_footer(page_number=7),
                     ),
                     # Page 9
