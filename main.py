@@ -101,7 +101,7 @@ def main():
                     html.Img(
                         src=app.get_asset_url('radial_diagram.png'),
                         style={
-                            'height': '380px',
+                            'height': '390px',
                             'width': 'auto',  # This maintains aspect ratio
                             'max-width': '100%',  # Ensures it doesn't overflow container
                             'object-fit': 'contain',  # Prevents distortion
@@ -963,7 +963,7 @@ def main():
                                 ref_stats_entry=ref_stats["Histamine"],
                                 subtitle="",
                             ),
-                            
+                        ],
                         footer=render_page_footer(page_number=7),
                     ),
                     # Page 9
