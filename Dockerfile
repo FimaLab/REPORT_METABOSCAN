@@ -14,6 +14,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gnupg \
     curl \
     fonts-liberation \
+    fontconfig \
     libasound2 \
     libatk-bridge2.0-0 \
     libatk1.0-0 \
@@ -32,6 +33,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     chromium-driver \
     chromium \
     && rm -rf /var/lib/apt/lists/*
+
+# Копируем кастомные .ttf-шрифты (папка рядом с Dockerfile)
+COPY fonts/ /usr/share/fonts/truetype/custom/
+
+# Обновляем кэш шрифтов
+RUN fc-cache -f -v
 
 # Кеш pip и requirements
 ENV PIP_NO_CACHE_DIR=off
