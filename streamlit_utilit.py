@@ -339,8 +339,8 @@ def classify_onco_pipeline(X_row, onco_model, onco_liver_model):
     X_liver = pd.DataFrame([X_row[liver_features]], columns=liver_features)
     X_liver = X_liver.replace([np.inf, -np.inf], np.nan).fillna(0).clip(-1e10, 1e10).astype(np.float32)
     
-    liver_proba = onco_liver_model.predict_proba(X_liver)[0][0]  # class 0 = Onco
-    final_diagnosis = "Onco" if liver_proba >= liver_threshold else "Здоров"
+    liver_proba = 1 - onco_liver_model.predict_proba(X_liver)[0][0]  # class 0 = Onco
+    final_diagnosis = "Onco" if liver_proba <= liver_threshold else "Здоров"
     
     return (liver_proba, probability_to_score(liver_proba, liver_threshold), 
             final_diagnosis, "onco-liver модель")
