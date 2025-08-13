@@ -1,3 +1,4 @@
+import threading
 import zipfile
 import streamlit as st
 import os
@@ -180,7 +181,7 @@ def main():
                                         patient_data.to_excel(patient_data_path, index=False)
                                         
                                         # Calculate risk parameters for this patient only
-                                        patient_risk_params_exp = prepare_final_dataframe(risk_params_path, patient_data_path)
+                                        patient_risk_params_exp = prepare_final_dataframe(risk_params_path, patient_data_path, ref_stats_path)
                                         
                                         # Calculate risk scores for this patient only
                                         patient_risk_scores = calculate_risks(patient_risk_params_exp, patient_data)
@@ -214,7 +215,7 @@ def main():
                                 "gender": gender,
                             }
                             
-                            risk_params_exp = prepare_final_dataframe(risk_params_path, metabolomic_data_with_ratios_path)
+                            risk_params_exp = prepare_final_dataframe(risk_params_path, metabolomic_data_with_ratios_path, ref_stats_path)
                             risk_params_exp_path = os.path.join(temp_dir, "risk_exp_params.xlsx")
                             risk_params_exp.to_excel(risk_params_exp_path, index=False)
                                 
@@ -259,8 +260,8 @@ def main():
                         logging.error(f"Error in report generation: {str(e)}")
 
 def generate_pdf_report(patient_info, risk_scores_path, risk_params_exp_path, 
-                       metabolomic_data_with_ratios_path, ref_stats_path,metrics_path, output_dir):
-    """Generate PDF report with proper error handling"""
+                       metabolomic_data_with_ratios_path, ref_stats_path, metrics_path, output_dir):
+    """Generate PDF report with enhanced error handling and Dash error reporting"""
     dash_process = None
     driver = None
     
@@ -280,7 +281,7 @@ def generate_pdf_report(patient_info, risk_scores_path, risk_params_exp_path,
             "--risk_scores", risk_scores_path,
             "--risk_params", risk_params_exp_path,
             "--metabolomic_data", metabolomic_data_with_ratios_path,
-            "--ref_stats", ref_stats_path,  # Add ref_stats parameter
+            "--ref_stats", ref_stats_path,
             "--metrics", metrics_path,
         ]
         
@@ -288,43 +289,90 @@ def generate_pdf_report(patient_info, risk_scores_path, risk_params_exp_path,
             dash_command,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            text=True
+            text=True,
+            bufsize=1  # Line buffering
         )
         
-        if not wait_for_dash_app():
-            raise Exception("Dash app failed to start")
+        # Read Dash output in real-time
+        dash_output = []
+        dash_errors = []
+        
+        def read_output(stream, output_list):
+            for line in stream:
+                output_list.append(line)
+                if "DASH_APP_ERROR:" in line:
+                    # Found an error - extract meaningful part
+                    error_msg = line.split("DASH_APP_ERROR:")[1].strip()
+                    st.error(f"Dash App Error: {error_msg}")
+                elif "DASH_APP_STATUS:" in line:
+                    # Status update from Dash
+                    status = line.split("DASH_APP_STATUS:")[1].strip()
+                    st.info(f"Dash App Status: {status}")
+        
+        # Start threads to read output and error streams
+        output_thread = threading.Thread(
+            target=read_output,
+            args=(dash_process.stdout, dash_output)
+        )
+        error_thread = threading.Thread(
+            target=read_output,
+            args=(dash_process.stderr, dash_errors)
+        )
+        output_thread.start()
+        error_thread.start()
+        
+        # Wait for Dash to start or fail
+        if not wait_for_dash_app(timeout=30):
+            output_thread.join(timeout=1)
+            error_thread.join(timeout=1)
+            
+            # Check if we captured any errors
+            combined_output = "\n".join(dash_output + dash_errors)
+            if "DASH_APP_ERROR:" in combined_output:
+                error_msg = combined_output.split("DASH_APP_ERROR:")[1].split("\n")[0]
+                raise Exception(f"Dash app failed: {error_msg}")
+            else:
+                raise Exception("Dash app failed to start (timeout)")
         
         # Generate PDF
         driver = setup_chrome_driver()
         driver.get("http://localhost:8050")
-        time.sleep(5)
         
-        pdf_path = os.path.join(output_dir, "report.pdf")
-        print_settings = {
-            "printBackground": True,
-            "paperWidth": 8.27,
-            "paperHeight": 11.69,
-            "scale": 0.89,
-            "margin": {
-                "top": "0.0in",
-                "bottom": "0.0in",
-                "left": "0.25in",
-                "right": "0.25in"
+        # Wait for page to load with progress indicator
+        with st.spinner("Generating PDF report..."):
+            time.sleep(5)  # Adjust based on your app's load time
+            
+            pdf_path = os.path.join(output_dir, "report.pdf")
+            print_settings = {
+                "printBackground": True,
+                "paperWidth": 8.27,
+                "paperHeight": 11.69,
+                "scale": 0.89,
+                "margin": {
+                    "top": "0.0in",
+                    "bottom": "0.0in",
+                    "left": "0.25in",
+                    "right": "0.25in"
+                }
             }
-        }
-        
-        pdf_data = driver.execute_cdp_cmd("Page.printToPDF", print_settings)
-        with open(pdf_path, "wb") as f:
-            f.write(base64.b64decode(pdf_data['data']))
-        
-        return pdf_path
-        
+            
+            try:
+                pdf_data = driver.execute_cdp_cmd("Page.printToPDF", print_settings)
+                with open(pdf_path, "wb") as f:
+                    f.write(base64.b64decode(pdf_data['data']))
+                
+                return pdf_path
+            except Exception as e:
+                st.error(f"PDF generation failed: {str(e)}")
+                return None
+                
     except Exception as e:
-        st.error(f"Report generation failed: {e}")
-        logging.error(f"Report generation error: {e}")
+        st.error(f"{str(e)}")
+        logging.error(f"{str(e)}")
         return None
         
     finally:
+        # Cleanup resources
         if driver:
             driver.quit()
         if dash_process:

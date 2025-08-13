@@ -545,7 +545,7 @@ def render_category_params(group_number, group_risk_name, risk_scores, ref_param
                                 html.Div(
                                     [],
                                     style={
-                                        'width': f'{100 - score}%',
+                                        'width': f'{max(10, 100 - score)}%',
                                         'background-color': get_color_under_normal_dist(score),
                                         'border-radius': '5px',
                                         'height': '10px',

@@ -5,7 +5,7 @@ import pandas as pd
 from ui_kit.render_functions import *
 from ui_kit.dash_utilit import *
 from ui_kit import render_functions
-
+import traceback
 import argparse
 import signal
 import sys
@@ -1864,17 +1864,18 @@ def main():
         app.layout = create_layout()
 
         print("Starting Dash server...")
-        app.run_server(
+        app.run(
             debug=False,
             port=8050,
             host='0.0.0.0',
             dev_tools_serve_dev_bundles=False,
         )
-
+    
     except Exception as e:
-        print(f"Error: {str(e)}", file=sys.stderr)
+        error_msg = f"DASH_APP_ERROR:{type(e).__name__}:{str(e)}"
+        print(error_msg, file=sys.stderr)
+        print(f"Stack trace:\n{traceback.format_exc()}", file=sys.stderr)
         sys.exit(1)
-
 
 if __name__ == "__main__":
     main()
