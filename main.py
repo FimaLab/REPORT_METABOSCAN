@@ -5,7 +5,7 @@ import pandas as pd
 from ui_kit.render_functions import *
 from ui_kit.dash_utilit import *
 from ui_kit import render_functions
-
+import traceback
 import argparse
 import signal
 import sys
@@ -101,7 +101,7 @@ def main():
                     html.Img(
                         src=app.get_asset_url('radial_diagram.png'),
                         style={
-                            'height': '390px',
+                            'height': '380px',
                             'width': 'auto',  # This maintains aspect ratio
                             'max-width': '100%',  # Ensures it doesn't overflow container
                             'object-fit': 'contain',  # Prevents distortion
@@ -963,29 +963,6 @@ def main():
                                 ref_stats_entry=ref_stats["Histamine"],
                                 subtitle="",
                             ),
-                            html.Div(
-                                [
-                                    html.Div(
-                                        [
-                                            render_info_message(
-                                                "На основании метаболомного профиля был оценен темп биологического старения организма"
-                                            ),
-                                            render_age_bell(
-                                                age_score=risk_scores.loc[
-                                                    risk_scores['Группа риска'] == 'Темп биологического старения',
-                                                    'Риск-скор',
-                                                ].values[0]
-                                            ),
-                                        ],
-                                        style={'margin-top': '15px', 'width': '48%'},
-                                    ),
-                                    html.Div(
-                                        [render_metabolism_score(risk_scores=risk_scores)],
-                                        style={'margin-top': '15px', 'width': '48%'},
-                                    ),
-                                ],
-                                style={'display': 'flex', 'flex-wrap': 'wrap', 'justify-content': 'space-between'},
-                            ),
                         ],
                         footer=render_page_footer(page_number=7),
                     ),
@@ -1016,7 +993,7 @@ def main():
                                                 стресса, отражая баланс между доступным
                                                 триптофаном и продуктами воспалительного
                                                 катаболизма (психоэмоц. статус).
-                                                ''',
+                                                '''
                                     ),
                                     render_ratios_row(
                                         value=metabolite_data['Kyn/Quin'],
@@ -1028,7 +1005,7 @@ def main():
                                                         хинолиновой кислотой (QА). Этот показатель
                                                         важен для оценки уровня воспаления,
                                                         нейротоксичности и оксидативного стресса.
-                                                        ''',
+                                                        '''
                                     ),
                                     render_ratios_row(
                                         value=metabolite_data['Serotonin / Trp'],
@@ -1039,7 +1016,7 @@ def main():
                                                         функциональное состояние
                                                         серотонинергической системы и баланс
                                                         эмоционального и психического статуса.
-                                                        ''',
+                                                        '''
                                     ),
                                     render_ratios_row(
                                         value=metabolite_data['Tryptamine / IAA'],
@@ -1048,7 +1025,7 @@ def main():
                                                         триптофана в кишечнике и характеризует
                                                         состояние кишечной микробиоты и кишечного
                                                         барьера.
-                                                        ''',
+                                                        '''
                                     ),
                                     render_ratios_row(
                                         value=metabolite_data['TMAO Synthesis'],
@@ -1059,7 +1036,7 @@ def main():
                                                         карнитина), характеризуя активность кишечной
                                                         микробиоты и риск воспаления и
                                                         атеросклероза.
-                                                        ''',
+                                                        '''
                                     ),
                                 ]
                             )
@@ -1887,17 +1864,18 @@ def main():
         app.layout = create_layout()
 
         print("Starting Dash server...")
-        app.run_server(
+        app.run(
             debug=False,
             port=8050,
             host='0.0.0.0',
             dev_tools_serve_dev_bundles=False,
         )
-
+    
     except Exception as e:
-        print(f"Error: {str(e)}", file=sys.stderr)
+        error_msg = f"DASH_APP_ERROR:{type(e).__name__}:{str(e)}"
+        print(error_msg, file=sys.stderr)
+        print(f"Stack trace:\n{traceback.format_exc()}", file=sys.stderr)
         sys.exit(1)
-
 
 if __name__ == "__main__":
     main()

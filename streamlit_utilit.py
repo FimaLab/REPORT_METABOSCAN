@@ -1,13 +1,9 @@
 import pandas as pd
 import numpy as np
-import os
-import joblib
 import time
-import base64
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 import subprocess
-import sys
 import logging
 import requests
 import psutil
@@ -219,88 +215,95 @@ def calculate_metabolite_ratios(metabolomic_data):
         print(f"Error calculating metabolite ratios: {str(e)}")
         return None
 
-def prepare_final_dataframe(risk_params_data, metabolomic_data_with_ratios):
-    # Load the data
+import numpy as np
+
+def prepare_final_dataframe(risk_params_data, metabolomic_data_with_ratios, ref_data_path):
+    """
+    Подготавливает итоговый датафрейм с расчетами метаболитов и оценками рисков
+    
+    Параметры:
+        risk_params_data - путь к файлу с параметрами рисков
+        metabolomic_data_with_ratios - путь к файлу с метаболическими данными
+        ref_data_path - путь к файлу с референсными значениями
+        
+    Возвращает:
+        Датафрейм с рассчитанными значениями и оценками
+    """
+    # Загрузка данных
     risk_params = pd.read_excel(risk_params_data)
     metabolic_data = pd.read_excel(metabolomic_data_with_ratios)
     
-    # Get values for each marker from metabolomic data
-    values_conc = []
+    # Загрузка и подготовка референсных данных
+    ref_stats = (
+        pd.read_excel(ref_data_path, header=None)
+        .pipe(lambda df: df.set_axis(['stat'] + list(df.iloc[0, 1:]), axis=1)
+        .drop(0)
+        .set_index('stat')
+        .apply(lambda x: pd.to_numeric(x.astype(str).str.replace(',', '.'), errors='coerce'))
+        ))
+    
+    # Функция для расчета z-скор
+    def calculate_zscore(metabolite, value):
+        """Рассчитывает z-score для метаболита"""
+        if metabolite not in ref_stats.columns:
+            return np.nan
+            
+        mean = ref_stats.loc['mean', metabolite]
+        sd = ref_stats.loc['sd', metabolite]
+        
+        return round((value - mean)/sd, 2) if pd.notna(sd) and sd > 0 else np.nan
+    
+    # Обработка метаболитов
+    results = []
     for metabolite in risk_params['Маркер / Соотношение']:
         try:
             value = metabolic_data.loc[0, metabolite]
-            # Handle negative and infinite values
+            
+            # Обработка некорректных значений
             if pd.isna(value) or np.isinf(value):
-                values_conc.append(np.nan)
-            elif value < 0:
-                values_conc.append(0)
-            else:
-                values_conc.append(value)
+                results.append((np.nan, np.nan))
+                continue
+                
+            value = max(0, value)  # Отрицательные значения заменяем на 0
+            z_score = calculate_zscore(metabolite, value) if value >= 0 else np.nan
+            results.append((value, z_score))
+            
         except KeyError:
-            values_conc.append(np.nan)  # Handle missing metabolites
+            results.append((np.nan, np.nan))
     
-    risk_params['Patient'] = values_conc
+    # Добавляем результаты в датафрейм
+    risk_params = risk_params.assign(
+        Patient=[r[0] for r in results],
+        Z_score=[r[1] for r in results]
+    ).copy()
     
-    # Drop rows with infinite or NaN values in Patient column
-    risk_params = risk_params[~risk_params['Patient'].isin([np.inf, -np.inf]) & 
-                  ~risk_params['Patient'].isna()].copy()
+    # Расчет групповых оценок
+    def calculate_subgroup_score(group):
+        """Рассчитывает оценку для подгруппы"""
+        inputs = []
+        for _, row in group.iterrows():
+            value = abs(row['Z_score'])
+            
+            risk = 0 if value < 1.54 else \
+                    1 if (1.54 <= value <= 1.96) else \
+                    2 if value > 1.96 else np.nan
+                        
+            inputs.append(risk * row['веса'])
+        
+        max_score = group['веса'].sum() * 2
+        return sum(inputs) / max_score * 100 if max_score > 0 else 0
     
-    subgroup_list=[]
-    subgroup_scores=[]
-    categories=risk_params['Категория'].unique()
-    for category in categories:
-        data_category=risk_params[risk_params['Категория']==category]
-        metabolite_inputs=[]
-        for index, row in data_category.iterrows():
-            metabolite_input=0
-            weight=data_category.loc[index, 'веса']
-            patient_value=data_category.loc[index, 'Patient']
-            norm_1=data_category.loc[index, 'norm_1']
-            norm_2=data_category.loc[index, 'norm_2']
-            risk_1=data_category.loc[index, 'High_risk_1']
-            risk_2=data_category.loc[index, 'High_risk_2']
-            metab_group=data_category.loc[index, 'Группа_метаб']
-            if metab_group==0:
-                if norm_1<=patient_value<=norm_2:
-                    metabolite_input=0
-                elif risk_1<=patient_value<norm_1 or norm_2<patient_value<=risk_2:
-                    metabolite_input=1
-                else:
-                    metabolite_input=2
-            elif metab_group==1:
-                if patient_value<=norm_2:
-                    metabolite_input=0
-                elif norm_2<patient_value<=risk_2:
-                    metabolite_input=1
-                else:
-                    metabolite_input=2
-            else:
-                if norm_1<=patient_value:
-                    metabolite_input=0
-                elif risk_1<=patient_value<norm_1:
-                    metabolite_input=1
-                else:
-                    metabolite_input=2
-            metabolite_inputs.append(metabolite_input*weight)
-            max_score=data_category['веса'].sum()*2
-            subgroup_score=sum(metabolite_inputs)/max_score*100
-        subgroup_scores.append(subgroup_score)
-        subgroup_list.append(category)
+    # Применяем расчет для каждой категории
+    subgroup_scores = {
+        cat: calculate_subgroup_score(group)
+        for cat, group in risk_params.groupby('Категория')
+    }
     
-    # in risk_params make column Subgroup_score and for each row where [Категория] is in subgroup_list, [Subgroup_score] is subgroup_scores[subgroup_list.index([Категория])]
-    risk_params['Subgroup_score'] = np.nan
-    for index, row in risk_params.iterrows():
-        if row['Категория'] in subgroup_list:
-            risk_params.loc[index, 'Subgroup_score'] = subgroup_scores[subgroup_list.index(row['Категория'])]
+    # Добавляем оценки подгрупп
+    risk_params['Subgroup_score'] = risk_params['Категория'].map(subgroup_scores)
     
-    # in risk_params make column Subgroup_score and for each row where [Категория] is in subgroup_list, [Subgroup_score] is subgroup_scores[subgroup_list.index([Категория])]
-    risk_params['Subgroup_score'] = np.nan
-    for index, row in risk_params.iterrows():
-        if row['Категория'] in subgroup_list:
-            risk_params.loc[index, 'Subgroup_score'] = subgroup_scores[subgroup_list.index(row['Категория'])]
     return risk_params
-
-
+    
 def probability_to_score(prob, threshold):
     prob = min(max(prob, 0), 1)
     if prob < threshold:
@@ -309,197 +312,60 @@ def probability_to_score(prob, threshold):
         score = 4 + 4 * (prob - threshold) / (1 - threshold)
     return 10- round(score, 0)
 
-def classify_onco_pipeline(X_row, onco_model, onco_liver_model):
-    """
-    Two-stage oncology prediction pipeline
-    Returns: (final_probability, final_score, final_diagnosis, source)
-    """
-    # Configuration
-    onco_threshold = 0.6
-    liver_threshold = 0.45
-    
-    # Get features from models
-    onco_features = onco_model.feature_names_in_
-    liver_features = onco_liver_model.feature_names_in_
-    
-    # First stage prediction
-    X_onco = pd.DataFrame([X_row[onco_features]], columns=onco_features)
-    X_onco = X_onco.replace([np.inf, -np.inf], np.nan).fillna(0).clip(-1e10, 1e10).astype(np.float32)
-    
-    onco_proba = onco_model.predict_proba(X_onco)[0][0]  # class 0 = Onco
-    initial_diagnosis = "Onco" if onco_proba >= onco_threshold else "Здоров"
-    
-    # If first stage is negative, return those results
-    if initial_diagnosis == "Здоров":
-        return (onco_proba, probability_to_score(onco_proba, onco_threshold), 
-                initial_diagnosis, "onco-control модель")
-    
-    # Second stage prediction
-    X_liver = pd.DataFrame([X_row[liver_features]], columns=liver_features)
-    X_liver = X_liver.replace([np.inf, -np.inf], np.nan).fillna(0).clip(-1e10, 1e10).astype(np.float32)
-    
-    liver_proba = onco_liver_model.predict_proba(X_liver)[0][0]  # class 0 = Onco
-    final_diagnosis = "Onco" if liver_proba >= liver_threshold else "Здоров"
-    
-    return (liver_proba, probability_to_score(liver_proba, liver_threshold), 
-            final_diagnosis, "onco-liver модель")
 
-
+from importlib import import_module
 def calculate_risks(risk_params_data, metabolic_data_with_ratios):
     """
-    Calculate combined risks using:
-    - ML models for specific groups (Onco, CVD, Liver, Pulmo, RA)
-    - Parameter-based method for other groups
-    Returns DataFrame with columns: ['Группа риска', 'Риск-скор', 'Метод оценки']
+    Расчет комбинированных рисков с использованием:
+    - ML-моделей для определенных групп (Онко, ССЗ, Печень, Легкие, РА)
+    - Параметров рисков для остальных групп
+    Возвращает DataFrame с колонками: ['Группа риска', 'Риск-скор', 'Метод оценки']
     """
     # Группы, для которых используем только ML модели
     ml_only_groups = {
-        "Оценка пролиферативных процессов",
         "Состояние сердечно-сосудистой системы",
         "Состояние функции печени",
-        "Состояние дыхательной системы",
-        "Состояние иммунного метаболического баланса"
+        "Оценка пролиферативных процессов",
     }
     
-        # --- Part 1: Validate input data indices ---
-    def ensure_unique_index(df, df_name):
-        if not df.index.is_unique:
-            print(f"Предупреждение: Найдены дубликаты в индексе {df_name}. Сбрасываю дубликат.")
-            return df[~df.index.duplicated(keep='first')]
-        return df
+    metabolic_data_with_ratios = metabolic_data_with_ratios[~metabolic_data_with_ratios.index.duplicated()]
+    risk_params_data = risk_params_data[~risk_params_data.index.duplicated()]
     
-    metabolic_data_with_ratios = ensure_unique_index(metabolic_data_with_ratios, "metabolic_data_with_ratios")
-    risk_params_data = ensure_unique_index(risk_params_data, "risk_params_data")
-    
-    # First, get all .pkl files in the ONCO folder
-    onco_files = glob(os.path.join(os.path.dirname(__file__), "models", "ONCO", "*.pkl"))
-
-    # Separate the files based on their names
-    onco_model_path = None
-    onco_liver_model_path = None
-
-    for file_path in onco_files:
-        if 'liver' in os.path.basename(file_path).lower():
-            onco_liver_model_path = file_path
-        else:
-            onco_model_path = file_path
-
-    # Verify we found both models
-    if not onco_model_path or not onco_liver_model_path:
-        raise FileNotFoundError(
-            "Need both regular and liver models in ONCO folder. "
-            f"Found files: {onco_files}"
-        )
-
-
-
-    # --- Part 1: Model-based risk calculation ---
-    models_info = {
-        "Оценка пролиферативных процессов": {
-            "onco_model_path": onco_model_path,
-            "liver_model_path": onco_liver_model_path,
-        },
-        "Состояние сердечно-сосудистой системы": {
-            "model_path": glob(os.path.join(os.path.dirname(__file__), "models", "CVD", "*.pkl"))[0]
-        },
-        "Состояние функции печени": {
-            "model_path": glob(os.path.join(os.path.dirname(__file__), "models", "LIVER", "*.pkl"))[0]
-        },
-        "Состояние дыхательной системы": {
-            "model_path": glob(os.path.join(os.path.dirname(__file__), "models", "PULMO", "*.pkl"))[0]
-        },
-        "Состояние иммунного метаболического баланса": {
-            "model_path": glob(os.path.join(os.path.dirname(__file__), "models", "RA", "*.pkl"))[0]
-        }
+    # Define which diseases to process
+    disease_pipelines = {
+        "CVD": "CVD.pipeline.CVDPipeline",
+        "LIVER": "LIVER.pipeline.LIVERPipeline",
+        "PULMO": "PULMO.pipeline.PULMOPipeline",
+        "RA": "RA.pipeline.RAPipeline",
+        "ONCO": "ONCO.pipeline.ONCOPipeline",
     }
     
-    thresholds = {
-            "Состояние сердечно-сосудистой системы": 0.48,
-            "Состояние функции печени": 0.45,
-            "Состояние дыхательной системы": 0.58,
-            "Состояние иммунного метаболического баланса": 0.65
-        }
-
-    # Initialize results
     results = []
-
-    # Process each row of metabolic data
+    
+    # Process each row
     for idx, row in metabolic_data_with_ratios.iterrows():
-        # Oncology-specific processing
-        if "Оценка пролиферативных процессов" in models_info:
-            onco_info = models_info["Оценка пролиферативных процессов"]
+        for disease_name, pipeline_path in disease_pipelines.items():
             try:
-                # Load models if not already loaded
-                if "onco_model" not in onco_info:
-                    onco_info["onco_model"] = joblib.load(onco_info["onco_model_path"])
-                if "liver_model" not in onco_info:
-                    onco_info["liver_model"] = joblib.load(onco_info["liver_model_path"])
+                # Dynamically import and instantiate the pipeline
+                module_path, class_name = pipeline_path.rsplit('.', 1)
+                module = import_module(f"models.{module_path}")
+                pipeline_class = getattr(module, class_name)
+                pipeline = pipeline_class()
                 
-                # Run two-stage prediction
-                prob, score, diagnosis, source = classify_onco_pipeline(
-                    row,
-                    onco_info["onco_model"],
-                    onco_info["liver_model"],
-                )
-                
-                results.append({
-                    "Группа риска": "Оценка пролиферативных процессов",
-                    "Риск-скор": score,
-                    "Метод оценки": source,
-                    "Диагноз": diagnosis,
-                    "Вероятность": prob
-                })
+                # Calculate risk
+                result = pipeline.calculate_risk(row)
+                results.append(result)
                 
             except Exception as e:
-                print(f"Ошибка в онко-модели: {e}")
+                print(f"Error processing {disease_name}: {str(e)}")
                 results.append({
-                    "Группа риска": "Оценка пролиферативных процессов",
-                    "Риск-скор": None,
-                    "Метод оценки": f"ML модель (ошибка: {str(e)})",
-                    "Диагноз": None,
-                    "Вероятность": None
-                })
-        
-        # Process other models (CVD, Liver, etc.)
-        for disease, info in models_info.items():
-            if disease == "Оценка пролиферативных процессов":
-                continue  # Already processed
-                
-            try:
-                # Load model if not already loaded
-                if "model" not in info:
-                    info["model"] = joblib.load(info["model_path"])
-                    info["features"] = info["model"].feature_names_in_
-                
-                # Prepare input data
-                X_row = pd.DataFrame([row[info["features"]]], columns=info["features"])
-                X_row = X_row.replace([np.inf, -np.inf], np.nan).fillna(0).clip(-1e10, 1e10)
-                X_row = X_row.astype(np.float32)
-                
-                # Make prediction
-                pred_proba = info["model"].predict_proba(X_row)[0][1]
-                score = probability_to_score(pred_proba, thresholds.get(disease, 0.5))
-
-                results.append({
-                    "Группа риска": disease,
-                    "Риск-скор": score,
-                    "Метод оценки": "ML модель",
-                    "Диагноз": None,
-                    "Вероятность": pred_proba
-                })
-
-            except Exception as e:
-                print(f"Ошибка в модели {disease}: {str(e)}")
-                results.append({
-                    "Группа риска": disease,
+                    "Группа риска": disease_name,
                     "Риск-скор": None,
                     "Метод оценки": f"ML модель (ошибка: {str(e)})"
                 })
        
 
     # 2. Process other groups with parameter-based method
-
-    
     # Filter out ML-only groups
     other_groups = set(risk_params_data['Группа_риска'].unique()) - ml_only_groups
     

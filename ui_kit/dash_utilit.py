@@ -118,6 +118,7 @@ def create_ref_stats_from_excel(excel_path):
                     else None
                 ),
                 'name_view': row['name_view'],
+                'name_short_view': row['name_short_view']
             }
 
             # Generate norm string with clean formatting
@@ -161,7 +162,7 @@ def plot_metabolite_z_scores(metabolite_concentrations, group_title, norm_ref=[-
             continue
 
         # Get display name (use name_view if available, otherwise original)
-        display_name = ref_data.get("name_view", original_name)
+        display_name = ref_data.get("name_short_view", original_name)
         name_translations[original_name] = display_name
 
         # Calculate z-score (deviation from mean in SD units)
@@ -207,7 +208,7 @@ def plot_metabolite_z_scores(metabolite_concentrations, group_title, norm_ref=[-
             fontsize=14,
             color='#6B7280',
         )
-        ax.set_title(group_title, fontsize=22, pad=20, color='#404547', fontweight='bold')
+        ax.set_title(group_title, fontsize=20, pad=20, color='#404547', fontweight='bold')
         for spine in ['top', 'right', 'bottom', 'left']:
             ax.spines[spine].set_visible(False)
         ax.set_xticks([])
