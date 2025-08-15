@@ -138,7 +138,7 @@ def create_ref_stats_from_excel(excel_path):
             continue
     return ref_stats
 
-def plot_metabolite_z_scores(metabolite_concentrations, group_title, norm_ref=[-1, 1], ref_stats={}):
+def plot_metabolite_z_scores(metabolite_concentrations, group_title, norm_ref=[-1.54, 1.54], ref_stats={}):
     # Set font to Calibri
     mpl.rcParams['font.family'] = 'Calibri'
 
@@ -176,9 +176,9 @@ def plot_metabolite_z_scores(metabolite_concentrations, group_title, norm_ref=[-
                     highlight_green_metabolites.append(display_name)
 
             # Determine color based on z-score
-            if abs(z_score) > 2:  # Significant deviation
+            if abs(z_score) > 1.96:  # Significant deviation
                 color = "#dc2626"  # red
-            elif abs(z_score) > 1:  # Moderate deviation
+            elif 1.54 <= abs(z_score) <= 1.96:  # Moderate deviation
                 color = "#feb61d"  # orange
             else:  # Normal range
                 color = "#10b981"  # green
@@ -252,8 +252,8 @@ def plot_metabolite_z_scores(metabolite_concentrations, group_title, norm_ref=[-
     ax.axhline(0, color='#374151', linewidth=1)
     ax.axhline(norm_ref[1], color='#6B7280', linestyle='--', linewidth=1)
     ax.axhline(norm_ref[0], color='#6B7280', linestyle='--', linewidth=1)
-    ax.axhline(2, color='#6B7280', linestyle=':', linewidth=1, alpha=0.5)
-    ax.axhline(-2, color='#6B7280', linestyle=':', linewidth=1, alpha=0.5)
+    ax.axhline(1.96, color='#6B7280', linestyle=':', linewidth=1, alpha=0.5)
+    ax.axhline(-1.96, color='#6B7280', linestyle=':', linewidth=1, alpha=0.5)
 
     # Set title and labels
     ax.set_title(group_title, fontsize=22, pad=20, color='#404547', fontweight='bold')

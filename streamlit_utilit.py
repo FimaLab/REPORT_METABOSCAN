@@ -219,84 +219,92 @@ def calculate_metabolite_ratios(metabolomic_data):
 import numpy as np
 
 def prepare_final_dataframe(risk_params_data, metabolomic_data_with_ratios, ref_data_path):
-    # Load the data
+    """
+    Подготавливает итоговый датафрейм с расчетами метаболитов и оценками рисков
+    
+    Параметры:
+        risk_params_data - путь к файлу с параметрами рисков
+        metabolomic_data_with_ratios - путь к файлу с метаболическими данными
+        ref_data_path - путь к файлу с референсными значениями
+        
+    Возвращает:
+        Датафрейм с рассчитанными значениями и оценками
+    """
+    # Загрузка данных
     risk_params = pd.read_excel(risk_params_data)
     metabolic_data = pd.read_excel(metabolomic_data_with_ratios)
     
-    # Get values for each marker from metabolomic data
-    values_conc = []
+    # Загрузка и подготовка референсных данных
+    ref_stats = (
+        pd.read_excel(ref_data_path, header=None)
+        .pipe(lambda df: df.set_axis(['stat'] + list(df.iloc[0, 1:]), axis=1)
+        .drop(0)
+        .set_index('stat')
+        .apply(lambda x: pd.to_numeric(x.astype(str).str.replace(',', '.'), errors='coerce'))
+        ))
+    
+    # Функция для расчета z-скор
+    def calculate_zscore(metabolite, value):
+        """Рассчитывает z-score для метаболита"""
+        if metabolite not in ref_stats.columns:
+            return np.nan
+            
+        mean = ref_stats.loc['mean', metabolite]
+        sd = ref_stats.loc['sd', metabolite]
+        
+        return round((value - mean)/sd, 2) if pd.notna(sd) and sd > 0 else np.nan
+    
+    # Обработка метаболитов
+    results = []
     for metabolite in risk_params['Маркер / Соотношение']:
         try:
             value = metabolic_data.loc[0, metabolite]
-            # Handle negative and infinite values
+            
+            # Обработка некорректных значений
             if pd.isna(value) or np.isinf(value):
-                values_conc.append(np.nan)
-            elif value < 0:
-                values_conc.append(0)
-            else:
-                values_conc.append(value)
+                results.append((np.nan, np.nan))
+                continue
+                
+            value = max(0, value)  # Отрицательные значения заменяем на 0
+            z_score = calculate_zscore(metabolite, value) if value >= 0 else np.nan
+            results.append((value, z_score))
+            
         except KeyError:
-            values_conc.append(np.nan)  # Handle missing metabolites
+            results.append((np.nan, np.nan))
     
-    risk_params['Patient'] = values_conc
+    # Добавляем результаты в датафрейм
+    risk_params = risk_params.assign(
+        Patient=[r[0] for r in results],
+        Z_score=[r[1] for r in results]
+    ).copy()
     
-    # Drop rows with infinite or NaN values in Patient column
-    risk_params = risk_params[~risk_params['Patient'].isin([np.inf, -np.inf]) & 
-                  ~risk_params['Patient'].isna()].copy()
+    # Расчет групповых оценок
+    def calculate_subgroup_score(group):
+        """Рассчитывает оценку для подгруппы"""
+        inputs = []
+        for _, row in group.iterrows():
+            value = abs(row['Z_score']* row['веса'])
+            
+            risk = 0 if value < 1.54 else \
+                    1 if (1.54 <= value <= 1.96) else \
+                    2 if value > 1.96 else np.nan
+            if risk is np.nan:
+                print(row['Маркер / Соотношение'], row['Z_score'])
+                        
+            inputs.append(risk)
+        
+        max_score = len(group['веса']) * 2
+        return sum(inputs) / max_score * 100 if max_score > 0 else 0
     
-    subgroup_list=[]
-    subgroup_scores=[]
-    categories=risk_params['Категория'].unique()
-    for category in categories:
-        data_category=risk_params[risk_params['Категория']==category]
-        metabolite_inputs=[]
-        for index, row in data_category.iterrows():
-            metabolite_input=0
-            weight=data_category.loc[index, 'веса']
-            patient_value=data_category.loc[index, 'Patient']
-            norm_1=data_category.loc[index, 'norm_1']
-            norm_2=data_category.loc[index, 'norm_2']
-            risk_1=data_category.loc[index, 'High_risk_1']
-            risk_2=data_category.loc[index, 'High_risk_2']
-            metab_group=data_category.loc[index, 'Группа_метаб']
-            if metab_group==0:
-                if norm_1<=patient_value<=norm_2:
-                    metabolite_input=0
-                elif risk_1<=patient_value<norm_1 or norm_2<patient_value<=risk_2:
-                    metabolite_input=1
-                else:
-                    metabolite_input=2
-            elif metab_group==1:
-                if patient_value<=norm_2:
-                    metabolite_input=0
-                elif norm_2<patient_value<=risk_2:
-                    metabolite_input=1
-                else:
-                    metabolite_input=2
-            else:
-                if norm_1<=patient_value:
-                    metabolite_input=0
-                elif risk_1<=patient_value<norm_1:
-                    metabolite_input=1
-                else:
-                    metabolite_input=2
-            metabolite_inputs.append(metabolite_input*weight)
-            max_score=data_category['веса'].sum()*2
-            subgroup_score=sum(metabolite_inputs)/max_score*100
-        subgroup_scores.append(subgroup_score)
-        subgroup_list.append(category)
+    # Применяем расчет для каждой категории
+    subgroup_scores = {
+        cat: calculate_subgroup_score(group)
+        for cat, group in risk_params.groupby('Категория')
+    }
     
-    # in risk_params make column Subgroup_score and for each row where [Категория] is in subgroup_list, [Subgroup_score] is subgroup_scores[subgroup_list.index([Категория])]
-    risk_params['Subgroup_score'] = np.nan
-    for index, row in risk_params.iterrows():
-        if row['Категория'] in subgroup_list:
-            risk_params.loc[index, 'Subgroup_score'] = subgroup_scores[subgroup_list.index(row['Категория'])]
+    # Добавляем оценки подгрупп
+    risk_params['Subgroup_score'] = risk_params['Категория'].map(subgroup_scores)
     
-    # in risk_params make column Subgroup_score and for each row where [Категория] is in subgroup_list, [Subgroup_score] is subgroup_scores[subgroup_list.index([Категория])]
-    risk_params['Subgroup_score'] = np.nan
-    for index, row in risk_params.iterrows():
-        if row['Категория'] in subgroup_list:
-            risk_params.loc[index, 'Subgroup_score'] = subgroup_scores[subgroup_list.index(row['Категория'])]
     return risk_params
     
 def probability_to_score(prob, threshold):
@@ -387,44 +395,9 @@ def calculate_risks(risk_params_data, metabolic_data_with_ratios):
             risk_params_data_group = risk_params_data[risk_params_data['Группа_риска'] == risk_group]
             if len(risk_params_data_group) == 0:
                 continue
-                
-            metabolite_inputs = []
-            for index, row_group in risk_params_data_group.iterrows():
-                metabolite_input = 0
-                weight = row_group['веса']
-                patient_value = row_group['Patient']
-                norm_1 = row_group['norm_1']
-                norm_2 = row_group['norm_2']
-                risk_1 = row_group['High_risk_1']
-                risk_2 = row_group['High_risk_2']
-                metab_group = row_group['Группа_метаб']
-                
-                if metab_group == 0:
-                    if norm_1 <= patient_value <= norm_2:
-                        metabolite_input = 0
-                    elif risk_1 <= patient_value < norm_1 or norm_2 < patient_value <= risk_2:
-                        metabolite_input = 1
-                    else:
-                        metabolite_input = 2
-                elif metab_group == 1:
-                    if patient_value <= norm_2:
-                        metabolite_input = 0
-                    elif norm_2 < patient_value <= risk_2:
-                        metabolite_input = 1
-                    else:
-                        metabolite_input = 2
-                else:
-                    if norm_1 <= patient_value:
-                        metabolite_input = 0
-                    elif risk_1 <= patient_value < norm_1:
-                        metabolite_input = 1
-                    else:
-                        metabolite_input = 2
-                
-                metabolite_inputs.append(metabolite_input * weight)
             
-            max_score = risk_params_data_group['веса'].sum() * 2
-            group_score = 10 - sum(metabolite_inputs) / max_score * 10
+            max_score = len(risk_params_data_group['Subgroup_score']) * 100
+            group_score = 10 - (sum(risk_params_data_group['Subgroup_score']) / max_score * 10)
             results.append({
                 "Группа риска": risk_group,
                 "Риск-скор": np.round(group_score, 0),
@@ -438,8 +411,6 @@ def calculate_risks(risk_params_data, metabolic_data_with_ratios):
     result_df.sort_values(['Группа риска'], ascending=True, inplace=True)
     
     return result_df[['Группа риска', 'Риск-скор', 'Метод оценки']].reset_index(drop=True)
-
-
 
 # НЕ ТРОГАТЬ, НУЖНО ДЛЯ ГЕНЕРАЦИИ ОТЧЕТА!!!
 # Configure logging
