@@ -89,14 +89,14 @@ def main():
                 # Initialize session state for both original and edited data
                 if 'original_ref' not in st.session_state or 'edited_ref' not in st.session_state:
                     xls = pd.ExcelFile(REF_FILE)
-                    st.session_state.original_ref = {
-                        sheet_name: xls.parse(sheet_name) 
-                        for sheet_name in xls.sheet_names
-                    }
-                    st.session_state.edited_ref = {
-                        sheet_name: df.copy() 
-                        for sheet_name, df in st.session_state.original_ref.items()
-                    }
+                    
+                    st.session_state.original_ref = {}
+                    st.session_state.edited_ref = {}
+                    
+                    for sheet_name in xls.sheet_names:
+                        df = xls.parse(sheet_name).ffill()
+                        st.session_state.original_ref[sheet_name] = df
+                        st.session_state.edited_ref[sheet_name] = df.copy()
                 
                 # Create tabs for each sheet
                 tabs = st.tabs(st.session_state.edited_ref.keys())
@@ -205,6 +205,7 @@ def main():
                                             )
                                             st.dataframe(
                                                 patient_risk_params_exp,
+                                                column_order=("Группа_риска", "Категория", "Показатель", "Z_score", "Subgroup_score"),
                                                 use_container_width=True
                                             )
                         else:  # Single patient case (original behavior)
@@ -230,7 +231,20 @@ def main():
                             with cols[0]:
                                 st.dataframe(risk_scores)
                             with cols[1]:
-                                st.dataframe(risk_params_exp)
+                                st.dataframe(risk_params_exp, column_order=("Группа_риска", "Категория", "Показатель", "Z_score", "Subgroup_score"),)
+                                
+                                                        # Save Excel files to current directory
+                            # current_dir = os.getcwd()
+
+                            # # Define paths for saving in current directory
+                            # risk_scores_current = os.path.join(current_dir, f"Risk_Scores_{name.replace(' ', '_')}.xlsx")
+                            # risk_params_current = os.path.join(current_dir, f"Risk_Params_{name.replace(' ', '_')}.xlsx")
+                            # metabolomic_data_current = os.path.join(current_dir, f"Metabolomic_Data_{name.replace(' ', '_')}.xlsx")
+                            # Copy files from temp dir to current dir
+                            # shutil.copy(risk_scores_path, risk_scores_current)
+                            # shutil.copy(risk_params_exp_path, risk_params_current)
+                            # shutil.copy(metabolomic_data_with_ratios_path, metabolomic_data_current)
+
                             
                             # Generate report
                             report_path = generate_pdf_report(
@@ -243,6 +257,7 @@ def main():
                                 temp_dir
                             )
                             
+
                             if report_path:
                                 st.success("✅ Отчет успешно сформирован!")
                                 with open(report_path, "rb") as f:

@@ -833,3 +833,109 @@
 2025-07-24 16:24:15,055 - ERROR - Error in report generation: 'UploadedFile' object is not subscriptable
 2025-07-24 16:27:50,596 - ERROR - Report generation error: Dash app failed to start
 2025-07-24 16:31:08,412 - ERROR - Report generation error: Dash app failed to start
+2025-08-18 17:22:39,234 - ERROR - Dash app failed: NotImplementedError:
+2025-08-18 17:23:34,376 - ERROR - Dash app failed: NotImplementedError:
+2025-08-18 17:24:26,999 - ERROR - Dash app failed: NotImplementedError:
+2025-08-18 17:26:16,655 - ERROR - Dash app failed: NotImplementedError:
+2025-08-18 17:36:57,873 - ERROR - Dash app failed: PermissionError:[Errno 13] Permission denied: 'metabolism_groups.xlsx'
+2025-08-18 17:51:47,290 - ERROR - Dash app failed: TypeError:list indices must be integers or slices, not str
+2025-08-18 17:53:18,327 - ERROR - Dash app failed: TypeError:list indices must be integers or slices, not str
+2025-08-18 17:55:44,145 - ERROR - Dash app failed: TypeError:list indices must be integers or slices, not str
+2025-08-18 18:45:11,977 - ERROR - Dash app failed: KeyError:'Аммиачная детоксикация'
+2025-08-19 11:37:01,131 - ERROR - Message: unknown error: net::ERR_CONNECTION_REFUSED
+  (Session info: chrome=139.0.7258.128)
+Stacktrace:
+	GetHandleVerifier [0x0x7ff7bf0d6b25+79621]
+	GetHandleVerifier [0x0x7ff7bf0d6b80+79712]
+	(No symbol) [0x0x7ff7bee6c0ea]
+	(No symbol) [0x0x7ff7bee68e90]
+	(No symbol) [0x0x7ff7bee59cb9]
+	(No symbol) [0x0x7ff7bee5ba71]
+	(No symbol) [0x0x7ff7bee59fd6]
+	(No symbol) [0x0x7ff7bee59a36]
+	(No symbol) [0x0x7ff7bee596fa]
+	(No symbol) [0x0x7ff7bee572c8]
+	(No symbol) [0x0x7ff7bee57b4c]
+	(No symbol) [0x0x7ff7bee7009a]
+	(No symbol) [0x0x7ff7bef1416e]
+	(No symbol) [0x0x7ff7beeeb13a]
+	(No symbol) [0x0x7ff7bef133d0]
+	(No symbol) [0x0x7ff7beeeaf13]
+	(No symbol) [0x0x7ff7beeb4151]
+	(No symbol) [0x0x7ff7beeb4ee3]
+	GetHandleVerifier [0x0x7ff7bf39683d+2962461]
+	GetHandleVerifier [0x0x7ff7bf390b5d+2938685]
+	GetHandleVerifier [0x0x7ff7bf3af71d+3064573]
+	GetHandleVerifier [0x0x7ff7bf0f0c6e+186446]
+	GetHandleVerifier [0x0x7ff7bf0f8a3f+218655]
+	GetHandleVerifier [0x0x7ff7bf0df914+115956]
+	GetHandleVerifier [0x0x7ff7bf0dfac9+116393]
+	GetHandleVerifier [0x0x7ff7bf0c5ef8+10968]
+	BaseThreadInitThunk [0x0x7ffbdbbe7374+20]
+	RtlUserThreadStart [0x0x7ffbdc05cc91+33]
+
+2025-08-19 11:58:13,339 - ERROR - Error in report generation: invalid index to scalar variable.
+2025-08-19 15:32:48,349 - ERROR - Dash app failed: UnboundLocalError:cannot access local variable 'ref_params_subgroup_description' where it is not associated with a value
+2025-08-19 15:55:49,459 - ERROR - Dash app failed: KeyError:'Phenylalanine'
+2025-08-19 15:59:14,747 - ERROR - Dash app failed: TypeError:list indices must be integers or slices, not str
+2025-08-19 16:01:02,957 - ERROR - Dash app failed: TypeError:list indices must be integers or slices, not str
+2025-08-19 16:03:15,433 - ERROR - Dash app failed: KeyError:'Phenylalanine'
+2025-08-19 16:24:57,801 - ERROR - Dash app failed: AttributeError:'str' object has no attribute 'get'
+2025-08-19 16:30:08,293 - ERROR - Dash app failed: AttributeError:'str' object has no attribute 'get'
+2025-08-19 16:49:36,490 - ERROR - Dash app failed: TypeError:list.append() takes exactly one argument (2 given)
+2025-08-19 16:51:04,806 - ERROR - Dash app failed: TypeError:type 'Div' is not subscriptable
+2025-08-19 16:59:11,835 - ERROR - Dash app failed: TypeError:render_metabolite_card() missing 1 required positional argument: 'metabolite_description'
+2025-08-19 17:28:18,222 - ERROR - Dash app failed: TypeError:The `html.Div` component (version 3.1.1) received an unexpected keyword argument: `css_styles`
+2025-08-20 12:37:12,006 - ERROR - Dash app failed: TypeError:plot_metabolite_z_scores() got an unexpected keyword argument 'metabolite_concentrations'
+2025-08-20 12:38:15,213 - ERROR - Dash app failed: AttributeError:'list' object has no attribute 'items'
+2025-08-20 12:39:21,188 - ERROR - Dash app failed: ValueError:too many values to unpack (expected 2)
+2025-08-20 12:41:30,125 - ERROR - Dash app failed: ValueError:too many values to unpack (expected 2)
+2025-08-20 12:48:44,906 - ERROR - Dash app failed: ValueError:too many values to unpack (expected 2)
+2025-08-20 12:50:43,538 - ERROR - Dash app failed: ValueError:too many values to unpack (expected 2)
+2025-08-20 12:52:22,321 - ERROR - Dash app failed: ValueError:too many values to unpack (expected 2)
+2025-08-20 12:58:34,787 - ERROR - Dash app failed: ValueError:too many values to unpack (expected 2)
+2025-08-20 12:59:50,871 - ERROR - Dash app failed: ValueError:too many values to unpack (expected 2)
+2025-08-20 13:52:04,456 - ERROR - Dash app failed: ValueError:too many values to unpack (expected 2)
+2025-08-20 14:02:23,855 - ERROR - Dash app failed: TypeError:string indices must be integers, not 'str'
+2025-08-20 14:07:43,210 - ERROR - Dash app failed: AttributeError:'list' object has no attribute 'items'
+2025-08-20 14:09:17,385 - ERROR - Dash app failed: KeyError:'Tyrosin'
+2025-08-20 14:11:23,759 - ERROR - Dash app failed: KeyError:'Tyrosin'
+2025-08-20 14:12:35,248 - ERROR - Dash app failed: {type(e).__name__}:{str(e)} {tryptophan_metabolism_coridor}"
+2025-08-20 14:30:36,296 - ERROR - Dash app failed: TypeError:render_coridor_plot() got an unexpected keyword argument 'ref_stats'
+2025-08-20 14:32:54,208 - ERROR - Dash app failed: AttributeError:'str' object has no attribute 'get'
+2025-08-20 14:36:12,979 - ERROR - Dash app failed: AttributeError:'tuple' object has no attribute 'get'
+2025-08-20 14:52:50,707 - ERROR - Dash app failed: AttributeError:'float' object has no attribute 'get'
+2025-08-20 14:59:40,431 - ERROR - Dash app failed: TypeError:render_metabolite_cards_grid() got an unexpected keyword argument 'metabolite_dict'
+2025-08-20 15:00:56,783 - ERROR - Dash app failed: TypeError:render_metabolite_cards_grid() got an unexpected keyword argument 'metabolite_dict'
+2025-08-20 16:20:59,371 - ERROR - Dash app failed: ValueError:rotation must be 'vertical', 'horizontal' or a number, not [0, 0, 0, 0, 0, 0, 0, 0, 0]
+2025-08-20 16:26:58,319 - ERROR - Dash app failed: ValueError:rotation must be 'vertical', 'horizontal' or a number, not [0, 0, 0, 0, 0, 0, 0, 0, 0]
+2025-08-20 16:36:17,609 - ERROR - Dash app failed: UnboundLocalError:cannot access local variable 'status_symbol' where it is not associated with a value
+2025-08-20 16:38:09,292 - ERROR - Dash app failed: UnboundLocalError:cannot access local variable 'status_symbol' where it is not associated with a value
+2025-08-20 16:39:23,889 - ERROR - Dash app failed: UnboundLocalError:cannot access local variable 'status_symbol' where it is not associated with a value
+2025-08-20 16:46:12,743 - ERROR - Dash app failed: AttributeError:'Div' object has no attribute 'to_html'
+2025-08-20 16:50:15,505 - ERROR - Dash app failed: AttributeError:'NoneType' object has no attribute 'to_html'
+2025-08-20 16:51:50,171 - ERROR - Dash app failed: AttributeError:'Div' object has no attribute 'to_html'
+2025-08-20 16:53:59,653 - ERROR - Dash app failed: AttributeError:module 'dash.html' has no attribute 'to_html'
+2025-08-20 18:30:37,100 - ERROR - Dash app failed to start (timeout)
+2025-08-21 11:56:38,554 - ERROR - Dash app failed: UnboundLocalError:cannot access local variable 'name_view' where it is not associated with a value
+2025-08-21 11:57:30,059 - ERROR - Dash app failed: UnboundLocalError:cannot access local variable 'name_view' where it is not associated with a value
+2025-08-21 12:57:31,230 - WARNING - There was an error managing chromedriver (error sending request for url (https://googlechromelabs.github.io/chrome-for-testing/known-good-versions-with-downloads.json)); using driver found in the cache
+2025-08-21 12:57:31,230 - WARNING - Error sending stats to Plausible: error sending request for url (https://plausible.io/api/event)
+2025-08-21 17:49:05,769 - ERROR - Dash app failed: TypeError:The `html.Span` component (version 3.1.1) received an unexpected keyword argument: `dangerously_set_inner_html`
+2025-08-22 12:15:10,956 - WARNING - There was an error managing chromedriver (error sending request for url (https://googlechromelabs.github.io/chrome-for-testing/known-good-versions-with-downloads.json)); using driver found in the cache
+2025-08-22 12:15:10,956 - WARNING - Error sending stats to Plausible: error sending request for url (https://plausible.io/api/event)
+2025-08-22 12:45:18,977 - ERROR - PDF generation error: Dash app failed to start (timeout)
+2025-08-22 12:45:18,977 - ERROR - Traceback (most recent call last):
+  File "D:\MetaboApp-main\REPORT_METABOSCAN_FIMA\streamlit_app.py", line 353, in generate_pdf_report
+    raise Exception("Dash app failed to start (timeout)")
+Exception: Dash app failed to start (timeout)
+
+2025-08-22 12:46:08,381 - WARNING - There was an error managing chromedriver (error sending request for url (https://googlechromelabs.github.io/chrome-for-testing/known-good-versions-with-downloads.json)); using driver found in the cache
+2025-08-22 13:24:52,702 - WARNING - Error sending stats to Plausible: error sending request for url (https://plausible.io/api/event)
+2025-08-22 13:55:16,429 - ERROR - Dash app failed: TypeError:list.append() takes exactly one argument (2 given)
+2025-08-22 14:35:08,027 - WARNING - Error sending stats to Plausible: error sending request for url (https://plausible.io/api/event)
+2025-08-22 15:58:36,173 - ERROR - Dash app failed: TypeError:render_metabolite_card() got an unexpected keyword argument 'metabolite_data'
+2025-08-22 16:00:44,681 - ERROR - Dash app failed: TypeError:render_metabolite_card() got an unexpected keyword argument 'description'
+2025-08-22 16:02:44,978 - ERROR - Dash app failed: AttributeError:'list' object has no attribute 'get'
+2025-08-22 18:33:08,842 - ERROR - Dash app failed: AttributeError:'list' object has no attribute 'items'
+2025-08-22 18:37:08,869 - ERROR - Dash app failed: AttributeError:'list' object has no attribute 'get'

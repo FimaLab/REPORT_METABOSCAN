@@ -89,7 +89,9 @@ def create_ref_stats_from_excel(excel_path):
     df = df.set_index('metabolite').T.reset_index()
     df.columns.name = None
 
-    ref_stats = {}
+    # Create dictionaries to store data
+    ref_stats_dict = {}
+    ref_desc_dict = {}
 
     def format_number(value):
         """Format number to remove .0 for integers"""
@@ -104,50 +106,55 @@ def create_ref_stats_from_excel(excel_path):
     for _, row in df.iterrows():
         try:
             metabolite = row['index']
-            data = {
-                'mean': float(str(row['mean']).replace(',', '.')),
-                'sd': float(str(row['sd']).replace(',', '.')),
-                'ref_min': (
-                    float(str(row['ref_min']).replace(',', '.'))
-                    if pd.notna(row['ref_min'])
-                    else None
-                ),
-                'ref_max': (
-                    float(str(row['ref_max']).replace(',', '.'))
-                    if pd.notna(row['ref_max'])
-                    else None
-                ),
+            
+            # Process numerical statistics
+            mean_val = float(str(row['mean']).replace(',', '.')) if pd.notna(row['mean']) else None
+            sd_val = float(str(row['sd']).replace(',', '.')) if pd.notna(row['sd']) else None
+            ref_min_val = float(str(row['ref_min']).replace(',', '.')) if pd.notna(row['ref_min']) else None
+            ref_max_val = float(str(row['ref_max']).replace(',', '.')) if pd.notna(row['ref_max']) else None
+            
+            # Generate norm string
+            norm_val = None
+            if ref_min_val is not None and ref_max_val is not None:
+                min_val = format_number(ref_min_val)
+                max_val = format_number(ref_max_val)
+                if min_val == 0:
+                    norm_val = f"< {max_val}"
+                else:
+                    norm_val = f"{min_val} - {max_val}"
+
+            # Add to stats dictionary
+            ref_stats_dict[metabolite] = {
+                'mean': mean_val,
+                'sd': sd_val,
+                'ref_min': ref_min_val,
+                'ref_max': ref_max_val,
+                'norm': norm_val,
                 'name_view': row['name_view'],
                 'name_short_view': row['name_short_view']
             }
 
-            # Generate norm string with clean formatting
-            if data['ref_min'] is not None and data['ref_max'] is not None:
-                min_val = format_number(data['ref_min'])
-                max_val = format_number(data['ref_max'])
-                
-                if min_val == 0:
-                    data['norm'] = f"< {max_val}"
-                else:
-                    data['norm'] = f"{min_val} - {max_val}"
-
-            ref_stats[metabolite] = {k: v for k, v in data.items() if v is not None}
+            # Add to description dictionary
+            ref_desc_dict[metabolite] = {
+                'name_view': row['name_view'],
+                'name_short_view': row['name_short_view'],
+                'description': row.get('description', ''),
+                'high_level': row.get('high_level', ''),
+                'low_level': row.get('low_level', ''),
+                'recomendation_high': row.get('recomendation_high', ''),
+                'recomendation_low': row.get('recomendation_low', '')
+            }
 
         except Exception as e:
             print(f"Error processing {row.get('index', 'unknown')}: {str(e)}")
             continue
-    return ref_stats
+    
+    return ref_stats_dict, ref_desc_dict
 
-def plot_metabolite_z_scores(metabolite_concentrations, group_title, norm_ref=[-1.54, 1.54], ref_stats={}):
-    # Set font to Calibri
-    mpl.rcParams['font.family'] = 'Calibri'
-
-    # Calculate z-scores and determine colors
-    data = []
-    highlight_green_metabolites = []
+def get_coridor_metabolite_object(metabolite_concentrations, ref_stats={}):
+    result_df_data = {}  # Changed from list to dictionary
     missing_metabolites = []
-    name_translations = {}  # Track original to display name mappings
-
+    
     for original_name, conc in metabolite_concentrations.items():
         # Skip if metabolite not in reference
         if original_name not in ref_stats:
@@ -161,44 +168,77 @@ def plot_metabolite_z_scores(metabolite_concentrations, group_title, norm_ref=[-
             missing_metabolites.append(original_name)
             continue
 
-        # Get display name (use name_view if available, otherwise original)
-        display_name = ref_data.get("name_short_view", original_name)
-        name_translations[original_name] = display_name
-
         # Calculate z-score (deviation from mean in SD units)
         try:
             z_score = round((conc - ref_data["mean"]) / ref_data["sd"], 2)
-
-            # Handle special case for "<" reference ranges
-            if "norm" in ref_data and isinstance(ref_data["norm"], str):
-                if "<" in ref_data["norm"] and z_score <= 0:
-                    z_score = 0
-                    highlight_green_metabolites.append(display_name)
-
-            # Determine color based on z-score
-            if abs(z_score) > 1.96:  # Significant deviation
-                color = "#dc2626"  # red
-            elif 1.54 <= abs(z_score) <= 1.96:  # Moderate deviation
-                color = "#feb61d"  # orange
-            else:  # Normal range
-                color = "#10b981"  # green
-
-            data.append(
-                {
-                    "original_name": original_name,
-                    "display_name": display_name,
-                    "value": z_score,
-                    "color": color,
-                    "original_value": conc,
-                }
-            )
-
+            
+            # Determine status for dataframe
+            if abs(z_score) > 1.96:
+                if z_score > 0:
+                    status = "Повышен"
+                else:
+                    status = "Снижен"
+            elif 1.54 <= abs(z_score) <= 1.96:
+                if z_score > 0:
+                    status = "Близко ↑"
+                else:
+                    status = "Близко ↓"
+            else:
+                status = "Норма"
+                
+            ref_min, ref_max = get_ref_min_max(ref_data)
+                        # Determine status for dataframe
+            ref_0_8 = ref_min + ((ref_max-ref_min)*80/100)
+            ref_0_2 = ref_min + ((ref_max-ref_min)*20/100)
+            if conc > ref_max:
+                status_table = "Повышен"
+            elif ref_0_8 < conc <= ref_max:
+                status_table = "Близко ↑"
+            elif ref_0_2 <= conc <= ref_0_8:
+                status_table = "Норма"
+            elif ref_min <= conc < ref_0_2:
+                status_table = "Близко ↓"
+            else:
+                status_table = "Снижен"
+            
+            if original_name not in result_df_data:
+                result_df_data[original_name] = []
+            
+            result_df_data[original_name].append({
+                "original_name": original_name,
+                "name_view": ref_data.get('name_view'),
+                "name_short_view": ref_data.get('name_short_view'),
+                "z_score": z_score,
+                "status_table": status_table,
+                "concentration": conc,
+                "status": status,
+                "norm": ref_data.get('norm', '')
+            })
+                
         except (TypeError, ValueError):
             missing_metabolites.append(original_name)
+    
+    return result_df_data
+
+def get_color_by_z_score(z_score):
+    if abs(z_score) > 1.96:  # Significant deviation
+        return "#dc2626"  # red
+    elif 1.54 <= abs(z_score) <= 1.96:  # Moderate deviation
+        return "#f59e0b"  # yellow
+    else:  # Normal range
+        return "#10b981"  # green
+
+def plot_metabolite_z_scores(metabolites_coridor_dict, norm_ref=[-1.54, 1.54]):
+    # Set font to Calibri
+    mpl.rcParams['font.family'] = 'Calibri'
+
+    highlight_green_metabolites = []
 
     # Create figure - show empty plot if no valid data
-    fig, ax = plt.subplots(figsize=(8, 6), dpi=300)
-    if not data:
+    fig, ax = plt.subplots(figsize=(12, 3), dpi=300)
+    
+    # Check if the dictionary is empty or contains no valid data
+    if not metabolites_coridor_dict:
         ax.text(
             0.5,
             0.5,
@@ -208,7 +248,6 @@ def plot_metabolite_z_scores(metabolite_concentrations, group_title, norm_ref=[-
             fontsize=14,
             color='#6B7280',
         )
-        ax.set_title(group_title, fontsize=20, pad=20, color='#404547', fontweight='bold')
         for spine in ['top', 'right', 'bottom', 'left']:
             ax.spines[spine].set_visible(False)
         ax.set_xticks([])
@@ -216,119 +255,254 @@ def plot_metabolite_z_scores(metabolite_concentrations, group_title, norm_ref=[-
         plt.tight_layout()
         return fig_to_uri(fig)
 
-    # Create bars using display names
-    bars = ax.bar(
-        [d["display_name"] for d in data],
-        [d["value"] for d in data],
-        color=[d["color"] for d in data],
-        edgecolor='white',
-        linewidth=1,
-    )
-
-    # Add value labels on top of bars
-    for bar, item in zip(bars, data):
-        height = item["value"]
-        va = 'bottom' if height >= 0 else 'top'
-        y = height + 0.05 if height >= 0 else height - 0.05
-
-        # Determine text color - green if in highlight list, otherwise black
-        text_color = '#10b981' if item["display_name"] in highlight_green_metabolites else 'black'
-
-        # Adjust fontsize based on number of labels
-        fontsize = 11 if len(data) > 15 else 14
-
+    # Extract the list of metabolite data from the dictionary
+    metabolite_data = []
+    for key, data_list in metabolites_coridor_dict.items():
+        if isinstance(data_list, list):
+            metabolite_data.extend(data_list)
+        else:
+            # If it's a single dictionary, add it directly
+            metabolite_data.append(data_list)
+    
+    # If we still have no data after flattening
+    if not metabolite_data:
         ax.text(
-            bar.get_x() + bar.get_width() / 2.0,
-            y,
-            f'{height:.2f}',
+            0.5,
+            0.5,
+            "No valid reference data available\nfor these metabolites",
             ha='center',
-            va=va,
-            fontsize=fontsize,
-            fontweight='bold',
-            color=text_color,
+            va='center',
+            fontsize=14,
+            color='#6B7280',
         )
+        for spine in ['top', 'right', 'bottom', 'left']:
+            ax.spines[spine].set_visible(False)
+        ax.set_xticks([])
+        ax.set_yticks([])
+        plt.tight_layout()
+        return fig_to_uri(fig)
 
-    # Add horizontal lines
-    ax.axhline(0, color='#374151', linewidth=1)
-    ax.axhline(norm_ref[1], color='#6B7280', linestyle='--', linewidth=1)
-    ax.axhline(norm_ref[0], color='#6B7280', linestyle='--', linewidth=1)
-    ax.axhline(1.96, color='#6B7280', linestyle=':', linewidth=1, alpha=0.5)
-    ax.axhline(-1.96, color='#6B7280', linestyle=':', linewidth=1, alpha=0.5)
+    # Set y-axis limits to ±3
+    ax.set_ylim(-3, 3)
 
-    # Set title and labels
-    ax.set_title(group_title, fontsize=22, pad=20, color='#404547', fontweight='bold')
-    ax.set_ylabel(
-        f"Отклонение от состояния ЗДОРОВЫЙ, норма от {norm_ref[0]} до {norm_ref[1]}",
-        fontsize=14,
-        labelpad=15,
+    # Create colored background regions (behind bars)
+    ax.axhspan(norm_ref[0], norm_ref[1], facecolor='#10b981', alpha=0.1, zorder=1)  # Green normal range
+    ax.axhspan(-1.96, norm_ref[0], facecolor='#f59e0b', alpha=0.1, zorder=1)       # Yellow border zone
+    ax.axhspan(norm_ref[1], 1.96, facecolor='#f59e0b', alpha=0.1, zorder=1)        # Yellow border zone
+    ax.axhspan(1.96, 3, facecolor='#dc2626', alpha=0.1, zorder=1)                 # Light red risk zone
+    ax.axhspan(-3, -1.96, facecolor='#dc2626', alpha=0.1, zorder=1)               # Light red risk zone
+
+    # Add horizontal lines (behind bars)
+    ax.axhline(0, color='#374151', linewidth=1, alpha=0.5, zorder=2)
+    ax.axhline(norm_ref[1], color='#10b981', linestyle='--', linewidth=1.5, zorder=2)
+    ax.axhline(norm_ref[0], color='#10b981', linestyle='--', linewidth=1.5, zorder=2)
+    ax.axhline(1.96, color='#dc2626', linestyle=':', linewidth=1.5, zorder=2)
+    ax.axhline(-1.96, color='#dc2626', linestyle=':', linewidth=1.5, zorder=2)
+
+    # Create bars (in front of background and lines)
+    bars = ax.bar(
+        [d["name_short_view"] for d in metabolite_data],
+        [d["z_score"] for d in metabolite_data],
+        color=[get_color_by_z_score(d["z_score"]) for d in metabolite_data],
+        linewidth=1,
+        zorder=3  # Higher zorder to be in front
     )
 
-    # Set y-axis scale with appropriate steps
-    y_min = round(min(-1.5, min([d["value"] for d in data])) - 0.2, 1)
-    y_max = round(max(1.5, max([d["value"] for d in data])) + 0.2, 1)
-    ax.set_ylim(y_min, y_max)
+    # Add value labels on top of bars (highest zorder)
+    for bar, item in zip(bars, metabolite_data):
+        height = item["z_score"]
+        
+        # For values beyond ±3, show label inside bar (white color)
+        if abs(height) > 2.8:
+            # Determine position inside bar
+            y_pos = 2.8 if height > 0 else -2.8
+            va = 'top' if height > 0 else 'bottom'
+            
+            ax.text(
+                bar.get_x() + bar.get_width() / 2.0,
+                y_pos,
+                f'{height:.1f}',
+                ha='center',
+                va=va,
+                fontsize=12,
+                fontweight='bold',
+                color='white',
+                zorder=4  # Highest zorder
+            )
+        else:
+            # Regular label placement for values within ±3
+            va = 'bottom' if height >= 0 else 'top'
+            y = height + 0.05 if height >= 0 else height - 0.05
 
-    y_range = max(abs(y_min), abs(y_max))
-    step = (
-        5.0
-        if y_range > 15
-        else 2.5
-        if y_range > 12
-        else 2.0
-        if y_range > 10
-        else 1.0 
-        if y_range > 7 
-        else 0.75 
-        if y_range > 5 
-        else 0.5
-    )
-    ax.set_yticks(np.arange(np.floor(y_min), np.ceil(y_max) + step, step))
+            # Determine text color - green if in highlight list, otherwise black
+            text_color = '#10b981' if item.get("name_view") in highlight_green_metabolites else 'black'
+
+            ax.text(
+                bar.get_x() + bar.get_width() / 2.0,
+                y,
+                f'{height:.2f}',
+                ha='center',
+                va=va,
+                fontsize=12,
+                fontweight='bold',
+                color=text_color,
+                zorder=4  # Highest zorder
+            )
+
+    # Add risk labels (behind bars but above background)
+    ax.text(0.003, 2.2, 'РИСК', transform=ax.get_yaxis_transform(), 
+            ha='left', va='center', color="#dc26268e", fontsize=8, fontweight='bold', zorder=2)
+    ax.text(0.003, 0.2, 'НОРМА', transform=ax.get_yaxis_transform(), 
+            ha='left', va='center', color="#149941af", fontsize=8, fontweight='bold', zorder=2)
+    ax.text(0.003, -2.2, 'РИСК', transform=ax.get_yaxis_transform(), 
+        ha='left', va='center', color="#dc262685", fontsize=8, fontweight='bold', zorder=2)
+
+    # Set y-axis ticks
+    ax.set_yticks([-3, -2, -1, 0, 1, 2, 3])
 
     # Customize axes
     for spine in ['top', 'right', 'bottom', 'left']:
         ax.spines[spine].set_visible(False)
     ax.xaxis.set_tick_params(length=0)
     ax.yaxis.set_tick_params(length=0)
-    plt.yticks(fontsize=13)
+    plt.yticks(fontsize=11)
+    
+    # Format x-tick labels
+    x_tick_labels = [d.get("name_short_view", "") for d in metabolite_data]
+    
+    # Check if we need special handling for many labels
+    many_labels = len(x_tick_labels) > 13
+    
+    # Determine font size based on number of labels
+    x_fontsize = 13.5
+    if len(x_tick_labels) > 8:
+        x_fontsize = 11.5
+    elif len(x_tick_labels) > 10:
+        x_fontsize = 9.5
+    elif len(x_tick_labels) > 14:
+        x_fontsize = 6.5
+    elif len(x_tick_labels) > 18:
+        x_fontsize = 5.5
 
-    # Adjust x-axis labels
-    xticklabels = ax.get_xticklabels()
-    for label in xticklabels:
-        display_name = label.get_text()
-        fontsize = 13.5 if len(display_name) > 20 else 15 if len(display_name) > 12 else 15.5
-        label.set_fontsize(fontsize)
-        label.set_rotation(45)
-        label.set_ha('right')
-
-    # Add warning about missing metabolites if needed
-    if missing_metabolites:
-        # Try to get display names for missing metabolites
-        missing_display_names = []
-        for name in missing_metabolites:
-            if name in ref_stats and "name_view" in ref_stats[name]:
-                missing_display_names.append(ref_stats[name]["name_view"])
+    if many_labels:
+        # For many labels: remove default x-ticks and add custom labels
+        ax.set_xticks([])  # Remove default x-ticks
+        
+        # Strategy: alternate long labels between top and bottom when they're close
+        # to avoid overlapping and improve readability
+        
+        # First, identify all long labels (more than 5 characters)
+        long_label_indices = [i for i, label in enumerate(x_tick_labels) if len(label) > 5]
+        
+        # Group consecutive long labels to alternate their placement
+        groups = []
+        current_group = []
+        
+        for i in long_label_indices:
+            if not current_group:
+                current_group.append(i)
+            elif i == current_group[-1] + 1:
+                # Consecutive long label
+                current_group.append(i)
             else:
-                missing_display_names.append(name)
+                # Break in sequence, start new group
+                groups.append(current_group)
+                current_group = [i]
+        
+        if current_group:
+            groups.append(current_group)
+        
+        # For each group of consecutive long labels, alternate placement
+        placement_map = {}  # Store placement for each index: 'top' or 'bottom'
+        
+        for group in groups:
+            for j, idx in enumerate(group):
+                # Alternate placement within the group
+                if j % 2 == 0:
+                    placement_map[idx] = 'top'
+                else:
+                    placement_map[idx] = 'bottom'
+        
+        # Add custom labels
+        for i, (bar, label) in enumerate(zip(bars, x_tick_labels)):
 
-        warning_text = f"Missing data for:\n{', '.join(missing_display_names[:3])}" + (
-            "..." if len(missing_display_names) > 3 else ""
-        )
+            if len(label) > 5:
+                # Long label - use alternating placement
+                placement = placement_map.get(i, 'top')  # Default to top if not in map
 
-        ax.text(
-            1.02,
-            0.95,
-            warning_text,
-            transform=ax.transAxes,
-            fontsize=10,
-            color='#dc2626',
-            ha='left',
-            va='top',
-            bbox=dict(facecolor='white', alpha=0.8, edgecolor='#fecaca', pad=4),
-        )
-
+                if placement == 'top':
+                    ax.text(
+                        bar.get_x() + bar.get_width() / 2.0,
+                        3.2,
+                        label,
+                        ha='center',
+                        va='bottom',
+                        fontsize=x_fontsize,
+                        fontweight='bold',
+                        rotation=0,
+                        zorder=4
+                    )
+                else:
+                    ax.text(
+                        bar.get_x() + bar.get_width() / 2.0,
+                        -3.2,
+                        label,
+                        ha='center',
+                        va='top',
+                        fontsize=x_fontsize,
+                        fontweight='bold',
+                        rotation=0,
+                        zorder=4
+                    )
+            else:
+                # Short label stays at bottom
+                ax.text(
+                    bar.get_x() + bar.get_width() / 2.0,
+                    -3.2,
+                    label,
+                    ha='center',
+                    va='top',
+                    fontsize=x_fontsize,
+                    fontweight='bold',
+                    rotation=0,
+                    zorder=4
+                )
+    else:
+        # Original logic for fewer labels
+        formatted_labels = []
+        for label in x_tick_labels:
+            if len(label) > 10 and ('/' in label or ' ' in label or '+' in label):
+                if '/' in label:
+                    parts = label.split('/')
+                    formatted_label = ' /\n'.join(parts)
+                elif '+' in label:
+                    parts = label.split('+')
+                    formatted_label = ' +\n'.join(parts)
+                elif ' ' in label:
+                    parts = label.split(' ')
+                    if len(parts) > 1:
+                        mid = len(parts) // 2
+                        first_line = ' '.join(parts[:mid])
+                        second_line = ' '.join(parts[mid:])
+                        formatted_label = f'{first_line}\n{second_line}'
+                    else:
+                        formatted_label = label
+                else:
+                    mid = len(label) // 2
+                    formatted_label = f'{label[:mid]}\n{label[mid:]}'
+            else:
+                formatted_label = label
+            formatted_labels.append(formatted_label)
+        
+        plt.xticks(range(len(formatted_labels)), formatted_labels, 
+                  fontsize=x_fontsize, fontweight='bold', rotation=0)
+        
+        # Adjust layout for multi-line labels
+        if any('\n' in label for label in formatted_labels):
+            fig.subplots_adjust(bottom=0.2)
+    
     plt.tight_layout()
     return fig_to_uri(fig)
-
 
 def fig_to_uri(fig):
     """Convert matplotlib figure to data URI"""
@@ -415,10 +589,6 @@ def get_status_text(value, norm_str):
     except (ValueError, AttributeError):
         # Handle cases where norm_str is not in expected format
         return "Не определено"  # Default text for invalid format
-
-
-
-
 
 def get_color_age(n):
     if n <= 0:

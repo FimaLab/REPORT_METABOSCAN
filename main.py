@@ -1,7 +1,9 @@
 import json
 from dash import Dash, html
 import os
+import dash
 import pandas as pd
+import pdfkit
 from ui_kit.render_functions import *
 from ui_kit.dash_utilit import *
 from ui_kit import render_functions
@@ -15,8 +17,6 @@ app_pid = os.getpid()
 app = Dash(__name__)
 
 render_functions.app = app
-
-
 
 def shutdown_handler(signum, frame):
     sys.exit(0)
@@ -56,9 +56,28 @@ def main():
 
         risk_scores = pd.read_excel(risk_scores_path)
         ref_params = pd.read_excel(risk_params_path)
-        ref_stats = create_ref_stats_from_excel(args.ref_stats)
+        # 1. Scores DataFrame (with Z_score and Subgroup_score)
+        ref_params_scores = ref_params[['Группа_риска', 'Категория', 'Показатель', 'Subgroup_score']].copy()
+
+        # 2. Recommendations DataFrame (all recommendation columns)
+        ref_params_recomendations = ref_params[[
+            'Группа_риска', 'Категория', 
+            'Рекомендация_общая', 'Рекомендация_питание', 
+            'Рекомендация_контроль', 'Рекомендация_нагрузка'
+        ]].copy()
+
+        # 3. Subgroup description DataFrame
+        ref_params_descriptions = ref_params[[
+            'Группа_риска', 'Заголовок_группы', 'Описание_группы',
+            'Категория', 'Описание_категории'
+        ]].copy()
+
+        # Remove duplicates from the description DataFrame since these are group-level descriptions
+        ref_params_descriptions = ref_params_descriptions.drop_duplicates()
+        ref_stats, ref_metabolite_descriptions = create_ref_stats_from_excel(args.ref_stats)
         
         metrics = pd.read_excel(args.metrics)
+        
         # Convert to the desired JSON structure
         metrics_dict = {}
         for _, row in metrics.iterrows():
@@ -69,22 +88,217 @@ def main():
                 "+PV": f"{row['Pos_PV']}%",
                 "-PV": f"{row['Neg_PV']}%"
             }
-
-        
-        
+            
         # Generate radial diagram
         radial_path = os.path.join('assets', "radial_diagram.png")
         generate_radial_diagram(risk_scores, radial_path)
+        
+        phenylalanine_metabolism_coridor = get_coridor_metabolite_object(metabolite_concentrations={
+                                                    "Phenylalanine": metabolite_data["Phenylalanine"],
+                                                    "Tyrosin": metabolite_data["Tyrosin"],
+                                                    "Summ Leu-Ile": metabolite_data["Summ Leu-Ile"],
+                                                    "Valine": metabolite_data["Valine"],
+                                                    "BCAA": metabolite_data["BCAA"],
+                                                    "BCAA/AAA": metabolite_data["BCAA/AAA"],
+                                                    "Phe/Tyr": metabolite_data["Phe/Tyr"],
+                                                    "Val/C4": metabolite_data["Val/C4"],
+                                                    "(Leu+IsL)/(C3+С5+С5-1+C5-DC)": metabolite_data[
+                                                        "(Leu+IsL)/(C3+С5+С5-1+C5-DC)"
+                                                    ],
+                                                },
+                                                ref_stats=ref_stats)
+        histidine_metabolism_coridor = get_coridor_metabolite_object(metabolite_concentrations={
+                                                    "Histidine": metabolite_data["Histidine"],
+                                                    "Methylhistidine": metabolite_data["Methylhistidine"],
+                                                    "Threonine": metabolite_data["Threonine"],
+                                                    "Glycine": metabolite_data["Glycine"],
+                                                    "DMG": metabolite_data["DMG"],
+                                                    "Serine": metabolite_data["Serine"],
+                                                    "Lysine": metabolite_data["Lysine"],
+                                                    "Glutamic acid": metabolite_data["Glutamic acid"],
+                                                    "Glutamine/Glutamate": metabolite_data["Glutamine"],
+                                                    "Glutamine/Glutamate": metabolite_data["Glutamine/Glutamate"],
+                                                    "Glycine/Serine": metabolite_data["Glycine/Serine"],
+                                                    "GSG Index": metabolite_data["GSG Index"],
+                                                    "Carnosine": metabolite_data["Carnosine"],
+                                                },
+                                                ref_stats=ref_stats,
+                                            )
+        methionine_metabolism_coridor = get_coridor_metabolite_object(metabolite_concentrations={
+                                                    "Methionine": metabolite_data["Methionine"],
+                                                    "Methionine-Sulfoxide": metabolite_data["Methionine-Sulfoxide"],
+                                                    "Taurine": metabolite_data["Taurine"],
+                                                    "Betaine": metabolite_data["Betaine"],
+                                                    "Choline": metabolite_data["Choline"],
+                                                    "TMAO": metabolite_data["TMAO"],
+                                                    "Betaine/choline": metabolite_data["Betaine/choline"],
+                                                    "Methionine + Taurine": metabolite_data["Methionine + Taurine"],
+                                                    "Met Oxidation": metabolite_data["Met Oxidation"],
+                                                    "TMAO Synthesis": metabolite_data["TMAO Synthesis"],
+                                                    "DMG / Choline": metabolite_data["DMG / Choline"],
+                                                },
+                                                ref_stats=ref_stats,
+                                            )
+        kynurenine_metabolism_coridor = get_coridor_metabolite_object(metabolite_concentrations={
+                                                    "Tryptophan": metabolite_data["Tryptophan"],
+                                                    "Kynurenine": metabolite_data["Kynurenine"],
+                                                    "Antranillic acid": metabolite_data["Antranillic acid"],
+                                                    "Quinolinic acid": metabolite_data["Quinolinic acid"],
+                                                    "Xanthurenic acid": metabolite_data["Xanthurenic acid"],
+                                                    "Kynurenic acid": metabolite_data["Kynurenic acid"],
+                                                    "Kyn/Trp": metabolite_data["Kyn/Trp"],
+                                                    "Trp/(Kyn+QA)": metabolite_data["Trp/(Kyn+QA)"],
+                                                    "Kyn/Quin": metabolite_data["Kyn/Quin"],
+                                                },
+                                                ref_stats=ref_stats,
+                                            )
+        serotonin_metabolism_coridor = get_coridor_metabolite_object(metabolite_concentrations={
+                                                    "Serotonin": metabolite_data["Serotonin"],
+                                                    "HIAA": metabolite_data["HIAA"],
+                                                    "5-hydroxytryptophan": metabolite_data["5-hydroxytryptophan"],
+                                                    "Serotonin / Trp": metabolite_data["Serotonin / Trp"],
+                                                },
+                                                ref_stats=ref_stats,
+                                            )
+        
+        indol_metabolism_coridor = get_coridor_metabolite_object(metabolite_concentrations={
+                                                    "Indole-3-acetic acid": metabolite_data["Indole-3-acetic acid"],
+                                                    "Indole-3-lactic acid": metabolite_data["Indole-3-lactic acid"],
+                                                    "Indole-3-carboxaldehyde": metabolite_data[
+                                                        "Indole-3-carboxaldehyde"
+                                                    ],
+                                                    "Indole-3-propionic acid": metabolite_data[
+                                                        "Indole-3-propionic acid"
+                                                    ],
+                                                    "Indole-3-butyric": metabolite_data["Indole-3-butyric"],
+                                                    "Tryptamine": metabolite_data["Tryptamine"],
+                                                    "Tryptamine / IAA": metabolite_data["Tryptamine / IAA"],
+                                                },
+                                                ref_stats=ref_stats,
+                                            )
+        # Create metabolite corridor objects for each group
+        arginine_metabolism_coridor = get_coridor_metabolite_object(
+            metabolite_concentrations={
+                "Proline": metabolite_data["Proline"],
+                "Hydroxyproline": metabolite_data["Hydroxyproline"],
+                "Arginine": metabolite_data["Arginine"],
+                "ADMA": metabolite_data["ADMA"],
+                "Arg/ADMA": metabolite_data["Arg/ADMA"],
+                
+                "NMMA": metabolite_data["NMMA"],
+                "TotalDMA (SDMA)": metabolite_data["TotalDMA (SDMA)"],
+                
+                "(Arg+HomoArg)/ADMA": metabolite_data["(Arg+HomoArg)/ADMA"],
+                "Homoarginine": metabolite_data["Homoarginine"],
+                "Citrulline": metabolite_data["Citrulline"],
+                "Ornitine": metabolite_data["Ornitine"],
+                "Asparagine": metabolite_data["Asparagine"],
+                "Aspartic acid": metabolite_data["Aspartic acid"],
+                "Creatinine": metabolite_data["Creatinine"],
+                
+                "Arg/Orn+Cit": metabolite_data["Arg/Orn+Cit"],
+                "ADMA/(Adenosin+Arginine)": metabolite_data["ADMA/(Adenosin+Arginine)"],
+                "Sum of Dimethylated Arg": metabolite_data["Sum of Dimethylated Arg"],
+                "Symmetrical Arg Methylation": metabolite_data["Symmetrical Arg Methylation"],
+                
+                "Ratio of Pro to Cit": metabolite_data["Ratio of Pro to Cit"],
+                "Cit Synthesis": metabolite_data["Cit Synthesis"],
+            },
+            ref_stats=ref_stats
+        )
+
+        acylcarnitine_ratios_coridor = get_coridor_metabolite_object(
+            metabolite_concentrations={
+                "Alanine": metabolite_data["Alanine"],
+                "C0": metabolite_data["C0"],
+                "Ratio of AC-OHs to ACs": metabolite_data["Ratio of AC-OHs to ACs"],
+                "СДК": metabolite_data["СДК"],
+                "ССК": metabolite_data["ССК"],
+                "СКК": metabolite_data["СКК"],
+                "Ratio of Medium-Chain to Long-Chain ACs": metabolite_data["Ratio of Medium-Chain to Long-Chain ACs"],
+                "Ratio of Short-Chain to Long-Chain ACs": metabolite_data["Ratio of Short-Chain to Long-Chain ACs"],
+                "С2/С0": metabolite_data["С2/С0"],
+                "CPT-2 Deficiency (NBS)": metabolite_data["CPT-2 Deficiency (NBS)"],
+                
+                "C0/(C16+C18)": metabolite_data["C0/(C16+C18)"],
+                
+                "Ratio of Short-Chain to Medium-Chain ACs": metabolite_data["Ratio of Short-Chain to Medium-Chain ACs"],
+                "Sum of ACs": metabolite_data["Sum of ACs"],
+                "Sum of ACs + С0": metabolite_data["Sum of ACs + С0"],
+                "Sum of ACs/C0": metabolite_data["Sum of ACs/C0"],
+            },
+            ref_stats=ref_stats
+        )
+
+        short_chain_acylcarnitines_coridor = get_coridor_metabolite_object(
+            metabolite_concentrations={
+                "C2": metabolite_data["C2"],
+                "C3": metabolite_data["C3"],
+                "C4": metabolite_data["C4"],
+                "C5": metabolite_data["C5"],
+                "C5-1": metabolite_data["C5-1"],
+                "C5-DC": metabolite_data["C5-DC"],
+                "C5-OH": metabolite_data["C5-OH"],
+            },
+            ref_stats=ref_stats
+        )
+
+        medium_chain_acylcarnitines_coridor = get_coridor_metabolite_object(
+            metabolite_concentrations={
+                "C6": metabolite_data["C6"],
+                "C6-DC": metabolite_data["C6-DC"],
+                "C8": metabolite_data["C8"],
+                "C8-1": metabolite_data["C8-1"],
+                "C10": metabolite_data["C10"],
+                "C10-1": metabolite_data["C10-1"],
+                "C10-2": metabolite_data["C10-2"],
+                "C12": metabolite_data["C12"],
+                "C12-1": metabolite_data["C12-1"],
+            },
+            ref_stats=ref_stats
+        )
+
+        long_chain_acylcarnitines_coridor = get_coridor_metabolite_object(
+            metabolite_concentrations={
+                "C14": metabolite_data["C14"],
+                "C14-1": metabolite_data["C14-1"],
+                "C14-2": metabolite_data["C14-2"],
+                "C14-OH": metabolite_data["C14-OH"],
+                "C16": metabolite_data["C16"],
+                "C16-1": metabolite_data["C16-1"],
+                "C16-1-OH": metabolite_data["C16-1-OH"],
+                "C16-OH": metabolite_data["C16-OH"],
+                "C18": metabolite_data["C18"],
+                "C18-1": metabolite_data["C18-1"],
+                "C18-1-OH": metabolite_data["C18-1-OH"],
+                "C18-2": metabolite_data["C18-2"],
+                "C18-OH": metabolite_data["C18-OH"],
+            },
+            ref_stats=ref_stats
+        )
+
+        other_metabolites_coridor = get_coridor_metabolite_object(
+            metabolite_concentrations={
+                "Pantothenic": metabolite_data["Pantothenic"],
+                "Riboflavin": metabolite_data["Riboflavin"],
+                "Melatonin": metabolite_data["Melatonin"],
+                "Uridine": metabolite_data["Uridine"],
+                "Adenosin": metabolite_data["Adenosin"],
+                "Cytidine": metabolite_data["Cytidine"],
+                "Cortisol": metabolite_data["Cortisol"],
+                "Histamine": metabolite_data["Histamine"],
+            },
+            ref_stats=ref_stats
+        )
 
         def create_layout():
-            """Your complete existing layout using all the variables"""
-            return html.Div(
+            layout = html.Div(
                 [
                     render_main_header_report(name, date, age, gender),
                     html.Div(
                         [
                             html.Div(
-                                children='Панорамный метаболомный обзор',
+                                children="Панорамный метаболомный обзор",
                                 style={'textAlign': 'center', 'margin': '0px', 'fontSize': '20px', 'fontWeight': '600'},
                             ),
                         ],
@@ -112,6 +326,8 @@ def main():
                             'margin-right': 'auto',  # Centers the image
                         },
                     ),
+                    
+                    
                     #  Make table with columns Балл and Интерпретация
                     render_radial_diagram_legend(),
                     # Plot risk_scores table
@@ -122,7 +338,7 @@ def main():
                                     '1',
                                     'Метаболическая детоксикация',
                                     risk_scores,
-                                    ref_params,
+                                    ref_params_scores,
                                 ),
                                 style={'width': '50%'},
                             ),
@@ -131,7 +347,7 @@ def main():
                                     '2',
                                     'Здоровье митохондрий',
                                     risk_scores,
-                                    ref_params,
+                                    ref_params_scores,
                                 ),
                                 style={'width': '50%'},
                             ),
@@ -153,7 +369,7 @@ def main():
                                     '3',
                                     'Воспаление и иммунитет',
                                     risk_scores,
-                                    ref_params,
+                                    ref_params_scores,
                                 ),
                                 style={'width': '50%'},
                             ),
@@ -162,7 +378,7 @@ def main():
                                     '4',
                                     'Метаболическая адаптация и стрессоустойчивость',
                                     risk_scores,
-                                    ref_params,
+                                    ref_params_scores,
                                 ),
                                 style={'width': '50%'},
                             ),
@@ -180,28 +396,19 @@ def main():
                     html.Div(
                         [
                             html.Div(
-                                render_category_params(
-                                    '5',
-                                    'Витаминный статус',
-                                    risk_scores,
-                                    ref_params,
-                                ),
-                                style={'width': '50%'},
-                            ),
-                            html.Div(
                                 [
                                     render_category_params(
                                         '6',
                                         'Статус микробиоты',
                                         risk_scores,
-                                        ref_params,
+                                        ref_params_scores,
                                     ),
                                     html.Div(style={'height': '10px'}),
                                     render_category_params(
                                         '7',
                                         'Резистентность к стрессорам',
                                         risk_scores,
-                                        ref_params,
+                                        ref_params_scores,
                                     ),
                                 ],
                                 style={
@@ -219,7 +426,209 @@ def main():
                             'height': 'fit-content',
                         },
                     ),
+                    
                     html.Div([render_page_footer(page_number=1)], style={'margin-top': '25px'}),
+                    # Page 14
+
+                    render_page_layout(
+                        header=render_page_header(date=date, name=name),
+                        content=[
+
+                            render_category_header(order_number=None, title="Метаболизм фенилаланина"),
+
+                                    render_coridor_plot(metabolites_dict=phenylalanine_metabolism_coridor),
+                                    render_coridor_table(metabolites_dict=phenylalanine_metabolism_coridor, ref_stats= ref_stats),
+                                    html.Div([
+                                        render_metabolite_cards_grid(
+                                            metabolites_dict=phenylalanine_metabolism_coridor,  # Your metabolite dictionary
+                                            metabolite_descriptions=ref_metabolite_descriptions  # Your descriptions dictionary
+                                        )
+                                    ])],
+                        footer=render_page_footer(page_number=14),
+                    ),
+
+                                                            render_page_layout(
+                        header=render_page_header(date=date, name=name),
+                        content=[
+
+                            render_category_header(order_number=None, title="Метаболизм гистидина"),
+
+                                    render_coridor_plot(metabolites_dict=histidine_metabolism_coridor),
+                                    render_coridor_table(metabolites_dict=histidine_metabolism_coridor, ref_stats= ref_stats),
+                                    html.Div([
+                                        render_metabolite_cards_grid(
+                                            metabolites_dict=histidine_metabolism_coridor,  # Your metabolite dictionary
+                                            metabolite_descriptions=ref_metabolite_descriptions  # Your descriptions dictionary
+                                        )
+                                    ])],
+                        footer=render_page_footer(page_number=14),
+                    ),
+                                                                                render_page_layout(
+                        header=render_page_header(date=date, name=name),
+                        content=[
+
+                            render_category_header(order_number=None, title="Метаболизм метионина"),
+
+                                    render_coridor_plot(metabolites_dict=methionine_metabolism_coridor),
+                                    render_coridor_table(metabolites_dict=methionine_metabolism_coridor, ref_stats= ref_stats),
+                                    html.Div([
+                                        render_metabolite_cards_grid(
+                                            metabolites_dict=methionine_metabolism_coridor,  # Your metabolite dictionary
+                                            metabolite_descriptions=ref_metabolite_descriptions  # Your descriptions dictionary
+                                        )
+                                    ])],
+                        footer=render_page_footer(page_number=14),
+                    ),
+                                                                                                                        render_page_layout(
+                        header=render_page_header(date=date, name=name),
+                        content=[
+
+                            render_category_header(order_number=None, title="Кинурениновый путь"),
+
+                                    render_coridor_plot(metabolites_dict=kynurenine_metabolism_coridor),
+                                    render_coridor_table(metabolites_dict=kynurenine_metabolism_coridor, ref_stats= ref_stats),
+                                    html.Div([
+                                        render_metabolite_cards_grid(
+                                            metabolites_dict=kynurenine_metabolism_coridor,  # Your metabolite dictionary
+                                            metabolite_descriptions=ref_metabolite_descriptions  # Your descriptions dictionary
+                                        )
+                                    ])],
+                        footer=render_page_footer(page_number=14),
+                    ),
+                                                                                                    render_page_layout(
+                        header=render_page_header(date=date, name=name),
+                        content=[
+
+                            render_category_header(order_number=None, title="Серотониновый путь"),
+
+                                    render_coridor_plot(metabolites_dict=serotonin_metabolism_coridor),
+                                    render_coridor_table(metabolites_dict=serotonin_metabolism_coridor, ref_stats= ref_stats),
+                                    html.Div([
+                                        render_metabolite_cards_grid(
+                                            metabolites_dict=serotonin_metabolism_coridor,  # Your metabolite dictionary
+                                            metabolite_descriptions=ref_metabolite_descriptions  # Your descriptions dictionary
+                                        )
+                                    ])],
+                        footer=render_page_footer(page_number=14),
+                    ),
+                                                                                                                                                                                                        render_page_layout(
+                        header=render_page_header(date=date, name=name),
+                        content=[
+
+                            render_category_header(order_number=None, title="Индоловый путь"),
+
+                                    render_coridor_plot(metabolites_dict=indol_metabolism_coridor),
+                                    render_coridor_table(metabolites_dict=indol_metabolism_coridor, ref_stats= ref_stats),
+                                    html.Div([
+                                        render_metabolite_cards_grid(
+                                            metabolites_dict=indol_metabolism_coridor,  # Your metabolite dictionary
+                                            metabolite_descriptions=ref_metabolite_descriptions  # Your descriptions dictionary
+                                        )
+                                    ])],
+                        footer=render_page_footer(page_number=14),
+                    ),
+                    # Page 15 - Arginine Metabolism
+                    render_page_layout(
+                        header=render_page_header(date=date, name=name),
+                        content=[
+                            render_category_header(order_number=None, title="Метаболизм аргинина"),
+                            render_coridor_plot(metabolites_dict=arginine_metabolism_coridor),
+                            render_coridor_table(metabolites_dict=arginine_metabolism_coridor, ref_stats= ref_stats),
+                            html.Div([
+                                render_metabolite_cards_grid(
+                                    metabolites_dict=arginine_metabolism_coridor,
+                                    metabolite_descriptions=ref_metabolite_descriptions
+                                )
+                            ])
+                        ],
+                        footer=render_page_footer(page_number=15),
+                    ),
+
+                    # Page 16 - Acylcarnitine Ratios
+                    render_page_layout(
+                        header=render_page_header(date=date, name=name),
+                        content=[
+                            render_category_header(order_number=None, title="Ацилкарнитиновые соотношения"),
+                            render_coridor_plot(metabolites_dict=acylcarnitine_ratios_coridor),
+                            render_coridor_table(metabolites_dict=acylcarnitine_ratios_coridor, ref_stats= ref_stats),
+                            html.Div([
+                                render_metabolite_cards_grid(
+                                    metabolites_dict=acylcarnitine_ratios_coridor,
+                                    metabolite_descriptions=ref_metabolite_descriptions
+                                )
+                            ])
+                        ],
+                        footer=render_page_footer(page_number=16),
+                    ),
+
+                    # Page 17 - Short-chain Acylcarnitines
+                    render_page_layout(
+                        header=render_page_header(date=date, name=name),
+                        content=[
+                            render_category_header(order_number=None, title="Короткоцепочечные ацилкарнитины"),
+                            render_coridor_plot(metabolites_dict=short_chain_acylcarnitines_coridor),
+                            render_coridor_table(metabolites_dict=short_chain_acylcarnitines_coridor, ref_stats= ref_stats),
+                            html.Div([
+                                render_metabolite_cards_grid(
+                                    metabolites_dict=short_chain_acylcarnitines_coridor,
+                                    metabolite_descriptions=ref_metabolite_descriptions
+                                )
+                            ])
+                        ],
+                        footer=render_page_footer(page_number=17),
+                    ),
+
+                    # Page 18 - Medium-chain Acylcarnitines
+                    render_page_layout(
+                        header=render_page_header(date=date, name=name),
+                        content=[
+                            render_category_header(order_number=None, title="Среднецепочечные ацилкарнитины"),
+                            render_coridor_plot(metabolites_dict=medium_chain_acylcarnitines_coridor),
+                            render_coridor_table(metabolites_dict=medium_chain_acylcarnitines_coridor, ref_stats= ref_stats),
+                            html.Div([
+                                render_metabolite_cards_grid(
+                                    metabolites_dict=medium_chain_acylcarnitines_coridor,
+                                    metabolite_descriptions=ref_metabolite_descriptions
+                                )
+                            ])
+                        ],
+                        footer=render_page_footer(page_number=18),
+                    ),
+
+                    # Page 19 - Long-chain Acylcarnitines
+                    render_page_layout(
+                        header=render_page_header(date=date, name=name),
+                        content=[
+                            render_category_header(order_number=None, title="Длинноцепочечные ацилкарнитины"),
+                            render_coridor_plot(metabolites_dict=long_chain_acylcarnitines_coridor),
+                            render_coridor_table(metabolites_dict=long_chain_acylcarnitines_coridor, ref_stats= ref_stats),
+                            html.Div([
+                                render_metabolite_cards_grid(
+                                    metabolites_dict=long_chain_acylcarnitines_coridor,
+                                    metabolite_descriptions=ref_metabolite_descriptions
+                                )
+                            ])
+                        ],
+                        footer=render_page_footer(page_number=19),
+                    ),
+
+                    # Page 20 - Other Metabolites
+                    render_page_layout(
+                        header=render_page_header(date=date, name=name),
+                        content=[
+                            render_category_header(order_number=None, title="Другие метаболиты"),
+                            render_coridor_plot(metabolites_dict=other_metabolites_coridor),
+                            render_coridor_table(metabolites_dict=other_metabolites_coridor, ref_stats= ref_stats),
+                            html.Div([
+                                render_metabolite_cards_grid(
+                                    metabolites_dict=other_metabolites_coridor,
+                                    metabolite_descriptions=ref_metabolite_descriptions
+                                )
+                            ])
+                        ],
+                        footer=render_page_footer(page_number=20),
+                    ),
+
                     render_page_layout(
                         header=render_page_header(date=date, name=name),
                         content=html.Div(
@@ -1393,455 +1802,6 @@ def main():
                         ],
                         footer=render_page_footer(page_number=13),
                     ),
-                    # Page 14
-                    render_page_layout(
-                        header=render_page_header(date=date, name=name),
-                        content=[
-                            # Health corridor title
-                            render_category_header(order_number=None, title="Коридор здоровья"),
-                            render_info_message(
-                                "Данные по оценке стандартного отклонения от средних показателей здоровых людей получены из экспериментальных данных образцов биобанка Центра биофармацевтического анализа и метаболомных исследований Сеченовского университета."
-                            ),
-                            # First row - Phenylalanine and Histidine metabolism
-                            html.Div(
-                                [
-                                    html.Div(
-                                        [
-                                            render_coridor_plot(
-                                                "Метаболизм фенилаланина",
-                                                {
-                                                    "Phenylalanine": metabolite_data["Phenylalanine"],
-                                                    "Tyrosin": metabolite_data["Tyrosin"],
-                                                    "Summ Leu-Ile": metabolite_data["Summ Leu-Ile"],
-                                                    "Valine": metabolite_data["Valine"],
-                                                    "BCAA": metabolite_data["BCAA"],
-                                                    "BCAA/AAA": metabolite_data["BCAA/AAA"],
-                                                    "Phe/Tyr": metabolite_data["Phe/Tyr"],
-                                                    "Val/C4": metabolite_data["Val/C4"],
-                                                    "(Leu+IsL)/(C3+С5+С5-1+C5-DC)": metabolite_data[
-                                                        "(Leu+IsL)/(C3+С5+С5-1+C5-DC)"
-                                                    ],
-                                                },
-                                                ref_stats=ref_stats,
-                                            )
-                                        ],
-                                        style={
-                                            'width': '50%',
-                                            'object-fit': 'contain',
-                                            'background-color': 'white',
-                                            'display': 'inline-block',
-                                        },
-                                    ),
-                                    html.Div(
-                                        [
-                                            render_coridor_plot(
-                                                "Метаболизм гистидина",
-                                                {
-                                                    "Histidine": metabolite_data["Histidine"],
-                                                    "Methylhistidine": metabolite_data["Methylhistidine"],
-                                                    "Threonine": metabolite_data["Threonine"],
-                                                    "Glycine": metabolite_data["Glycine"],
-                                                    "DMG": metabolite_data["DMG"],
-                                                    "Serine": metabolite_data["Serine"],
-                                                    "Lysine": metabolite_data["Lysine"],
-                                                    "Glutamic acid": metabolite_data["Glutamic acid"],
-                                                    "Glutamine/Glutamate": metabolite_data["Glutamine"],
-                                                    "Glutamine/Glutamate": metabolite_data["Glutamine/Glutamate"],
-                                                    "Glycine/Serine": metabolite_data["Glycine/Serine"],
-                                                    "GSG Index": metabolite_data["GSG Index"],
-                                                    "Carnosine": metabolite_data["Carnosine"],
-                                                },
-                                                ref_stats=ref_stats,
-                                            )
-                                        ],
-                                        style={
-                                            'width': '50%',
-                                            'object-fit': 'contain',
-                                            'background-color': 'white',
-                                            'display': 'inline-block',
-                                        },
-                                    ),
-                                ],
-                                style={
-                                    "width": "99%",
-                                    "display": "flex",
-                                    "gap": "1rem",
-                                    "marginTop": "10px",
-                                },
-                            ),
-                            # Second row - Methionine and Kynurenine pathways
-                            html.Div(
-                                [
-                                    html.Div(
-                                        [
-                                            render_coridor_plot(
-                                                "Метаболизм метионина",
-                                                {
-                                                    "Methionine": metabolite_data["Methionine"],
-                                                    "Methionine-Sulfoxide": metabolite_data["Methionine-Sulfoxide"],
-                                                    "Taurine": metabolite_data["Taurine"],
-                                                    "Betaine": metabolite_data["Betaine"],
-                                                    "Choline": metabolite_data["Choline"],
-                                                    "TMAO": metabolite_data["TMAO"],
-                                                    "Betaine/choline": metabolite_data["Betaine/choline"],
-                                                    "Methionine + Taurine": metabolite_data["Methionine + Taurine"],
-                                                    "Met Oxidation": metabolite_data["Met Oxidation"],
-                                                    "TMAO Synthesis": metabolite_data["TMAO Synthesis"],
-                                                    "DMG / Choline": metabolite_data["DMG / Choline"],
-                                                },
-                                                ref_stats=ref_stats,
-                                            )
-                                        ],
-                                        style={
-                                            'width': '50%',
-                                            'object-fit': 'contain',
-                                            'background-color': 'white',
-                                            'display': 'inline-block',
-                                        },
-                                    ),
-                                    html.Div(
-                                        [
-                                            render_coridor_plot(
-                                                "Кинурениновый путь",
-                                                {
-                                                    "Tryptophan": metabolite_data["Tryptophan"],
-                                                    "Kynurenine": metabolite_data["Kynurenine"],
-                                                    "Antranillic acid": metabolite_data["Antranillic acid"],
-                                                    "Quinolinic acid": metabolite_data["Quinolinic acid"],
-                                                    "Xanthurenic acid": metabolite_data["Xanthurenic acid"],
-                                                    "Kynurenic acid": metabolite_data["Kynurenic acid"],
-                                                    "Kyn/Trp": metabolite_data["Kyn/Trp"],
-                                                    "Trp/(Kyn+QA)": metabolite_data["Trp/(Kyn+QA)"],
-                                                    "Kyn/Quin": metabolite_data["Kyn/Quin"],
-                                                },
-                                                ref_stats=ref_stats,
-                                            )
-                                        ],
-                                        style={
-                                            'width': '50%',
-                                            'object-fit': 'contain',
-                                            'background-color': 'white',
-                                            'display': 'inline-block',
-                                        },
-                                    ),
-                                ],
-                                style={
-                                    "width": "99%",
-                                    "display": "flex",
-                                    "gap": "1rem",
-                                    "marginTop": "10px",
-                                },
-                            ),
-                            # Third row - Serotonin and Indole pathways
-                            html.Div(
-                                [
-                                    html.Div(
-                                        [
-                                            render_coridor_plot(
-                                                "Серотониновый путь",
-                                                {
-                                                    "Serotonin": metabolite_data["Serotonin"],
-                                                    "HIAA": metabolite_data["HIAA"],
-                                                    "5-hydroxytryptophan": metabolite_data["5-hydroxytryptophan"],
-                                                    "Serotonin / Trp": metabolite_data["Serotonin / Trp"],
-                                                },
-                                                ref_stats=ref_stats,
-                                            )
-                                        ],
-                                        style={
-                                            'width': '50%',
-                                            'object-fit': 'contain',
-                                            'background-color': 'white',
-                                            'display': 'inline-block',
-                                        },
-                                    ),
-                                    html.Div(
-                                        [
-                                            render_coridor_plot(
-                                                "Индоловый путь",
-                                                {
-                                                    "Indole-3-acetic acid": metabolite_data["Indole-3-acetic acid"],
-                                                    "Indole-3-lactic acid": metabolite_data["Indole-3-lactic acid"],
-                                                    "Indole-3-carboxaldehyde": metabolite_data[
-                                                        "Indole-3-carboxaldehyde"
-                                                    ],
-                                                    "Indole-3-propionic acid": metabolite_data[
-                                                        "Indole-3-propionic acid"
-                                                    ],
-                                                    "Indole-3-butyric": metabolite_data["Indole-3-butyric"],
-                                                    "Tryptamine": metabolite_data["Tryptamine"],
-                                                    "Tryptamine / IAA": metabolite_data["Tryptamine / IAA"],
-                                                },
-                                                ref_stats=ref_stats,
-                                            )
-                                        ],
-                                        style={
-                                            'width': '50%',
-                                            'object-fit': 'contain',
-                                            'background-color': 'white',
-                                            'display': 'inline-block',
-                                        },
-                                    ),
-                                ],
-                                style={
-                                    "width": "99%",
-                                    "display": "flex",
-                                    "gap": "1rem",
-                                    "marginTop": "10px",
-                                },
-                            ),
-                        ],
-                        footer=render_page_footer(page_number=14),
-                    ),
-                    # Page 15
-                    render_page_layout(
-                        header=render_page_header(date=date, name=name),
-                        content=[
-                            # Health corridor title
-                            html.Div(
-                                [
-                                    html.H3(
-                                        children='Коридор здоровья',
-                                        style={
-                                            'textAlign': 'left',
-                                            'margin': '0px',
-                                            'line-height': 'normal',
-                                            'display': 'inline-block',
-                                            'vertical-align': 'center',
-                                        },
-                                    )
-                                ],
-                                style={
-                                    'width': '100%',
-                                    'background-color': '#2563eb',
-                                    'border-radius': '5px 5px 0px 0px',
-                                    'color': 'white',
-                                    'font-family': 'Calibri',
-                                    'margin': '0px',
-                                    'height': '35px',
-                                    'line-height': '35px',
-                                    'text-align': 'center',
-                                    'margin-top': '5px',
-                                },
-                            ),
-                            render_info_message(
-                                "Данные по оценке стандартного отклонения от средних показателей здоровых людей получены из экспериментальных данных образцов биобанка Центра биофармацевтического анализа и метаболомных исследований Сеченовского университета."
-                            ),
-                            # First row - Arginine Metabolism and Acylcarnitine Ratios
-                            html.Div(
-                                [
-                                    html.Div(
-                                        [
-                                            render_coridor_plot(
-                                                "Метаболизм аргинина",
-                                                {
-                                                    "Proline": metabolite_data["Proline"],
-                                                    "Hydroxyproline": metabolite_data["Hydroxyproline"],
-                                                    "ADMA": metabolite_data["ADMA"],
-                                                    "NMMA": metabolite_data["NMMA"],
-                                                    "TotalDMA (SDMA)": metabolite_data["TotalDMA (SDMA)"],
-                                                    "Homoarginine": metabolite_data["Homoarginine"],
-                                                    "Arginine": metabolite_data["Arginine"],
-                                                    "Citrulline": metabolite_data["Citrulline"],
-                                                    "Ornitine": metabolite_data["Ornitine"],
-                                                    "Asparagine": metabolite_data["Asparagine"],
-                                                    "Aspartic acid": metabolite_data["Aspartic acid"],
-                                                    "Creatinine": metabolite_data["Creatinine"],
-                                                    "Arg/ADMA": metabolite_data["Arg/ADMA"],
-                                                    "(Arg+HomoArg)/ADMA": metabolite_data["(Arg+HomoArg)/ADMA"],
-                                                    "Arg/Orn+Cit": metabolite_data["Arg/Orn+Cit"],
-                                                    "ADMA/(Adenosin+Arginine)": metabolite_data[
-                                                        "ADMA/(Adenosin+Arginine)"
-                                                    ],
-                                                    "Symmetrical Arg Methylation": metabolite_data[
-                                                        "Symmetrical Arg Methylation"
-                                                    ],
-                                                    "Sum of Dimethylated Arg": metabolite_data[
-                                                        "Sum of Dimethylated Arg"
-                                                    ],
-                                                    "Ratio of Pro to Cit": metabolite_data["Ratio of Pro to Cit"],
-                                                    "Cit Synthesis": metabolite_data["Cit Synthesis"],
-                                                },ref_stats=ref_stats,
-                                            )
-                                        ],
-                                        style={
-                                            'width': '50%',
-                                            'object-fit': 'contain',
-                                            'background-color': 'white',
-                                            'display': 'inline-block',
-                                        },
-                                    ),
-                                    html.Div(
-                                        [
-                                            render_coridor_plot(
-                                                "Метаболизм ацилкарнитинов (соотношения)",
-                                                {
-                                                    "Alanine": metabolite_data["Alanine"],
-                                                    "C0": metabolite_data["C0"],
-                                                    "Ratio of AC-OHs to ACs": metabolite_data["Ratio of AC-OHs to ACs"],
-                                                    "СДК": metabolite_data["СДК"],
-                                                    "ССК": metabolite_data["ССК"],
-                                                    "СКК": metabolite_data["СКК"],
-                                                    "C0/(C16+C18)": metabolite_data["C0/(C16+C18)"],
-                                                    "CPT-2 Deficiency (NBS)": metabolite_data["CPT-2 Deficiency (NBS)"],
-                                                    "С2/С0": metabolite_data["С2/С0"],
-                                                    "Ratio of Short-Chain to Long-Chain ACs": metabolite_data[
-                                                        "Ratio of Short-Chain to Long-Chain ACs"
-                                                    ],
-                                                    "Ratio of Medium-Chain to Long-Chain ACs": metabolite_data[
-                                                        "Ratio of Medium-Chain to Long-Chain ACs"
-                                                    ],
-                                                    "Ratio of Short-Chain to Medium-Chain ACs": metabolite_data[
-                                                        "Ratio of Short-Chain to Medium-Chain ACs"
-                                                    ],
-                                                    "Sum of ACs": metabolite_data["Sum of ACs"],
-                                                    "Sum of ACs + С0": metabolite_data["Sum of ACs + С0"],
-                                                    "Sum of ACs/C0": metabolite_data["Sum of ACs/C0"],
-                                                },
-                                                ref_stats=ref_stats,
-                                            )
-                                        ],
-                                        style={
-                                            'width': '50%',
-                                            'object-fit': 'contain',
-                                            'background-color': 'white',
-                                            'display': 'inline-block',
-                                        },
-                                    ),
-                                ],
-                                style={
-                                    "width": "99%",
-                                    "display": "flex",
-                                    "gap": "1rem",
-                                    "marginTop": "10px",
-                                },
-                            ),
-                            # Second row - Short-chain and Medium-chain Acylcarnitines
-                            html.Div(
-                                [
-                                    html.Div(
-                                        [
-                                            render_coridor_plot(
-                                                "Короткоцепочечные ацилкарнитины",
-                                                {
-                                                    "C2": metabolite_data["C2"],
-                                                    "C3": metabolite_data["C3"],
-                                                    "C4": metabolite_data["C4"],
-                                                    "C5": metabolite_data["C5"],
-                                                    "C5-1": metabolite_data["C5-1"],
-                                                    "C5-DC": metabolite_data["C5-DC"],
-                                                    "C5-OH": metabolite_data["C5-OH"],
-                                                },
-                                                ref_stats=ref_stats,
-                                            )
-                                        ],
-                                        style={
-                                            'width': '50%',
-                                            'object-fit': 'contain',
-                                            'background-color': 'white',
-                                            'display': 'inline-block',
-                                        },
-                                    ),
-                                    html.Div(
-                                        [
-                                            render_coridor_plot(
-                                                "Среднецепочечные ацилкарнитины",
-                                                {
-                                                    "C6": metabolite_data["C6"],
-                                                    "C6-DC": metabolite_data["C6-DC"],
-                                                    "C8": metabolite_data["C8"],
-                                                    "C8-1": metabolite_data["C8-1"],
-                                                    "C10": metabolite_data["C10"],
-                                                    "C10-1": metabolite_data["C10-1"],
-                                                    "C10-2": metabolite_data["C10-2"],
-                                                    "C12": metabolite_data["C12"],
-                                                    "C12-1": metabolite_data["C12-1"],
-                                                },
-                                                ref_stats=ref_stats,
-                                            )
-                                        ],
-                                        style={
-                                            'width': '50%',
-                                            'object-fit': 'contain',
-                                            'background-color': 'white',
-                                            'display': 'inline-block',
-                                        },
-                                    ),
-                                ],
-                                style={
-                                    "width": "99%",
-                                    "display": "flex",
-                                    "gap": "1rem",
-                                    "marginTop": "10px",
-                                },
-                            ),
-                            # Third row - Long-chain Acylcarnitines and Other Metabolites
-                            html.Div(
-                                [
-                                    html.Div(
-                                        [
-                                            render_coridor_plot(
-                                                "Длинноцепочечные ацилкарнитины",
-                                                {
-                                                    "C14": metabolite_data["C14"],
-                                                    "C14-1": metabolite_data["C14-1"],
-                                                    "C14-2": metabolite_data["C14-2"],
-                                                    "C14-OH": metabolite_data["C14-OH"],
-                                                    "C16": metabolite_data["C16"],
-                                                    "C16-1": metabolite_data["C16-1"],
-                                                    "C16-1-OH": metabolite_data["C16-1-OH"],
-                                                    "C16-OH": metabolite_data["C16-OH"],
-                                                    "C18": metabolite_data["C18"],
-                                                    "C18-1": metabolite_data["C18-1"],
-                                                    "C18-1-OH": metabolite_data["C18-1-OH"],
-                                                    "C18-2": metabolite_data["C18-2"],
-                                                    "C18-OH": metabolite_data["C18-OH"],
-                                                },
-                                                ref_stats=ref_stats,
-                                            )
-                                        ],
-                                        style={
-                                            'width': '50%',
-                                            'object-fit': 'contain',
-                                            'background-color': 'white',
-                                            'display': 'inline-block',
-                                        },
-                                    ),
-                                    html.Div(
-                                        [
-                                            render_coridor_plot(
-                                                "Другие метаболиты",
-                                                {
-                                                    "Pantothenic": metabolite_data["Pantothenic"],
-                                                    "Riboflavin": metabolite_data["Riboflavin"],
-                                                    "Melatonin": metabolite_data["Melatonin"],
-                                                    "Uridine": metabolite_data["Uridine"],
-                                                    "Adenosin": metabolite_data["Adenosin"],
-                                                    "Cytidine": metabolite_data["Cytidine"],
-                                                    "Cortisol": metabolite_data["Cortisol"],
-                                                    "Histamine": metabolite_data["Histamine"],
-                                                },
-                                                ref_stats=ref_stats,
-                                            )
-                                        ],
-                                        style={
-                                            'width': '50%',
-                                            'object-fit': 'contain',
-                                            'background-color': 'white',
-                                            'display': 'inline-block',
-                                        },
-                                    ),
-                                ],
-                                style={
-                                    "width": "99%",
-                                    "display": "flex",
-                                    "gap": "1rem",
-                                    "marginTop": "10px",
-                                },
-                            ),
-                        ],
-                        footer=render_page_footer(page_number=15),
-                    ),
                     render_page_layout(
                         header=render_page_header(date=date, name=name),
                         content=html.Div(
@@ -1860,9 +1820,11 @@ def main():
                 ],
                 style={'width': '100%', 'height': '100%'},
             )
+            
+            return layout
 
         app.layout = create_layout()
-
+    
         print("Starting Dash server...")
         app.run(
             debug=False,

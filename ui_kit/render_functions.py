@@ -39,11 +39,11 @@ def render_page_layout(header=None, content=None, footer=None):
             html.Div(
                 header,
                 style={
-                    'width': '100%',
-                    'position': 'sticky',
-                    'top': '0',
-                    'zIndex': '100',
-                    'background': 'white'  # Ensure header is visible
+                    "width": "100%",
+                    "position": "sticky",
+                    "top": "0",
+                    "zIndex": "100",
+                    "background": "white"  # Ensure header is visible
                 }
             ),
             
@@ -72,7 +72,7 @@ def render_page_layout(header=None, content=None, footer=None):
         style={
             'display': 'flex',
             'flexDirection': 'column',
-            'height': '1180px',
+            'height': '1181px',
             'width': '100%',
             'padding': '0',  # No padding on container
             'fontFamily': 'Calibri',
@@ -818,7 +818,7 @@ def render_metabolite_row(concentration, ref_stats_entry, subtitle):
                             'display': 'flex',
                             'justify-content': 'space-between',
                             'height': (
-                                '45px' if not show_subtitle else '52px'
+                                '40px' if not show_subtitle else '47px'
                             ),  # Adjust height based on subtitle
                             'margin-left': '5px',
                         },
@@ -827,9 +827,9 @@ def render_metabolite_row(concentration, ref_stats_entry, subtitle):
                             html.Div(
                                 style={
                                     'width': '39%',
-                                    'height': '45px' if not show_subtitle else '52px',
+                                    'height': '40px' if not show_subtitle else '47px',
                                     'margin': '0px',
-                                    'font-size': '15px',
+                                    'font-size': '13px',
                                     'font-family': 'Calibri',
                                     'color': 'black',
                                     'display': 'flex',
@@ -863,9 +863,9 @@ def render_metabolite_row(concentration, ref_stats_entry, subtitle):
                             html.Div(
                                 style={
                                     'width': '8%',
-                                    'height': '45px' if not show_subtitle else '52px',
+                                    'height': '40px' if not show_subtitle else '47px',
                                     'margin': '0px',
-                                    'font-size': '15px',
+                                    'font-size': '13px',
                                     'font-family': 'Calibri',
                                     'color': color_text_ref(
                                         concentration, ref_stats_entry=ref_stats_entry
@@ -898,7 +898,7 @@ def render_metabolite_row(concentration, ref_stats_entry, subtitle):
                                     'width': '27%',
                                     'height': '45px' if not show_subtitle else '52px',
                                     'margin': '0px',
-                                    'font-size': '15px',
+                                    'font-size': '13px',
                                     'font-family': 'Calibri',
                                     'color': '#2563eb',
                                     'display': 'flex',
@@ -944,9 +944,9 @@ def render_metabolite_row(concentration, ref_stats_entry, subtitle):
                             html.Div(
                                 style={
                                     'width': '21%',
-                                    'height': '45px' if not show_subtitle else '52px',
+                                    'height': '40px' if not show_subtitle else '47px',
                                     'margin': '0px',
-                                    'font-size': '15px',
+                                    'font-size': '13px',
                                     'font-family': 'Calibri',
                                     'color': 'black',
                                     'display': 'flex',
@@ -990,15 +990,14 @@ def render_category_header(order_number, title):
             'background-color': '#2563eb',
             'border-radius': '5px 5px 0px 0px',
             'color': 'white',
-            'font-family': 'Calibri',
+            'font-family': 'system-ui, -apple-system, sans-serif',
             'margin': '0px',
-            'height': '35px',
-            'line-height': '35px',
+            'height': '25px',
             'text-align': 'center',
             'margin-top': '5px',
         },
         children=[
-            html.H3(
+            html.Div(
                 children=header_text,
                 style={
                     'textAlign': 'center',
@@ -1006,6 +1005,8 @@ def render_category_header(order_number, title):
                     'line-height': 'normal',
                     'display': 'inline-block',
                     'vertical-align': 'center',
+                    'font-size': '13px',
+                    'font-weight': 'bold'
                 },
             )
         ],
@@ -1041,7 +1042,7 @@ def render_metabolite_category_header(title):
                                     'width': '39%',
                                     'height': '35px',
                                     'margin': '0px',
-                                    'font-size': '16px',
+                                    'font-size': '14px',
                                     'font-family': 'Calibri',
                                     'color': '#2563eb',
                                     'line-height': '30px',
@@ -1053,7 +1054,7 @@ def render_metabolite_category_header(title):
                                         'Результат',
                                         style={
                                             'display': 'inline-block',
-                                            'fontSize': '14px',
+                                            'fontSize': '12px',
                                             'color': '#4D5052',
                                             'fontWeight': '500',
                                         },
@@ -1063,7 +1064,7 @@ def render_metabolite_category_header(title):
                                     'width': '7%',
                                     'height': '20px',
                                     'margin': '0px',
-                                    'font-size': '15px',
+                                    'font-size': '12px',
                                     'font-family': 'Calibri',
                                     'color': 'black',
                                     'text-align': 'center',
@@ -1112,7 +1113,7 @@ def render_metabolite_category_header(title):
                                             'justify-content': 'space-between',
                                             'font-family': 'Calibri',
                                             'color': '#4D5052',
-                                            'font-size': '13px',
+                                            'font-size': '12px',
                                             'padding': '4px 8px',
                                         },
                                     )
@@ -1125,7 +1126,7 @@ def render_metabolite_category_header(title):
                                     'width': '21%',
                                     'height': '20px',
                                     'margin': '0px',
-                                    'font-size': '14px',
+                                    'font-size': '12px',
                                     'font-family': 'Calibri',
                                     'color': '#4D5052',
                                     'text-align': 'center',
@@ -1147,7 +1148,7 @@ def render_metabolite_category_header(title):
     )
 
 
-def render_page_header(date, name, logo_height='45px'):
+def render_page_header(date, name, logo_height='40px'):
     """
     Render the main header with date/name on left and logo on right
 
@@ -1164,7 +1165,7 @@ def render_page_header(date, name, logo_height='45px'):
             'display': 'flex',
             'justify-content': 'space-between',
             'width': '100%',
-            'height': '45px',
+            'height': logo_height,
             'color': '#2563eb',
         },
         children=[
@@ -1174,17 +1175,16 @@ def render_page_header(date, name, logo_height='45px'):
                 children=[
                     html.B(
                         f"Дата: {date}",
-                        style={'margin': '0px', 'font-size': '16px', 'font-family': 'Calibri'},
+                        style={'margin': '0px', 'font-size': '13px', 'font-family': 'system-ui, -apple-system, sans-serif'},
                     ),
                     html.Div(
-                        style={'margin-top': '2px'},
                         children=[
                             html.B(
                                 f'Пациент: {name}',
                                 style={
                                     'margin': '0px',
-                                    'font-size': '16px',
-                                    'font-family': 'Calibri',
+                                    'font-size': '13px',
+                                    'font-family': 'system-ui, -apple-system, sans-serif',
                                 },
                             )
                         ],
@@ -1223,7 +1223,7 @@ def render_page_footer(page_number):
                 style={
                     'color': 'black',
                     'font-family': 'Calibri',
-                    'font-size': '13px',
+                    'font-size': '11px',
                     'margin': '0px',
                     'text-align': "left",
                     'font-style': 'italic',
@@ -1236,11 +1236,10 @@ def render_page_footer(page_number):
                 style={
                     'color': 'black',
                     'font-family': 'Calibri',
-                    'font-size': '13px',
+                    'font-size': '12px',
                     'margin': '0px',
                     'text-align': "right",
                     'font-style': 'italic',
-                    'margin-top': '15px',  # Note: Overrides the 5px from parent
                     'width': '10%',
                 },
             ),
@@ -1415,7 +1414,7 @@ def render_ratios_header(order_number, title):
                     'padding': '8px',
                     'borderRadius': '0px 0px 5px 5px',
                     'marginTop': '5px',
-                    'fontSize': '14px',
+                    'fontSize': '12px',
                     'fontFamily': 'Calibri',
                 },
                 children=[
@@ -1532,22 +1531,291 @@ def render_ratios_row(value, ref_stats_entry, description):
             ),
         ],
     )
-
-
-def render_coridor_plot(title, metabolites_dict, ref_stats):
-    fig_coridor = plot_metabolite_z_scores(
-        metabolite_concentrations=metabolites_dict, group_title=title, ref_stats=ref_stats
+    
+def render_coridor_table(metabolites_dict, ref_stats):
+    # Create table rows from the metabolites dictionary
+    table_rows = []
+    
+    # Check if metabolites_dict is a dictionary with lists as values
+    if isinstance(metabolites_dict, dict):
+        # Flatten the dictionary structure into a list of metabolites
+        metabolites_list = []
+        for metabolite_list in metabolites_dict.values():
+            if isinstance(metabolite_list, list):
+                metabolites_list.extend(metabolite_list)
+            else:
+                metabolites_list.append(metabolite_list)
+    else:
+        # Assume it's already a list
+        metabolites_list = metabolites_dict
+    
+    # Sort by absolute z-score in descending order (highest deviations first)
+    sorted_metabolites = sorted(
+        metabolites_list, 
+        key=lambda x: abs(x.get("z_score", 0)), 
+        reverse=True
     )
-    return html.Img(
-        src=fig_coridor,
+    
+    for metabolite_data in sorted_metabolites:
+        # Extract data from the metabolite dictionary
+        
+        name_view = metabolite_data.get("name_view")
+        original_name = metabolite_data.get("original_name")
+        concentration = metabolite_data.get("concentration", 0)
+        status = metabolite_data.get("status_table", "")
+        norm = metabolite_data.get("norm", "")
+        
+        # Determine status color based on status text
+        if "Повышен" in status:
+            status_color = "red"
+        elif "Снижен" in status:
+            status_color = "blue"
+        elif "Близко ↑" in status:
+            status_color = "yellow"
+        elif "Близко ↓" in status:
+            status_color = "teal"
+        else: 
+            status_color = "green"
+            
+        row_fontsize = "11.5px"
+        header_fontsize = "11.5px"
+        
+        if len(sorted_metabolites) == 1:
+            row_fontsize = "13.5px"
+            header_fontsize = "13.5px"
+            
+        ref_stats_entry = ref_stats[original_name]
+        
+        table_rows.append(
+            html.Div(
+                style={
+                    'display': 'grid',
+                    'gridTemplateColumns': 'repeat(12, minmax(0, 1fr))',
+                    'gap': '5px',
+                    'padding': '4px 1px',
+                    'borderBottom': '1px solid #e9ecef',
+                    'fontSize': row_fontsize,
+                    'fontFamily': 'Calibri',
+                    'alignItems': 'center',
+                },
+                children=[
+                    # Parameter name
+                    html.Div(
+                        name_view,
+                        style={
+                            'gridColumn': 'span 6',
+                            'fontWeight': '600',
+                            'marginLeft': "5px",
+                            "fontSize": "12.5pх",
+                            'color': '#212529',
+                        }
+                    ),
+                    # Value with indicator
+                    html.Div(
+                        style={
+                            'gridColumn': 'span 2',
+                            'display': 'flex',
+                            'alignItems': 'center',
+                            'justifyContent': 'center',
+                            'margin': '0 auto',
+                            'width': 'fit-content',
+                        },
+                        children=[
+                            html.Div(
+                                f"{smart_round(value=concentration, ref_stats_entry = ref_stats_entry)}" if isinstance(concentration, (int, float)) else str(concentration),
+                                style={
+                                    'fontWeight': 'bold',
+                                    'fontSize': row_fontsize,
+                                    'color': '#212529',
+                                },
+                            ),
+                            # Status indicator (arrow for high/low)
+                            html.Div(
+                                style={
+                                    'width': '0',
+                                    'height': '0',
+                                    'borderLeft': '5px solid transparent',
+                                    'borderRight': '5px solid transparent',
+                                    'borderTop': '8px solid #2563eb' if "Снижен" in status else 'none',
+                                    'borderBottom': '8px solid #dc3545' if "Повышен" in status else 'none',
+                                    'marginLeft': '3px',
+                                }
+                            ) if "Повышен" in status or "Снижен" in status else None,
+                            html.Div("↑", style = {'color': "#DA8524", 'marginLeft': '3px'}) if "Близко ↑" in status else None,
+                            html.Div("↓", style = {'color': "#15908a", 'marginLeft': '3px'}) if "Близко ↓" in status else None,
+                        ],
+                    ),
+                    # Status badge
+                    html.Div(
+                        style={'gridColumn': 'span 2', 'textAlign': 'center'},
+                        children=html.Span(
+                            status,
+                            style={
+                                'padding': '2px 5px' if status != "Норма" else '2px 10px',
+                                'borderRadius': '11px',
+                                'fontSize': "10.5px",
+                                'fontWeight': '500',
+                                'backgroundColor': '#e6f7ee' if status_color == 'green' else 
+                                                 '#f8d7da' if status_color == 'red' else 
+                                                 "#fceede" if status_color == 'yellow' else
+                                                 "#d4f2f1ff" if status_color == 'teal' else
+                                                 '#e3f2fd',
+                                'color': '#198754' if status_color == 'green' else 
+                                        '#dc3545' if status_color == 'red' else 
+                                        "#DA8524" if status_color == 'yellow' else
+                                        "#15908a" if status_color == 'teal' else
+                                        '#0d6efd',
+                            },
+                        ),
+                    ),
+                    # Reference range
+                    html.Div(
+                        norm,
+                        style={
+                            'gridColumn': 'span 2',
+                            'fontSize': row_fontsize,
+                            'textAlign': 'center',
+                            'color': '#6c757d',
+                        },
+                    ),
+                ],
+            )
+        )
+    
+    # If no metabolites meet the criteria, show a message
+    if not table_rows:
+        return html.Div(
+            "Ваши показатели в норме!",
+            style={
+                'textAlign': 'left',
+                'padding': '5px',
+                'fontSize': "13px",
+                'fontWeight': "bold",
+                'color': "#2c2c2c",
+            }
+        )
+    
+    # Create table header
+    table_header = html.Div(
         style={
-            'height': 'fit-content',
-            'width': '99%',
-            'object-fit': 'contain',
-            'border': '1px solid #e5e7eb',
-            'borderRadius': '12px',
-            'padding': '10px 5px',
+            'display': 'grid',
+            'gridTemplateColumns': 'repeat(12, minmax(0, 1fr))',
+            'gap': '5px',
+            'fontWeight': '500',
+            'color': "#4D5052",
+            'backgroundColor': '#f8f9fa',
+            'padding': '5px 0px',
+            'borderRadius': '5px 5px 0px 0px',
+            'fontSize': header_fontsize,
+            'fontFamily': 'Calibri',
         },
+        children=[
+            html.Div('Показатель', style={'gridColumn': 'span 6', 'marginLeft': "8px"}),
+            html.Div('Результат', style={'gridColumn': 'span 2', 'textAlign': 'center'}),
+            html.Div('Статус', style={'gridColumn': 'span 2', 'textAlign': 'center'}),
+            html.Div('Норма', style={'gridColumn': 'span 2', 'textAlign': 'center'})
+        ],
+    )
+    
+    # If 4 or fewer rows, return single table
+    if len(table_rows) < 2:
+        return html.Div([
+            html.Div(
+            "Ваши показатели, которые отклонились от нормы:",
+            style={
+                'textAlign': 'left',
+                'marginBottom': '5px',
+                'fontSize': "12.5px",
+                'fontWeight': "bold",
+                'color': "#2c2c2c",
+            }
+        ),
+            table_header,
+            html.Div(
+                style={
+                    'border': '1px solid #e9ecef',
+                    'borderTop': 'none',
+                    'borderRadius': '0px 0px 5px 5px',
+                },
+                children=table_rows
+            )
+        ])
+    
+    # If more than 4 rows, split into two tables (50/50 layout)
+    mid_point = (len(table_rows) + 1) // 2  # Split roughly in half
+    table1_rows = table_rows[:mid_point]
+    table2_rows = table_rows[mid_point:]
+    
+    return html.Div([
+            html.Div(
+            "Ваши показатели, которые отклонились от нормы:",
+            style={
+                'textAlign': 'left',
+                'marginBottom': '5px',
+                'fontSize': "12.5px",
+                'fontWeight': "bold",
+                'color': "#2c2c2c",
+            }
+        ),
+        html.Div(
+            style={
+                'display': 'flex',
+                'gap': '5px',
+                'width': '100%',
+            },
+            children=[
+                # First table (50% width)
+                html.Div(
+                    style={'width': '50%'},
+                    children=[
+                        table_header,
+                        html.Div(
+                            style={
+                                'border': '1px solid #e9ecef',
+                                'borderTop': 'none',
+                                'borderRadius': '0px 0px 5px 5px',
+                            },
+                            children=table1_rows
+                        )
+                    ]
+                ),
+                # Second table (50% width)
+                html.Div(
+                    style={'width': '50%'},
+                    children=[
+                        table_header,
+                        html.Div(
+                            style={
+                                'border': '1px solid #e9ecef',
+                                'borderTop': 'none',
+                                'borderRadius': '0px 0px 5px 5px',
+                            },
+                            children=table2_rows
+                        )
+                    ]
+                )
+            ]
+        )
+    ])
+      
+def render_coridor_plot(metabolites_dict):
+    # Get both the figure and the dataframe
+    fig_coridor = plot_metabolite_z_scores(
+        metabolites_coridor_dict=metabolites_dict
+    )
+    
+    return html.Div(
+        [
+            # The plot image
+            html.Img(
+                src=fig_coridor,
+                style={
+                    'height': 'fit-content',
+                    'width': '100%',
+                    'object-fit': 'contain',
+                },
+            ),
+        ]
     )
 
 
@@ -2413,3 +2681,255 @@ def render_metabolism_score(risk_scores):
             )
         ]
     )
+    
+def render_metabolite_cards_grid(metabolites_dict, metabolite_descriptions):
+    # Extract all metabolite data from the dictionary
+    metabolite_data_list = []
+    for metabolite_name, metabolite_list in metabolites_dict.items():
+        if isinstance(metabolite_list, list):
+            for metabolite_data in metabolite_list:
+                if isinstance(metabolite_data, dict):
+                    # Add the original name to the data for reference
+                    metabolite_data['original_name'] = metabolite_name
+                    metabolite_data_list.append(metabolite_data)
+    
+
+    
+    # Sort by absolute z-score in descending order (highest deviations first)
+    sorted_metabolites = sorted(
+        metabolite_data_list, 
+        key=lambda x: abs(x.get("z_score", 0)), 
+        reverse=True
+    )
+    
+    
+    # Create rows of 3 cards each
+    rows = []
+    for i in range(0, len(sorted_metabolites), 2):
+        row_metabolites = sorted_metabolites[i:i+2]
+        row_cards = []
+        
+        for metabolite in row_metabolites:
+            original_name = metabolite.get("original_name", "")
+            
+            # Handle DataFrame descriptions - convert to dict if needed
+            if hasattr(metabolite_descriptions, 'to_dict'):
+                # If it's a DataFrame, get the row for this metabolite
+                if original_name in metabolite_descriptions.index:
+                    metabolite_description = metabolite_descriptions.loc[original_name].to_dict()
+                else:
+                    metabolite_description = {}
+            else:
+                # Assume it's already a dictionary
+                metabolite_description = metabolite_descriptions.get(original_name, {})
+            
+            card = render_metabolite_card(
+                metabolite_obj=metabolite,
+                metabolite_description=metabolite_description
+            )
+            row_cards.append(
+                html.Div(card, style={
+                    "display": "flex",
+                    "flexDirection": "column",
+                    "height": "100%"
+                })
+            )
+        
+        rows.append(
+            
+            html.Div(row_cards, style={
+                "display": "grid",
+                "gridTemplateColumns": "repeat(2, 1fr)",
+                "gap": "5px",
+                "alignItems": "stretch",
+                "marginTop": "5px"
+            })
+        )
+    
+    return html.Div(rows)
+
+def render_metabolite_card(metabolite_obj, metabolite_description):
+    # Extract properties with safe defaults
+    metabolite_name = metabolite_description.get('name_view', '')
+    formated_metabolite_name = metabolite_name
+    if len(metabolite_name) > 25:
+        formated_metabolite_name = metabolite_name
+        # Apply CSS to break long words
+        name_style = {
+            "color": "#2563eb",
+            "fontWeight": "bold",
+            "fontSize": "12px",
+            "flex": "1",
+            "wordWrap": "break-word",
+            "overflowWrap": "break-word"
+        }
+    else:
+        name_style = {
+            "color": "#2563eb",
+            "fontWeight": "bold",
+            "fontSize": "12px",
+            "flex": "1"
+        }
+    description = metabolite_description.get('description', '')
+    high_level = metabolite_description.get('high_level', '')
+    low_level = metabolite_description.get('low_level', '')
+    recomendation_low = metabolite_description.get('recomendation_low', '')
+    recomendation_high = metabolite_description.get('recomendation_high', '')
+    
+    z_score = metabolite_obj.get('z_score', 0)
+            
+    if abs(z_score) > 1.96:
+        if z_score > 0:
+            status = "Повышен"
+            status_symbol = html.Div([html.Div(
+                                style={
+                                    'width': '0',
+                                    'height': '0',
+                                    'borderLeft': '5px solid transparent',
+                                    'borderRight': '5px solid transparent',
+                                    'borderTop': '8px solid #2563eb' if "Снижен" in status else 'none',
+                                    'borderBottom': '8px solid #dc3545' if "Повышен" in status else 'none',
+                                    'marginLeft': '4px',
+                                }
+                            ) if "Повышен" in status or "Снижен" in status else None,], style={'color': '#2563eb', 'fontWeight': 'bold'})
+        else:
+            status = "Снижен"
+            status_symbol = html.Div([html.Div(
+                                style={
+                                    'width': '0',
+                                    'height': '0',
+                                    'borderLeft': '5px solid transparent',
+                                    'borderRight': '5px solid transparent',
+                                    'borderTop': '8px solid #2563eb' if "Снижен" in status else 'none',
+                                    'borderBottom': '8px solid #dc3545' if "Повышен" in status else 'none',
+                                    'marginLeft': '4px',
+                                }
+                            ) if "Повышен" in status or "Снижен" in status else None,], style={'color': '#dc3545', 'fontWeight': 'bold'})
+    elif 1.54 <= abs(z_score) <= 1.96:
+        if z_score > 0:
+            status = "Близко ↑"
+            # Прямоугольный треугольник (диагональ квадрата) растущий ↗
+            status_symbol = html.Div(style={
+                'width': '0',
+                'height': '0',
+                'borderRight': '10px solid #ffa407',
+                'borderTop': '10px solid transparent',
+                'marginLeft': '4px'
+            })
+        else:
+            status = "Близко ↓"
+            # Прямоугольный треугольник (диагональ квадрата) растущий ↙
+            status_symbol = html.Div(style={
+                'width': '0',
+                'height': '0',
+                'borderLeft': '10px solid #17a2b8',
+                'borderTop': '10px solid transparent',
+                'marginLeft': '4px'
+            })
+    else:
+        status = "Норма"
+        # Зеленый круг
+        status_symbol = html.Div(style={
+            'width': '11px',
+            'height': '11px',
+            'backgroundColor': '#28a745',
+            'borderRadius': '50%',
+            'marginLeft': '4px'
+        })
+    
+    # Create card content - Metabolite name and status in one row
+    card_content = [
+        html.Div([
+            html.Div(formated_metabolite_name, style=name_style),
+            html.Div(status_symbol, style={
+                'padding': '0px',
+                'borderRadius': '50%',
+                'fontSize': '12px',
+                'fontWeight': 'bold',
+                'backgroundColor':  '#ffffff',
+                
+            })
+        ], style={
+            'display': 'flex',
+            'justifyContent': 'space-between',
+            'alignItems': 'center',
+            "marginBottom": "5px",
+            "padding": "0px 7px"
+        }),
+        
+        # What is this section
+        html.Div([
+            html.Div("Что это?", style={"fontWeight": "bold","fontSize": "11px", "marginBottom": "3px", "display": "block"}),
+            html.Div(description, style={"fontSize": "11px", "lineHeight": "1.3","text-align": "justify"})
+        ], style={"marginBottom": "5px", "padding": "0px 10px"})
+    ]
+    
+    # Add level information if available with yellow background
+    level_style = {
+        'backgroundColor': 'rgba(255, 193, 7, 0.3)',
+        'borderLeft': '3px solid #ffc107',
+        'borderRadius': '6px',
+        'padding': '2px 7px 3px 7px',
+        'marginBottom': '5px'
+    }
+    
+    if status == "Повышен":
+        risk_message_title = "Высокий уровень"
+    elif status == "Близко ↑":
+        risk_message_title = "При дальнейшем повышении"
+    elif status == "Снижен":
+        risk_message_title = "Низкий уровень"
+    elif status == "Близко ↓":
+        risk_message_title = "При дальнейшем снижении"
+    
+    # Оптимизация второго блока if-elif
+    if status in ("Повышен", "Близко ↑"):
+        card_content.append(html.Div([
+            html.Strong(risk_message_title, style={"display": "block","fontSize": "11px", "marginBottom": "3px"}),
+            html.Div(high_level, style={"fontSize": "11px", "lineHeight": "1.3","text-align": "justify"})
+        ], style=level_style))
+
+    elif status in ("Снижен", "Близко ↓"):
+        card_content.append(html.Div([
+            html.Strong(risk_message_title, style={"display": "block","fontSize": "11px", "marginBottom": "3px"}),
+            html.Div(low_level, style={"fontSize": "11px", "lineHeight": "1.3","text-align": "justify"})
+        ], style=level_style))
+    
+    # Add recommendations if available with blue background
+    recommendation_style = {
+        'backgroundColor': 'rgba(23, 162, 184, 0.2)',
+        'borderLeft': '3px solid #17a2b8',
+        'borderRadius': '6px',
+        'padding': '2px 7px 3px 7px',
+    }
+    
+    if status == "Повышен" or status == "Близко ↑":
+        card_content.append(html.Div([
+            html.Strong("Рекомендации", style={"display": "block","fontSize": "11px", "marginBottom": "3px"}),
+            html.Div(recomendation_high, style={"fontSize": "11px", "lineHeight": "1.3","text-align": "justify"})
+        ], style=recommendation_style))
+    
+    elif status == "Снижен" or status == "Близко ↓":
+        card_content.append(html.Div([
+            html.Strong("Рекомендации", style={"display": "block","fontSize": "11px", "marginBottom": "3px"}),
+            html.Div(recomendation_low, style={"fontSize": "11px", "lineHeight": "1.3","text-align": "justify"})
+        ], style=recommendation_style))
+    
+    # Create the card
+    card = html.Div(
+        card_content,
+        className="metabolite-card",
+        style={
+            'flex': '1',
+            'display': 'flex',
+            'flexDirection': 'column',
+            'border': '1px solid #e9ecef',
+            'borderRadius': '12px',
+            'padding': '7px',
+            'backgroundColor': "#ffffff",
+            'boxShadow': '0 2px 6px rgba(0,0,0,0.08)',
+            'fontFamily': 'system-ui, -apple-system, sans-serif'
+        }
+    )
+    
+    return card

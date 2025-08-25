@@ -231,6 +231,7 @@ def prepare_final_dataframe(risk_params_data, metabolomic_data_with_ratios, ref_
     """
     # Загрузка данных
     risk_params = pd.read_excel(risk_params_data)
+    risk_params.fillna(method='ffill', inplace=True)
     metabolic_data = pd.read_excel(metabolomic_data_with_ratios)
     
     # Загрузка и подготовка референсных данных
@@ -255,7 +256,7 @@ def prepare_final_dataframe(risk_params_data, metabolomic_data_with_ratios, ref_
     
     # Обработка метаболитов
     results = []
-    for metabolite in risk_params['Маркер / Соотношение']:
+    for metabolite in risk_params['Показатель']:
         try:
             value = metabolic_data.loc[0, metabolite]
             
@@ -273,7 +274,6 @@ def prepare_final_dataframe(risk_params_data, metabolomic_data_with_ratios, ref_
     
     # Добавляем результаты в датафрейм
     risk_params = risk_params.assign(
-        Patient=[r[0] for r in results],
         Z_score=[r[1] for r in results]
     ).copy()
     
@@ -282,17 +282,17 @@ def prepare_final_dataframe(risk_params_data, metabolomic_data_with_ratios, ref_
         """Рассчитывает оценку для подгруппы"""
         inputs = []
         for _, row in group.iterrows():
-            value = abs(row['Z_score']* row['веса'])
+            value = abs(row['Z_score']* row['Вес'])
             
             risk = 0 if value < 1.54 else \
                     1 if (1.54 <= value <= 1.96) else \
                     2 if value > 1.96 else np.nan
             if risk is np.nan:
-                print(row['Маркер / Соотношение'], row['Z_score'])
+                print(row['Показатель'], row['Z_score'])
                         
             inputs.append(risk)
         
-        max_score = len(group['веса']) * 2
+        max_score = len(group['Вес']) * 2
         return sum(inputs) / max_score * 100 if max_score > 0 else 0
     
     # Применяем расчет для каждой категории
@@ -374,7 +374,7 @@ def calculate_risks(risk_params_data, metabolic_data_with_ratios):
     if other_groups:
         # Prepare parameter risk_params_data
         values_conc = []
-        for metabolite in risk_params_data['Маркер / Соотношение']:
+        for metabolite in risk_params_data['Показатель']:
             try:
                 value = row[metabolite]
                 if pd.isna(value) or np.isinf(value):
