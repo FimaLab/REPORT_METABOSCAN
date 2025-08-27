@@ -450,8 +450,8 @@ def setup_chrome_driver():
     # Setup Chrome options
     chrome_options = Options()
     chrome_options.add_argument("--headless")  # Optional: run in background
-    # service = Service(ChromeDriverManager().install())
-    service = Service("/usr/bin/chromedriver") #для корректной работы на сервере
+    service = Service(ChromeDriverManager().install())
+    # service = Service("/usr/bin/chromedriver") #для корректной работы на сервере
     driver = webdriver.Chrome(service=service, options=chrome_options) #для корректной работы на сервере
     
     driver.set_page_load_timeout(55)

@@ -1631,3 +1631,9 @@ For more information, refer to the
 2025-08-27 16:38:09,246 - INFO - Get LATEST chromedriver version for google-chrome
 2025-08-27 16:38:09,449 - INFO - Get LATEST chromedriver version for google-chrome
 2025-08-27 16:38:09,682 - INFO - Driver [C:\Users\admin\.wdm\drivers\chromedriver\win64\139.0.7258.154\chromedriver-win32/chromedriver.exe] found in cache
+2025-08-27 16:52:01,417 - ERROR - Message: Unable to obtain driver for chrome; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors/driver_location
+
+2025-08-27 16:52:33,876 - ERROR - Message: Unable to obtain driver for chrome; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors/driver_location
+
+2025-08-27 16:52:55,146 - ERROR - Message: Unable to obtain driver for chrome; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors/driver_location
+
