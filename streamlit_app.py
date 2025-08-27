@@ -54,6 +54,10 @@ def main():
     # Path to the reference file
     REF_FILE = "Ref.xlsx"
     
+    # Initialize session state for processed data
+    if 'processed_data' not in st.session_state:
+        st.session_state.processed_data = None
+    
     # Create two columns
     col1, col2 = st.columns([1, 1])
     
@@ -70,6 +74,8 @@ def main():
                 gender = st.selectbox("Пол", ("М", "Ж"), index=0)
             with cols[3]:
                 date = st.date_input("Дата отчета", datetime.now(), format="DD.MM.YYYY")
+            
+            layout = st.selectbox("Тип отчета", ("basic", "recommendation"), index=0)
             
             st.write("Загрузите данные")
             
@@ -124,6 +130,12 @@ def main():
         else:
             st.error(f"Файл параметров не найден: {REF_FILE}")
             st.session_state.edited_ref = None
+    
+    # Initialize session state for recommendation messages if not exists
+    if 'doctor_message' not in st.session_state:
+        st.session_state.doctor_message = ""
+    if 'patient_message' not in st.session_state:
+        st.session_state.patient_message = ""
     
     if submitted:
         if validate_inputs(name, metabolomic_data):
@@ -208,13 +220,6 @@ def main():
                                                 use_container_width=True
                                             )
                         else:  # Single patient case (original behavior)
-                            patient_info = {
-                                "name": name.strip(),
-                                "age": age,
-                                "date": date.strftime("%d.%m.%Y"),
-                                "gender": gender,
-                            }
-                            
                             risk_params_exp = prepare_final_dataframe(risk_params_path, metabolomic_data_with_ratios_path, ref_stats_path)
                             risk_params_exp_path = os.path.join(temp_dir, "risk_exp_params.xlsx")
                             risk_params_exp.to_excel(risk_params_exp_path, index=False)
@@ -232,32 +237,146 @@ def main():
                             with cols[1]:
                                 st.dataframe(risk_params_exp)
                             
-                            # Generate report
-                            report_path = generate_pdf_report(
-                                patient_info,
-                                risk_scores_path,
-                                risk_params_exp_path,
-                                metabolomic_data_with_ratios_path,
-                                ref_stats_path,
-                                metrics_path,
-                                temp_dir
-                            )
+                            # Store the processed data in session state for later use
+                            # We need to save the actual data, not just paths, since temp_dir will be deleted
+                            st.session_state.processed_data = {
+                                "risk_scores": risk_scores,
+                                "risk_params_exp": risk_params_exp,
+                                "metabolomic_data_with_ratios": metabolomic_data_with_ratios,
+                                "ref_stats": st.session_state.edited_ref['Ref_stats'],
+                                "metrics": st.session_state.edited_ref['metrics_ml_models'],
+                                "patient_info": {
+                                    "name": name.strip(),
+                                    "age": age,
+                                    "date": date.strftime("%d.%m.%Y"),
+                                    "gender": gender,
+                                    "layout": layout
+                                }
+                            }
                             
-                            if report_path:
-                                st.success("✅ Отчет успешно сформирован!")
-                                with open(report_path, "rb") as f:
-                                    st.download_button(
-                                        label="📥 Скачать отчет",
-                                        data=f.read(),
-                                        file_name=f"Report_{name.replace(' ', '_')}_{date.strftime('%Y%m%d')}.pdf",
-                                        mime="application/pdf",
+                            # Handle different report types
+                            if layout == "basic":
+                                # Generate basic report immediately
+                                with tempfile.TemporaryDirectory() as report_temp_dir:
+                                    # Save data to temporary files for report generation
+                                    risk_scores_path = os.path.join(report_temp_dir, "risk_scores.xlsx")
+                                    st.session_state.processed_data["risk_scores"].to_excel(risk_scores_path, index=False)
+                                    
+                                    risk_params_exp_path = os.path.join(report_temp_dir, "risk_exp_params.xlsx")
+                                    st.session_state.processed_data["risk_params_exp"].to_excel(risk_params_exp_path, index=False)
+                                    
+                                    metabolomic_data_with_ratios_path = os.path.join(report_temp_dir, "metabolomic_data.xlsx")
+                                    st.session_state.processed_data["metabolomic_data_with_ratios"].to_excel(metabolomic_data_with_ratios_path, index=False)
+                                    
+                                    ref_stats_path = os.path.join(report_temp_dir, "Ref_stats.xlsx")
+                                    st.session_state.processed_data["ref_stats"].to_excel(ref_stats_path, index=False)
+                                    
+                                    metrics_path = os.path.join(report_temp_dir, "metrics.xlsx")
+                                    st.session_state.processed_data["metrics"].to_excel(metrics_path, index=False)
+                                    
+                                    report_path = generate_pdf_report(
+                                        st.session_state.processed_data["patient_info"],
+                                        risk_scores_path,
+                                        risk_params_exp_path,
+                                        metabolomic_data_with_ratios_path,
+                                        ref_stats_path,
+                                        metrics_path,
+                                        report_temp_dir
                                     )
-                            else:
-                                st.error("Ошибка при генерации отчета")
-                                
+                                    
+                                    if report_path:
+                                        st.success("✅ Отчет успешно сформирован!")
+                                        with open(report_path, "rb") as f:
+                                            st.download_button(
+                                                label="📥 Скачать отчет",
+                                                data=f.read(),
+                                                file_name=f"Метабоскан_{name.replace(' ', '_')}_{date}.pdf",
+                                                mime="application/pdf",
+                                            )
+                                    else:
+                                        st.error("Ошибка при генерации отчета")
+                            
+                            elif layout == "recommendation":
+                                # Show form for recommendation messages
+                                st.info("Пожалуйста, заполните поля ниже для генерации отчета с рекомендациями")
+                    
                     except Exception as e:
                         st.error(f"An error occurred: {str(e)}")
                         logging.error(f"Error in report generation: {str(e)}")
+    
+    # Show recommendation form if we have processed data and layout is recommendation
+    if (st.session_state.processed_data and 
+        st.session_state.processed_data["patient_info"]["layout"] == "recommendation"):
+        
+        # Recommendation form
+        with st.form("recommendation_form"):
+            st.session_state.patient_message = st.text_area(
+                value=st.session_state.patient_message,
+                key="patient_message_input",
+                height=150,
+                max_chars= 700,
+                label="Текст для пациента",
+                placeholder="Введите выводы для пациента..."
+            )
+            st.session_state.doctor_message = st.text_area(
+                value=st.session_state.doctor_message,
+                key="doctor_message_input",
+                height=150,
+                max_chars= 1800,
+                label="Текст для врача",
+                placeholder="Введите выводы для врача..."
+            )
+            submitted_recommendation = st.form_submit_button("Сформировать отчет с рекомендациями", type="primary")
+            
+        if submitted_recommendation:
+            with st.spinner("Генерируем отчет с рекомендациями..."):
+                with tempfile.TemporaryDirectory() as report_temp_dir:
+                    # Save data to temporary files for report generation
+                    risk_scores_path = os.path.join(report_temp_dir, "risk_scores.xlsx")
+                    st.session_state.processed_data["risk_scores"].to_excel(risk_scores_path, index=False)
+                    
+                    risk_params_exp_path = os.path.join(report_temp_dir, "risk_exp_params.xlsx")
+                    st.session_state.processed_data["risk_params_exp"].to_excel(risk_params_exp_path, index=False)
+                    
+                    metabolomic_data_with_ratios_path = os.path.join(report_temp_dir, "metabolomic_data.xlsx")
+                    st.session_state.processed_data["metabolomic_data_with_ratios"].to_excel(metabolomic_data_with_ratios_path, index=False)
+                    
+                    ref_stats_path = os.path.join(report_temp_dir, "Ref_stats.xlsx")
+                    st.session_state.processed_data["ref_stats"].to_excel(ref_stats_path, index=False)
+                    
+                    metrics_path = os.path.join(report_temp_dir, "metrics.xlsx")
+                    st.session_state.processed_data["metrics"].to_excel(metrics_path, index=False)
+                    
+                    # Add messages to patient info
+                    patient_info_with_messages = st.session_state.processed_data["patient_info"].copy()
+                    patient_info_with_messages["doctor_message"] = st.session_state.doctor_message
+                    patient_info_with_messages["patient_message"] = st.session_state.patient_message
+                    
+                    # Generate report with recommendations
+                    report_path = generate_pdf_report(
+                        patient_info_with_messages,
+                        risk_scores_path,
+                        risk_params_exp_path,
+                        metabolomic_data_with_ratios_path,
+                        ref_stats_path,
+                        metrics_path,
+                        report_temp_dir
+                    )
+                    
+                    if report_path:
+                        st.success("✅ Отчет с рекомендациями успешно сформирован!")
+                        name = st.session_state.processed_data["patient_info"]["name"]
+                        
+                        with open(report_path, "rb") as f:
+                            st.download_button(
+                                label="📥 Скачать отчет с рекомендациями",
+                                data=f.read(),
+                                file_name=f"Метабоскан+_{name.replace(' ', '_')}_{date}.pdf",
+                                mime="application/pdf",
+                                key="download_recommendation"
+                            )
+                    else:
+                        st.error("Ошибка при генерации отчета с рекомендациями")
 
 def generate_pdf_report(patient_info, risk_scores_path, risk_params_exp_path, 
                        metabolomic_data_with_ratios_path, ref_stats_path, metrics_path, output_dir):
@@ -278,12 +397,19 @@ def generate_pdf_report(patient_info, risk_scores_path, risk_params_exp_path,
             "--age", str(patient_info['age']),
             "--gender", patient_info['gender'],
             "--date", patient_info['date'],
+            "--layout", patient_info['layout'],
             "--risk_scores", risk_scores_path,
             "--risk_params", risk_params_exp_path,
             "--metabolomic_data", metabolomic_data_with_ratios_path,
             "--ref_stats", ref_stats_path,
             "--metrics", metrics_path,
         ]
+        
+        # Add messages if they exist (for recommendation layout)
+        if 'doctor_message' in patient_info:
+            dash_command.extend(["--doctor_message", patient_info['doctor_message']])
+        if 'patient_message' in patient_info:
+            dash_command.extend(["--patient_message", patient_info['patient_message']])
         
         dash_process = subprocess.Popen(
             dash_command,

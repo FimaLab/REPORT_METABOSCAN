@@ -139,10 +139,14 @@ def create_ref_stats_from_excel(excel_path):
     return ref_stats
 
 def plot_metabolite_z_scores(metabolite_concentrations, group_title, norm_ref=[-1.54, 1.54], ref_stats={}):
+    """
+    Combined function that processes data like the second function
+    but renders the plot like the first function
+    """
     # Set font to Calibri
     mpl.rcParams['font.family'] = 'Calibri'
 
-    # Calculate z-scores and determine colors
+    # Calculate z-scores and determine colors (from second function)
     data = []
     highlight_green_metabolites = []
     missing_metabolites = []
@@ -161,7 +165,7 @@ def plot_metabolite_z_scores(metabolite_concentrations, group_title, norm_ref=[-
             missing_metabolites.append(original_name)
             continue
 
-        # Get display name (use name_view if available, otherwise original)
+        # Get display name (use name_short_view if available, otherwise original)
         display_name = ref_data.get("name_short_view", original_name)
         name_translations[original_name] = display_name
 
@@ -186,8 +190,8 @@ def plot_metabolite_z_scores(metabolite_concentrations, group_title, norm_ref=[-
             data.append(
                 {
                     "original_name": original_name,
-                    "display_name": display_name,
-                    "value": z_score,
+                    "name_short_view": display_name,
+                    "z_score": z_score,
                     "color": color,
                     "original_value": conc,
                 }
@@ -196,8 +200,9 @@ def plot_metabolite_z_scores(metabolite_concentrations, group_title, norm_ref=[-
         except (TypeError, ValueError):
             missing_metabolites.append(original_name)
 
-    # Create figure - show empty plot if no valid data
-    fig, ax = plt.subplots(figsize=(8, 6), dpi=300)
+    # Create figure - show empty plot if no valid data (from first function)
+    fig, ax = plt.subplots(figsize=(12, 3), dpi=300)
+    
     if not data:
         ax.text(
             0.5,
@@ -208,7 +213,7 @@ def plot_metabolite_z_scores(metabolite_concentrations, group_title, norm_ref=[-
             fontsize=14,
             color='#6B7280',
         )
-        ax.set_title(group_title, fontsize=20, pad=20, color='#404547', fontweight='bold')
+        # ax.set_title(group_title, fontsize=20, pad=20, color='#404547', fontweight='bold')
         for spine in ['top', 'right', 'bottom', 'left']:
             ax.spines[spine].set_visible(False)
         ax.set_xticks([])
@@ -216,119 +221,229 @@ def plot_metabolite_z_scores(metabolite_concentrations, group_title, norm_ref=[-
         plt.tight_layout()
         return fig_to_uri(fig)
 
-    # Create bars using display names
+    # Set y-axis limits to ±3 (from first function)
+    ax.set_ylim(-3, 3)
+
+    # Create colored background regions (behind bars) - from first function
+    ax.axhspan(norm_ref[0], norm_ref[1], facecolor='#10b981', alpha=0.1, zorder=1)  # Green normal range
+    ax.axhspan(-1.96, norm_ref[0], facecolor='#f59e0b', alpha=0.1, zorder=1)       # Yellow border zone
+    ax.axhspan(norm_ref[1], 1.96, facecolor='#f59e0b', alpha=0.1, zorder=1)        # Yellow border zone
+    ax.axhspan(1.96, 3, facecolor='#dc2626', alpha=0.1, zorder=1)                 # Light red risk zone
+    ax.axhspan(-3, -1.96, facecolor='#dc2626', alpha=0.1, zorder=1)               # Light red risk zone
+
+    # Add horizontal lines (behind bars) - from first function
+    ax.axhline(0, color='#374151', linewidth=1, alpha=0.5, zorder=2)
+    ax.axhline(norm_ref[1], color='#10b981', linestyle='--', linewidth=1.5, zorder=2)
+    ax.axhline(norm_ref[0], color='#10b981', linestyle='--', linewidth=1.5, zorder=2)
+    ax.axhline(1.96, color='#dc2626', linestyle=':', linewidth=1.5, zorder=2)
+    ax.axhline(-1.96, color='#dc2626', linestyle=':', linewidth=1.5, zorder=2)
+
+    # Create bars (in front of background and lines) - from first function
     bars = ax.bar(
-        [d["display_name"] for d in data],
-        [d["value"] for d in data],
+        [d["name_short_view"] for d in data],
+        [d["z_score"] for d in data],
         color=[d["color"] for d in data],
-        edgecolor='white',
         linewidth=1,
+        zorder=3  # Higher zorder to be in front
     )
 
-    # Add value labels on top of bars
+    # Add value labels on top of bars (highest zorder) - from first function
     for bar, item in zip(bars, data):
-        height = item["value"]
-        va = 'bottom' if height >= 0 else 'top'
-        y = height + 0.05 if height >= 0 else height - 0.05
+        height = item["z_score"]
+        
+        # For values beyond ±3, show label inside bar (white color)
+        if abs(height) > 2.8:
+            # Determine position inside bar
+            y_pos = 2.8 if height > 0 else -2.8
+            va = 'top' if height > 0 else 'bottom'
+            
+            ax.text(
+                bar.get_x() + bar.get_width() / 2.0,
+                y_pos,
+                f'{height:.1f}',
+                ha='center',
+                va=va,
+                fontsize=13,
+                fontweight='bold',
+                color='white',
+                zorder=4  # Highest zorder
+            )
+        else:
+            # Regular label placement for values within ±3
+            va = 'bottom' if height >= 0 else 'top'
+            y = height + 0.05 if height >= 0 else height - 0.05
 
-        # Determine text color - green if in highlight list, otherwise black
-        text_color = '#10b981' if item["display_name"] in highlight_green_metabolites else 'black'
+            # Determine text color - green if in highlight list, otherwise black
+            text_color = '#10b981' if item.get("name_short_view") in highlight_green_metabolites else 'black'
 
-        # Adjust fontsize based on number of labels
-        fontsize = 11 if len(data) > 15 else 14
+            ax.text(
+                bar.get_x() + bar.get_width() / 2.0,
+                y,
+                f'{height:.2f}',
+                ha='center',
+                va=va,
+                fontsize=13,
+                fontweight='bold',
+                color=text_color,
+                zorder=4  # Highest zorder
+            )
 
-        ax.text(
-            bar.get_x() + bar.get_width() / 2.0,
-            y,
-            f'{height:.2f}',
-            ha='center',
-            va=va,
-            fontsize=fontsize,
-            fontweight='bold',
-            color=text_color,
-        )
+    # Add risk labels (behind bars but above background) - from first function
+    ax.text(0.002, 2.2, 'РИСК', transform=ax.get_yaxis_transform(), 
+            ha='left', va='center', color="#dc26268e", fontsize=11, fontweight='bold', zorder=2)
+    ax.text(0.002, 0.2, 'НОРМА', transform=ax.get_yaxis_transform(), 
+            ha='left', va='center', color="#149941af", fontsize=11, fontweight='bold', zorder=2)
+    ax.text(0.002, -2.2, 'РИСК', transform=ax.get_yaxis_transform(), 
+        ha='left', va='center', color="#dc262685", fontsize=11, fontweight='bold', zorder=2)
 
-    # Add horizontal lines
-    ax.axhline(0, color='#374151', linewidth=1)
-    ax.axhline(norm_ref[1], color='#6B7280', linestyle='--', linewidth=1)
-    ax.axhline(norm_ref[0], color='#6B7280', linestyle='--', linewidth=1)
-    ax.axhline(1.96, color='#6B7280', linestyle=':', linewidth=1, alpha=0.5)
-    ax.axhline(-1.96, color='#6B7280', linestyle=':', linewidth=1, alpha=0.5)
+    # Set y-axis ticks - from first function
+    ax.set_yticks([-3, -2, -1, 0, 1, 2, 3])
 
-    # Set title and labels
-    ax.set_title(group_title, fontsize=22, pad=20, color='#404547', fontweight='bold')
-    ax.set_ylabel(
-        f"Отклонение от состояния ЗДОРОВЫЙ, норма от {norm_ref[0]} до {norm_ref[1]}",
-        fontsize=14,
-        labelpad=15,
-    )
-
-    # Set y-axis scale with appropriate steps
-    y_min = round(min(-1.5, min([d["value"] for d in data])) - 0.2, 1)
-    y_max = round(max(1.5, max([d["value"] for d in data])) + 0.2, 1)
-    ax.set_ylim(y_min, y_max)
-
-    y_range = max(abs(y_min), abs(y_max))
-    step = (
-        5.0
-        if y_range > 15
-        else 2.5
-        if y_range > 12
-        else 2.0
-        if y_range > 10
-        else 1.0 
-        if y_range > 7 
-        else 0.75 
-        if y_range > 5 
-        else 0.5
-    )
-    ax.set_yticks(np.arange(np.floor(y_min), np.ceil(y_max) + step, step))
-
-    # Customize axes
+    # Customize axes - from first function
     for spine in ['top', 'right', 'bottom', 'left']:
         ax.spines[spine].set_visible(False)
     ax.xaxis.set_tick_params(length=0)
     ax.yaxis.set_tick_params(length=0)
-    plt.yticks(fontsize=13)
+    plt.yticks(fontsize=12)
+    # ax.set_title(group_title, fontsize=15, pad=10, color='#404547', fontweight='bold')
+    
+    # Format x-tick labels - from first function
+    x_tick_labels = [d.get("name_short_view", "") for d in data]
+    
+    # Check if we need special handling for many labels
+    many_labels = len(x_tick_labels) > 13
+    
+    # Determine font size based on number of labels
+    x_fontsize = 14
+    if len(x_tick_labels) > 8:
+        x_fontsize = 13
+    elif len(x_tick_labels) > 10:
+        x_fontsize = 12
+    elif len(x_tick_labels) > 14:
+        x_fontsize = 10
+    elif len(x_tick_labels) > 18:
+        x_fontsize = 6
 
-    # Adjust x-axis labels
-    xticklabels = ax.get_xticklabels()
-    for label in xticklabels:
-        display_name = label.get_text()
-        fontsize = 13.5 if len(display_name) > 20 else 15 if len(display_name) > 12 else 15.5
-        label.set_fontsize(fontsize)
-        label.set_rotation(45)
-        label.set_ha('right')
-
-    # Add warning about missing metabolites if needed
-    if missing_metabolites:
-        # Try to get display names for missing metabolites
-        missing_display_names = []
-        for name in missing_metabolites:
-            if name in ref_stats and "name_view" in ref_stats[name]:
-                missing_display_names.append(ref_stats[name]["name_view"])
+    if many_labels:
+        # For many labels: remove default x-ticks and add custom labels
+        ax.set_xticks([])  # Remove default x-ticks
+        
+        # Strategy: alternate long labels between top and bottom when they're close
+        # to avoid overlapping and improve readability
+        
+        # First, identify all long labels (more than 5 characters)
+        long_label_indices = [i for i, label in enumerate(x_tick_labels) if len(label) > 5]
+        
+        # Group consecutive long labels to alternate their placement
+        groups = []
+        current_group = []
+        
+        for i in long_label_indices:
+            if not current_group:
+                current_group.append(i)
+            elif i == current_group[-1] + 1:
+                # Consecutive long label
+                current_group.append(i)
             else:
-                missing_display_names.append(name)
+                # Break in sequence, start new group
+                groups.append(current_group)
+                current_group = [i]
+        
+        if current_group:
+            groups.append(current_group)
+        
+        # For each group of consecutive long labels, alternate placement
+        placement_map = {}  # Store placement for each index: 'top' or 'bottom'
+        
+        for group in groups:
+            for j, idx in enumerate(group):
+                # Alternate placement within the group
+                if j % 2 == 0:
+                    placement_map[idx] = 'top'
+                else:
+                    placement_map[idx] = 'bottom'
+        
+        # Add custom labels
+        for i, (bar, label) in enumerate(zip(bars, x_tick_labels)):
 
-        warning_text = f"Missing data for:\n{', '.join(missing_display_names[:3])}" + (
-            "..." if len(missing_display_names) > 3 else ""
-        )
+            if len(label) > 5:
+                # Long label - use alternating placement
+                placement = placement_map.get(i, 'top')  # Default to top if not in map
 
-        ax.text(
-            1.02,
-            0.95,
-            warning_text,
-            transform=ax.transAxes,
-            fontsize=10,
-            color='#dc2626',
-            ha='left',
-            va='top',
-            bbox=dict(facecolor='white', alpha=0.8, edgecolor='#fecaca', pad=4),
-        )
+                if placement == 'top':
+                    ax.text(
+                        bar.get_x() + bar.get_width() / 2.0,
+                        3.2,
+                        label,
+                        ha='center',
+                        va='bottom',
+                        fontsize=x_fontsize,
+                        fontweight='bold',
+                        rotation=0,
+                        zorder=4
+                    )
+                else:
+                    ax.text(
+                        bar.get_x() + bar.get_width() / 2.0,
+                        -3.2,
+                        label,
+                        ha='center',
+                        va='top',
+                        fontsize=x_fontsize,
+                        fontweight='bold',
+                        rotation=0,
+                        zorder=4
+                    )
+            else:
+                # Short label stays at bottom
+                ax.text(
+                    bar.get_x() + bar.get_width() / 2.0,
+                    -3.2,
+                    label,
+                    ha='center',
+                    va='top',
+                    fontsize=x_fontsize,
+                    fontweight='bold',
+                    rotation=0,
+                    zorder=4
+                )
+    else:
+        # Original logic for fewer labels
+        formatted_labels = []
+        for label in x_tick_labels:
+            if len(label) > 10 and ('/' in label or ' ' in label or '+' in label):
+                if '/' in label:
+                    parts = label.split('/')
+                    formatted_label = '/\n'.join(parts)
+                elif '+' in label:
+                    parts = label.split('+')
+                    formatted_label = '+\n'.join(parts)
+                elif ' ' in label:
+                    parts = label.split(' ')
+                    if len(parts) > 1:
+                        mid = len(parts) // 2
+                        first_line = ' '.join(parts[:mid])
+                        second_line = ' '.join(parts[mid:])
+                        formatted_label = f'{first_line}\n{second_line}'
+                    else:
+                        formatted_label = label
+                else:
+                    mid = len(label) // 2
+                    formatted_label = f'{label[:mid]}\n{label[mid:]}'
+            else:
+                formatted_label = label
+            formatted_labels.append(formatted_label)
+        
+        plt.xticks(range(len(formatted_labels)), formatted_labels, 
+                  fontsize=x_fontsize, fontweight='bold', rotation=0)
+        
+        # Adjust layout for multi-line labels
+        if any('\n' in label for label in formatted_labels):
+            fig.subplots_adjust(bottom=0.2)
+    
 
-    plt.tight_layout()
+    plt.tight_layout(pad=0.0)
     return fig_to_uri(fig)
-
 
 def fig_to_uri(fig):
     """Convert matplotlib figure to data URI"""

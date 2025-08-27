@@ -3,6 +3,7 @@ import numpy as np
 import time
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.service import Service #для корректной работы на сервере
 import subprocess
 import logging
@@ -446,7 +447,10 @@ def setup_chrome_driver():
          "webkit.webprefs.fixed_font_family": "Consolas"
     }
     chrome_options.add_experimental_option("prefs", font_prefs)
-    
+    # Setup Chrome options
+    chrome_options = Options()
+    chrome_options.add_argument("--headless")  # Optional: run in background
+    # service = Service(ChromeDriverManager().install())
     service = Service("/usr/bin/chromedriver") #для корректной работы на сервере
     driver = webdriver.Chrome(service=service, options=chrome_options) #для корректной работы на сервере
     
