@@ -1,3 +1,4 @@
+from types import CodeType
 import pandas as pd
 import numpy as np
 import time
@@ -424,20 +425,16 @@ logging.basicConfig(
 def setup_chrome_driver():
     """Configure Chrome WebDriver with extended timeout settings"""
     chrome_options = Options()
-    chrome_options.binary_location = "/usr/bin/chromium"  # для корректной работы на сервере
+    chrome_options.binary_location = "/usr/bin/chromium"
     chrome_options.add_argument("--headless=new")
     chrome_options.add_argument("--disable-gpu")
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("--window-size=1920,1080")
-    chrome_options.add_argument("--disable-setuid-sandbox")  # Добавьте это
-    chrome_options.add_argument("--remote-debugging-port=9222")  # Решает проблему с DevToolsActivePort
+    chrome_options.add_argument("--disable-setuid-sandbox")
+    chrome_options.add_argument("--remote-debugging-port=9222")
     
-    # Убедитесь, что Chromium установлен и доступен
-    chrome_options.add_argument("--disable-software-rasterizer")
-    chrome_options.add_argument("--disable-features=VizDisplayCompositor")
-    
-    # Improved font configuration for Docker/Linux
+    # Improved font configuration
     chrome_options.add_argument("--disable-font-subpixel-positioning")
     chrome_options.add_argument("--disable-remote-fonts")
     chrome_options.add_argument("--force-color-profile=srgb")
@@ -455,15 +452,27 @@ def setup_chrome_driver():
     }
     chrome_options.add_experimental_option("prefs", font_prefs)
     
-    # Попробуйте оба варианта установки драйвера
+    # Установка совместимой версии ChromeDriver
     try:
-        # Вариант 1: Автоматическая установка
-        service = Service(ChromeDriverManager().install())
-    except:
-        # Вариант 2: Ручной путь (раскомментируйте если нужно)
-        service = Service("/usr/bin/chromedriver")  # для корректной работы на сервере
-    
-    driver = webdriver.Chrome(service=service, options=chrome_options)
+        # Способ 1: Установить правильную версию через ChromeDriverManager
+        driver = webdriver.Chrome(
+            service=Service(
+                ChromeDriverManager(
+                    driver_version="139.0.7258*"  # Указываем нужную версию
+                ).install()
+            ),
+            options=chrome_options
+        )
+    except Exception as e:
+        print(f"Error with ChromeDriverManager: {e}")
+        try:
+            # Способ 2: Использовать системный chromedriver (должен быть совместимой версии)
+            service = Service("/usr/bin/chromedriver")
+            driver = webdriver.Chrome(service=service, options=chrome_options)
+        except Exception as e2:
+            print(f"Error with system chromedriver: {e2}")
+            # Способ 3: Попробовать без указания service (автоопределение)
+            driver = webdriver.Chrome(options=chrome_options)
     
     driver.set_page_load_timeout(55)
     driver.set_script_timeout(40)
