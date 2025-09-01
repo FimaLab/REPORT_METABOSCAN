@@ -30,7 +30,7 @@ def create_layout(name, age, gender, date, metrics_dict, footer_gen, ref_stats, 
                     html.Img(
                         src=app.get_asset_url('radial_diagram.png'),
                         style={
-                            'height': '380px',
+                            'height': '350px',
                             'width': 'auto',  # This maintains aspect ratio
                             'max-width': '100%',  # Ensures it doesn't overflow container
                             'object-fit': 'contain',  # Prevents distortion

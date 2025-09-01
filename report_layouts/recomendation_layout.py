@@ -30,7 +30,7 @@ def create_layout(name, age, gender, date, patient_message, doctor_message, metr
                     html.Img(
                         src=app.get_asset_url('radial_diagram.png'),
                         style={
-                            'height': '380px',
+                            'height': '350px',
                             'width': 'auto',  # This maintains aspect ratio
                             'max-width': '100%',  # Ensures it doesn't overflow container
                             'object-fit': 'contain',  # Prevents distortion
@@ -42,6 +42,7 @@ def create_layout(name, age, gender, date, patient_message, doctor_message, metr
                         },
                     ),
                     render_radial_diagram_legend(),
+                    render_recomendation_message(title="Вывод о состоянии организма:", message=patient_message),
                     # Plot risk_scores table
                     html.Div(
                         [
@@ -145,7 +146,7 @@ def create_layout(name, age, gender, date, patient_message, doctor_message, metr
                         },
                         
                     ), 
-                    render_recomendation_message(title="Вывод о состоянии организма:", message=patient_message)
+                    
                                 ]), footer= next(footer_gen)),
                     
                     render_page_layout(

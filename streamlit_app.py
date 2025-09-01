@@ -314,7 +314,7 @@ def main():
                 value=st.session_state.patient_message,
                 key="patient_message_input",
                 height=150,
-                max_chars= 700,
+                max_chars= 650,
                 label="Текст для пациента",
                 placeholder="Введите выводы для пациента..."
             )

@@ -1637,3 +1637,21 @@ For more information, refer to the
 
 2025-08-27 16:52:55,146 - ERROR - Message: Unable to obtain driver for chrome; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors/driver_location
 
+2025-08-27 17:24:48,606 - INFO - ====== WebDriver manager ======
+2025-08-27 17:24:49,546 - INFO - There is no [win64] chromedriver "139.0.7258*" for browser google-chrome "139.0.7258" in cache
+2025-08-27 17:24:49,827 - ERROR - Message: Unable to obtain driver for chrome; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors/driver_location
+
+2025-08-28 13:38:40,795 - INFO - ====== WebDriver manager ======
+2025-08-28 13:38:41,737 - INFO - There is no [win64] chromedriver "139.0.7258*" for browser google-chrome "139.0.7258" in cache
+2025-08-28 13:38:42,023 - ERROR - Message: Unable to obtain driver for chrome; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors/driver_location
+
+2025-08-28 13:40:53,730 - INFO - ====== WebDriver manager ======
+2025-08-28 13:40:54,640 - INFO - Get LATEST chromedriver version for google-chrome
+2025-08-28 13:40:54,837 - INFO - Get LATEST chromedriver version for google-chrome
+2025-08-28 13:40:54,943 - INFO - Get LATEST chromedriver version for google-chrome
+2025-08-28 13:40:55,512 - INFO - WebDriver version 139.0.7258.154 selected
+2025-08-28 13:40:55,516 - INFO - Modern chrome version https://storage.googleapis.com/chrome-for-testing-public/139.0.7258.154/win32/chromedriver-win32.zip
+2025-08-28 13:40:55,516 - INFO - About to download new driver from https://storage.googleapis.com/chrome-for-testing-public/139.0.7258.154/win32/chromedriver-win32.zip
+2025-08-28 13:40:55,704 - INFO - Driver downloading response is 200
+2025-08-28 13:41:03,412 - INFO - Get LATEST chromedriver version for google-chrome
+2025-08-28 13:41:03,662 - INFO - Driver has been saved in cache [C:\Users\admin\.wdm\drivers\chromedriver\win64\139.0.7258.154]
