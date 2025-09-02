@@ -425,35 +425,54 @@ logging.basicConfig(
 def setup_chrome_driver():
     """Configure Chrome WebDriver with extended timeout settings"""
     chrome_options = Options()
-    chrome_options.binary_location = "/usr/bin/chromium" #для корректной работы на сервере
+    chrome_options.binary_location = "/usr/bin/chromium"
     chrome_options.add_argument("--headless=new")
     chrome_options.add_argument("--disable-gpu")
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("--window-size=1920,1080")
-    # # Improved font configuration for Docker/Linux
-    # chrome_options.add_argument("--disable-font-subpixel-positioning")
-    # chrome_options.add_argument("--disable-remote-fonts")
-    # chrome_options.add_argument("--force-color-profile=srgb")
+    chrome_options.add_argument("--disable-setuid-sandbox")
+    chrome_options.add_argument("--remote-debugging-port=9222")
+    
+    # Improved font configuration
+    chrome_options.add_argument("--disable-font-subpixel-positioning")
+    chrome_options.add_argument("--disable-remote-fonts")
+    chrome_options.add_argument("--force-color-profile=srgb")
     
     # Set default fonts
     font_prefs = {
-         "webkit.webprefs.default_fixed_font_size": 13,
-         "webkit.webprefs.default_font_size": 16,
-         "webkit.webprefs.minimum_font_size": 12,
-         "webkit.webprefs.minimum_logical_font_size": 12,
-         "webkit.webprefs.default_font_family": "Calibri",
-         "webkit.webprefs.sansserif_font_family": "Calibri",
-         "webkit.webprefs.serif_font_family": "Times New Roman",
-         "webkit.webprefs.fixed_font_family": "Consolas"
+        "webkit.webprefs.default_fixed_font_size": 13,
+        "webkit.webprefs.default_font_size": 16,
+        "webkit.webprefs.minimum_font_size": 12,
+        "webkit.webprefs.minimum_logical_font_size": 12,
+        "webkit.webprefs.default_font_family": "Calibri",
+        "webkit.webprefs.sansserif_font_family": "Calibri",
+        "webkit.webprefs.serif_font_family": "Times New Roman",
+        "webkit.webprefs.fixed_font_family": "Consolas"
     }
     chrome_options.add_experimental_option("prefs", font_prefs)
-    # Setup Chrome options
-    chrome_options = Options()
-    chrome_options.add_argument("--headless")  # Optional: run in background
-    service = Service(ChromeDriverManager().install())
-    # service = Service("/usr/bin/chromedriver") #для корректной работы на сервере
-    driver = webdriver.Chrome(service=service, options=chrome_options) #для корректной работы на сервере
+    
+    # Установка совместимой версии ChromeDriver
+    try:
+        # Способ 1: Установить правильную версию через ChromeDriverManager
+        driver = webdriver.Chrome(
+            service=Service(
+                ChromeDriverManager(
+                    driver_version="139.0.7258*"  # Указываем нужную версию
+                ).install()
+            ),
+            options=chrome_options
+        )
+    except Exception as e:
+        print(f"Error with ChromeDriverManager: {e}")
+        try:
+            # Способ 2: Использовать системный chromedriver (должен быть совместимой версии)
+            service = Service("/usr/bin/chromedriver")
+            driver = webdriver.Chrome(service=service, options=chrome_options)
+        except Exception as e2:
+            print(f"Error with system chromedriver: {e2}")
+            # Способ 3: Попробовать без указания service (автоопределение)
+            driver = webdriver.Chrome(options=chrome_options)
     
     driver.set_page_load_timeout(55)
     driver.set_script_timeout(40)
