@@ -4,7 +4,7 @@ from ui_kit.dash_utilit import *
 
 app = None
 
-def create_layout(name, age, gender, date, patient_message, doctor_message, metrics_dict, footer_gen, ref_stats, risk_scores, ref_params, metabolite_data):   
+def create_layout(name, age, gender, date, patient_message, patient_long_message, doctor_message, metrics_dict, footer_gen, ref_stats, risk_scores, ref_params, metabolite_data):   
     layout = html.Div(
                 [
                     render_page_layout(
@@ -1679,11 +1679,24 @@ def create_layout(name, age, gender, date, patient_message, doctor_message, metr
                                                         микробиоты и риск воспаления и
                                                         атеросклероза.
                                                         '''
-                                    ),
-                    render_recomendation_message(title="Информация для лечащего врача:", message=doctor_message),
+                                    )
                                 ]
                             )
                         ],
+                        footer=next(footer_gen),
+                    ),
+                    render_page_layout(
+                        header=render_page_header(date=date, name=name),
+                        content=html.Div(
+                            [render_recomendation_message(title="Информация для пациента:", message =patient_long_message),]
+                        ),
+                        footer=next(footer_gen),
+                    ),
+                    render_page_layout(
+                        header=render_page_header(date=date, name=name),
+                        content=html.Div(
+                            [render_recomendation_message(title="Информация для лечащего врача:", message=doctor_message),]
+                        ),
                         footer=next(footer_gen),
                     ),
                     

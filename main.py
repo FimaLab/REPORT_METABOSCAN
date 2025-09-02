@@ -35,7 +35,7 @@ def get_layout(layout_type, **kwargs):
         basic_layout.app = app
         # Удаляем ненужные аргументы для basic_layout
         filtered_kwargs = {k: v for k, v in kwargs.items() 
-                         if k not in ['patient_message', 'doctor_message']}
+                         if k not in ['patient_message', 'doctor_message', 'patient_long_message']}
         return basic_layout.create_layout(**filtered_kwargs)
         
     elif layout_type == 'recommendation':
@@ -57,6 +57,7 @@ def main():
     parser.add_argument('--risk_params', required=True)
     parser.add_argument('--ref_stats', required=True)
     parser.add_argument('--patient_message', default="")
+    parser.add_argument('--patient_long_message', default="")
     parser.add_argument('--doctor_message', default="")
     parser.add_argument('--metrics', required=True)
     args = parser.parse_args()
@@ -71,6 +72,7 @@ def main():
         gender = args.gender
         date = args.date
         patient_message = args.patient_message
+        patient_long_message = args.patient_long_message
         doctor_messsage = args.doctor_message
         metabolomic_data_path = args.metabolomic_data
         risk_scores_path = args.risk_scores
@@ -108,6 +110,7 @@ def main():
             'date': date,
             'gender': gender,
             'patient_message': patient_message,
+            'patient_long_message': patient_long_message,
             'doctor_message': doctor_messsage,
             'metrics_dict': metrics_dict,
             'footer_gen': footer_gen,

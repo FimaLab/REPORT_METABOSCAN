@@ -2122,9 +2122,9 @@ def render_recomendation_message(title="", message=""):
             html.Img(
                 src=app.get_asset_url('recomendation.svg'),
                 style={
-                    'width': '30px',
-                    'height': '30px',
-                    'margin-right': '15px',
+                    'width': '28px',
+                    'height': '28px',
+                    'margin-right': '12px',
                     'flex-shrink': '0',
                 },
             ),
@@ -2139,7 +2139,7 @@ def render_recomendation_message(title="", message=""):
                 dcc.Markdown(message, style={
                     'color': "#ffffff",
                     'font-family': 'Calibri',
-                    'font-size': '13.5px',
+                    'font-size': '14px',
                     'text-align': "justify",
                     'text-justify': 'inter-word',
                     "fontWeight": '500',
@@ -2154,11 +2154,11 @@ def render_recomendation_message(title="", message=""):
         ],
         style={
             'display': 'flex',
-            'margin': '10px 0',
+            'margin': '8px 0',
             'flex-direction': 'row',
             'align-items': 'flex-start',
             'border-radius': '0.6rem',
-            'padding': '12px 15px',
+            'padding': '7px 30px 0px 12px',
             'background': 'linear-gradient(135deg, #2563eb 0%, #3b82f6 50%, #348bf7 100%)',
             'box-shadow': '0 2px 4px rgba(0,0,0,0.1)',
         },

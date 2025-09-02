@@ -136,6 +136,8 @@ def main():
         st.session_state.doctor_message = ""
     if 'patient_message' not in st.session_state:
         st.session_state.patient_message = ""
+    if 'patient_long_message' not in st.session_state:
+        st.session_state.patient_long_message = ""
     
     if submitted:
         if validate_inputs(name, metabolomic_data):
@@ -314,15 +316,23 @@ def main():
                 value=st.session_state.patient_message,
                 key="patient_message_input",
                 height=150,
-                max_chars= 650,
+                max_chars= 600,
                 label="Текст для пациента",
                 placeholder="Введите выводы для пациента..."
+            )
+            st.session_state.patient_long_message = st.text_area(
+                value=st.session_state.patient_long_message,
+                key="patient_long_message_input",
+                height=150,
+                max_chars= 3000,
+                label="Текст для пациента (расширенный)",
+                placeholder="Введите выводы для пациента (расширенный)..."
             )
             st.session_state.doctor_message = st.text_area(
                 value=st.session_state.doctor_message,
                 key="doctor_message_input",
                 height=150,
-                max_chars= 1800,
+                max_chars= 3000,
                 label="Текст для врача",
                 placeholder="Введите выводы для врача..."
             )
@@ -351,6 +361,7 @@ def main():
                     patient_info_with_messages = st.session_state.processed_data["patient_info"].copy()
                     patient_info_with_messages["doctor_message"] = st.session_state.doctor_message
                     patient_info_with_messages["patient_message"] = st.session_state.patient_message
+                    patient_info_with_messages["patient_long_message"] = st.session_state.patient_long_message
                     
                     # Generate report with recommendations
                     report_path = generate_pdf_report(
@@ -410,6 +421,8 @@ def generate_pdf_report(patient_info, risk_scores_path, risk_params_exp_path,
             dash_command.extend(["--doctor_message", patient_info['doctor_message']])
         if 'patient_message' in patient_info:
             dash_command.extend(["--patient_message", patient_info['patient_message']])
+        if 'patient_long_message' in patient_info:
+            dash_command.extend(["--patient_long_message", patient_info['patient_long_message']])
         
         dash_process = subprocess.Popen(
             dash_command,
