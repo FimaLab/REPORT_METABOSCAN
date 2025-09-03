@@ -56,4 +56,5 @@ ENV CHROMEDRIVER_PATH=/usr/lib/chromium/chromedriver
 ENV PATH=$CHROMEDRIVER_PATH:$PATH
 
 # Запуск приложения
-CMD ["streamlit", "run", "streamlit_app.py"]
+CMD ["streamlit", "run", "streamlit_app.py", "--server.port=80", "--server.address=0.0.0.0"]
+
