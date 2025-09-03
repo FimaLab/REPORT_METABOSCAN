@@ -6,7 +6,7 @@ services:
       dockerfile: ./Dockerfile
       context: ./
     ports:
-      - "8501:8501"
+      - "80:80"
     volumes:
       - "./data:/usr/src/app/data:delegated"
       - "./project:/usr/src/app/project:delegated"
@@ -14,4 +14,5 @@ services:
       - USER_ID=1000
       - GROUP_ID=1000
     restart: unless-stopped
+
 
