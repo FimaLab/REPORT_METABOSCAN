@@ -1,7 +1,7 @@
 FROM python:3.11.4
 
 # Открываем порт для Streamlit
-EXPOSE 8501
+
 
 # Устанавливаем рабочую директорию
 WORKDIR /app
@@ -57,4 +57,5 @@ ENV PATH=$CHROMEDRIVER_PATH:$PATH
 
 # Запуск приложения
 CMD ["streamlit", "run", "streamlit_app.py", "--server.port=80", "--server.address=0.0.0.0"]
+
 
